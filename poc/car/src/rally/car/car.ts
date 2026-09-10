@@ -15,15 +15,17 @@ const VEHICLE_MASS = 1300;
 const WHEEL_RADIUS = 0.34;
 const WHEEL_WIDTH = 0.22;
 const WHEEL_X = HALF_W + WHEEL_WIDTH / 2;
-const WHEEL_Y = -0.9 * HALF_H;
+// Suspension attach point at the bottom of the chassis box. With the short
+// suspension below, the box sits about a wheel radius above the ground.
+const WHEEL_Y = -HALF_H;
 const FRONT_WHEEL_Z = 1.3;
 const BACK_WHEEL_Z = -1.3;
 
-// Long-travel rally suspension, soft and moderately damped.
-const SUSPENSION_MIN = 0.15;
-const SUSPENSION_MAX = 0.45;
-const SUSPENSION_FREQ = 1.5;
-const SUSPENSION_DAMPING = 0.5;
+// Short, stiff suspension: low ride height and little body roll.
+const SUSPENSION_MIN = 0.05;
+const SUSPENSION_MAX = 0.25;
+const SUSPENSION_FREQ = 2.5;
+const SUSPENSION_DAMPING = 0.7;
 const ANTI_ROLL_STIFFNESS = 1000;
 
 const MAX_STEER_ANGLE = (32 * Math.PI) / 180;
@@ -44,7 +46,7 @@ const CLUTCH_STRENGTH = 10;
 const FRONT_TORQUE_RATIO = 0.5;
 const LIMITED_SLIP_RATIO = 1.4;
 
-const SPAWN_CLEARANCE = 1.5;
+const SPAWN_CLEARANCE = 1.0;
 
 interface WheelSpec {
     x: number;

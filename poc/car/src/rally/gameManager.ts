@@ -45,7 +45,7 @@ export class GameManager {
         // Input first — its fixedUpdate must run before any consumer in the DFS.
         this.root.addChild(createInput());
 
-        const terrainGO = this.root.addChild(createTerrain(this.physics, scene, { amplitude: 2 }));
+        const terrainGO = this.root.addChild(createTerrain(this.physics, scene, { amplitude: 0.8 }));
         const terrain = terrainGO.getOrThrow(TerrainData);
 
         const carGO = this.root.addChild(createCar(this.physics, scene, terrain));
