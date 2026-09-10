@@ -1,11 +1,14 @@
 import type * as THREE from 'three';
 import type initJolt from 'jolt-physics';
 import type GUI from 'lil-gui';
+import { createNoise2D } from 'simplex-noise';
 import { Component } from '../../engine/gameObject';
 import { PHYSICS_TIMESTEP, type Physics } from '../../engine/physics';
 import { InputBehavior, type GameInput } from '../../engine/input/input';
 import { addCurveEditor, type CurvePoint } from '../../engine/debug/curveEditor';
+import { mulberry32 } from '../../engine/tools/math';
 import type { TerrainData } from '../terrain/terrain';
+import { SURFACES, type Surface } from '../terrain/surfaces';
 
 type JoltAPI = Awaited<ReturnType<typeof initJolt>>;
 type JoltBody = InstanceType<JoltAPI['Body']>;
@@ -13,33 +16,13 @@ type JoltConstraint = InstanceType<JoltAPI['VehicleConstraint']>;
 type JoltWheeledController = InstanceType<JoltAPI['WheeledVehicleController']>;
 type JoltLinearCurve = InstanceType<JoltAPI['LinearCurve']>;
 type JoltWheelWV = InstanceType<JoltAPI['WheelWV']>;
+type JoltVec3 = InstanceType<JoltAPI['Vec3']>;
 
 export const WHEEL_COUNT = 4;
 const WHEEL_NAMES = ['Front left', 'Front right', 'Back left', 'Back right'] as const;
+const REAR_WHEELS = [2, 3] as const;
 
-// Grippy tarmac-like tyre friction. Effective μ is sqrt(curve * ground
-// friction), so with the terrain at 1.5 these peak around 1.55. The rise
-// from μ=0 stays gradual enough that the wheel settles on an equilibrium
-// slip instead of chattering between 0 and 1+ each physics step.
-const LONGITUDINAL_DEFAULT: readonly CurvePoint[] = [
-    { x: 0, y: 0 },
-    { x: 0.08, y: 1.6 },
-    { x: 0.5, y: 1.4 },
-    { x: 1.0, y: 1.2 },
-];
-const LATERAL_DEFAULT: readonly CurvePoint[] = [
-    { x: 0, y: 0 },
-    { x: 3, y: 1.6 },
-    { x: 20, y: 1.3 },
-    { x: 30, y: 1.2 },
-];
-
-function applyCurve(target: JoltLinearCurve, points: readonly CurvePoint[]): void {
-    target.Clear();
-    for (const p of points) target.AddPoint(p.x, p.y);
-    target.Sort();
-}
-
+const GRAVITY = 9.81;
 const STEER_SPEED = 5;
 const RAD_TO_DEG = 180 / Math.PI;
 // Pressing "back" while rolling forward brakes; once (nearly) stopped it
@@ -50,46 +33,58 @@ const REVERSE_SPEED_THRESHOLD = 0.5;
 const IDLE_BRAKE = 0.2;
 const IDLE_BRAKE_SPEED_KMH = 5;
 
-// Jolt combines tyre and ground friction as sqrt(curve * body_friction) and
-// the JS binding doesn't expose the per-wheel combine callback, so surface
-// grip is emulated by scaling each wheel's curves. Body friction is 1, so
-// scaling a curve by s² yields an effective μ of curve * s.
-const SURFACE_EPSILON = 0.01;
-
 // Jolt keys lateral friction on the slip angle alone, so a locked rear
 // wheel keeps most of its side grip and the car just slows down instead of
 // rotating. Scaling the rear lateral curve down while the hand brake is
 // held gives the arcade "pull and flick" slide.
 const HAND_BRAKE_LATERAL_GRIP = 0.3;
-const REAR_WHEELS = [2, 3] as const;
 
-function scaleCurve(points: readonly CurvePoint[], scale: number): CurvePoint[] {
-    return points.map((p) => ({ x: p.x, y: p.y * scale }));
+// Procedural surface grain: a vertical force noise applied at each wheel
+// contact, sampled along the distance travelled so a parked car is still.
+// The amplitude ramps up with speed and caps at twice the surface value.
+const ROUGHNESS_WAVELENGTH = 0.5;
+const ROUGHNESS_REF_SPEED = 10;
+const ROUGHNESS_MAX_SPEED_FACTOR = 2;
+
+/**
+ * Curves in `Surface` are effective μ. The ground body friction is 1 and
+ * Jolt combines as sqrt(tyre * ground), so squaring here makes the tyre
+ * see exactly the curve value.
+ */
+function applyCurve(target: JoltLinearCurve, points: readonly CurvePoint[], scale: number): void {
+    target.Clear();
+    for (const p of points) {
+        const mu = p.y * scale;
+        target.AddPoint(p.x, mu * mu);
+    }
+    target.Sort();
 }
 
-interface SlipReadout {
+interface WheelReadout {
     long: number;
     lat: number;
-    surface: number;
+    surface: string;
 }
 
 export class CarBehavior extends Component {
     speedKmh = 0;
     rpm = 0;
     gear = 0;
-    readonly slip: SlipReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: 1 }));
     handBrakeLateralGrip = HAND_BRAKE_LATERAL_GRIP;
-    private readonly longitudinalPoints: CurvePoint[][] = WHEEL_NAMES.map(() => [
-        ...LONGITUDINAL_DEFAULT,
-    ]);
-    private readonly lateralPoints: CurvePoint[][] = WHEEL_NAMES.map(() => [...LATERAL_DEFAULT]);
-    private readonly surfaceScale: number[] = WHEEL_NAMES.map(() => 1);
-    private rearLateralScale = 1;
+    roughnessEnabled = true;
+    readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
+
     private input!: GameInput;
     private currentRight = 0;
-    private readonly wheelRight: InstanceType<JoltAPI['Vec3']>;
-    private readonly wheelUp: InstanceType<JoltAPI['Vec3']>;
+    private rearLateralScale = 1;
+    private travelled = 0;
+    private readonly mass: number;
+    private readonly wheelSurface: number[] = WHEEL_NAMES.map(() => -1);
     private readonly wheels: JoltWheelWV[] = [];
+    private readonly wheelRight: JoltVec3;
+    private readonly wheelUp: JoltVec3;
+    private readonly tmpForce: JoltVec3;
+    private readonly noise = createNoise2D(mulberry32(7));
 
     constructor(
         private readonly physics: Physics,
@@ -106,14 +101,14 @@ export class CarBehavior extends Component {
         const Jolt = physics.Jolt;
         this.wheelRight = new Jolt.Vec3(0, 1, 0);
         this.wheelUp = new Jolt.Vec3(1, 0, 0);
-        // Seed the friction curves here, before registerDebug runs, so the
-        // debug editors start from the same values the constraint uses.
+        this.tmpForce = new Jolt.Vec3(0, 0, 0);
+        this.mass = 1 / body.GetMotionProperties().GetInverseMass();
         for (let i = 0; i < WHEEL_COUNT; i++) {
-            const wheel = Jolt.castObject(this.constraint.GetWheel(i), Jolt.WheelWV);
-            applyCurve(wheel.GetSettings().mLongitudinalFriction, LONGITUDINAL_DEFAULT);
-            applyCurve(wheel.GetSettings().mLateralFriction, LATERAL_DEFAULT);
-            this.wheels.push(wheel);
+            this.wheels.push(Jolt.castObject(this.constraint.GetWheel(i), Jolt.WheelWV));
         }
+        // Start every wheel on the track surface so the first tick has valid curves.
+        for (let i = 0; i < WHEEL_COUNT; i++)
+            this.setWheelSurface(i, terrain.surfaceMap.options.track);
     }
 
     override start(): void {
@@ -158,8 +153,9 @@ export class CarBehavior extends Component {
 
         this.updateSurfaces();
         this.applyRearLateralScale(handBrake > 0 ? this.handBrakeLateralGrip : 1);
+        const surfaceForces = this.applySurfaceForces(Math.abs(forwardSpeed));
         this.controller.SetDriverInput(forward, right, brake, handBrake);
-        if (forward !== 0 || right !== 0 || brake !== 0 || handBrake !== 0) {
+        if (surfaceForces || forward !== 0 || right !== 0 || brake !== 0 || handBrake !== 0) {
             this.physics.bodyInterface.ActivateBody(this.body.GetID());
         }
 
@@ -169,52 +165,83 @@ export class CarBehavior extends Component {
         // Slips are stale by one tick (Physics.step() runs after fixedUpdate)
         // but that's invisible at 60 Hz for a debug readout.
         for (const [i, wheel] of this.wheels.entries()) {
-            const readout = this.slip[i];
+            const readout = this.readouts[i];
             if (!readout) continue;
             readout.long = wheel.get_mLongitudinalSlip();
             readout.lat = wheel.get_mLateralSlip() * RAD_TO_DEG;
         }
     }
 
-    /** Sample the terrain surface under each wheel and rescale its curves when it changes. */
+    /** Look up the surface under each wheel contact and re-seed its curves when it changes. */
     private updateSurfaces(): void {
         for (const [i, wheel] of this.wheels.entries()) {
             // Contact data is one step stale (see slip readouts); a wheel in
             // the air keeps its last surface, which is what it lands on anyway.
             if (!wheel.HasContact()) continue;
             const p = wheel.GetContactPosition();
-            const s = this.terrain.frictionAt(p.GetX(), p.GetZ());
-            const readout = this.slip[i];
-            if (readout) readout.surface = s;
-            if (Math.abs(s - (this.surfaceScale[i] ?? 1)) < SURFACE_EPSILON) continue;
-            this.surfaceScale[i] = s;
-            this.applyLongitudinal(i);
-            this.applyLateral(i);
+            const id = this.terrain.surfaceAt(p.GetX(), p.GetZ());
+            if (id !== this.wheelSurface[i]) this.setWheelSurface(i, id);
+        }
+    }
+
+    private setWheelSurface(index: number, id: number): void {
+        this.wheelSurface[index] = id;
+        const readout = this.readouts[index];
+        if (readout) readout.surface = SURFACES[id]?.name ?? '?';
+        this.applySurface(index);
+    }
+
+    /** Push the wheel's current surface (and hand brake state) into its Jolt settings. */
+    private applySurface(index: number): void {
+        const wheel = this.wheels[index];
+        const surface = SURFACES[this.wheelSurface[index] ?? 0];
+        if (!wheel || !surface) return;
+        const settings = wheel.GetSettings();
+        const isRear = (REAR_WHEELS as readonly number[]).includes(index);
+        applyCurve(settings.mLongitudinalFriction, surface.longitudinal, 1);
+        applyCurve(settings.mLateralFriction, surface.lateral, isRear ? this.rearLateralScale : 1);
+        settings.mAngularDamping = surface.rollingDamping;
+    }
+
+    /** Re-apply every wheel currently sitting on `id`; called when a surface is edited live. */
+    private reapplySurface(id: number): void {
+        for (const [i, current] of this.wheelSurface.entries()) {
+            if (current === id) this.applySurface(i);
         }
     }
 
     private applyRearLateralScale(scale: number): void {
         if (scale === this.rearLateralScale) return;
         this.rearLateralScale = scale;
-        for (const i of REAR_WHEELS) this.applyLateral(i);
+        for (const i of REAR_WHEELS) this.applySurface(i);
     }
 
-    private applyLongitudinal(index: number): void {
-        const wheel = this.wheels[index];
-        const points = this.longitudinalPoints[index];
-        if (!wheel || !points) return;
-        const s = this.surfaceScale[index] ?? 1;
-        applyCurve(wheel.GetSettings().mLongitudinalFriction, scaleCurve(points, s * s));
-    }
-
-    private applyLateral(index: number): void {
-        const wheel = this.wheels[index];
-        const points = this.lateralPoints[index];
-        if (!wheel || !points) return;
-        const isRear = (REAR_WHEELS as readonly number[]).includes(index);
-        const s = this.surfaceScale[index] ?? 1;
-        const scale = s * s * (isRear ? this.rearLateralScale : 1);
-        applyCurve(wheel.GetSettings().mLateralFriction, scaleCurve(points, scale));
+    /** Drag and grain forces at each wheel contact. Returns true if anything was applied. */
+    private applySurfaceForces(speed: number): boolean {
+        this.travelled += speed * PHYSICS_TIMESTEP;
+        const lv = this.body.GetLinearVelocity();
+        const vx = lv.GetX();
+        const vz = lv.GetZ();
+        const loadPerWheel = (this.mass * GRAVITY) / WHEEL_COUNT;
+        const speedFactor = Math.min(speed / ROUGHNESS_REF_SPEED, ROUGHNESS_MAX_SPEED_FACTOR);
+        let applied = false;
+        for (const [i, wheel] of this.wheels.entries()) {
+            if (!wheel.HasContact()) continue;
+            const surface = SURFACES[this.wheelSurface[i] ?? 0];
+            if (!surface) continue;
+            const fy = this.roughnessEnabled
+                ? surface.roughness *
+                  loadPerWheel *
+                  speedFactor *
+                  this.noise(i * 7.31, this.travelled / ROUGHNESS_WAVELENGTH)
+                : 0;
+            const drag = surface.drag;
+            if (fy === 0 && drag === 0) continue;
+            this.tmpForce.Set(-drag * vx, fy, -drag * vz);
+            this.body.AddForce(this.tmpForce, wheel.GetContactPosition());
+            applied = true;
+        }
+        return applied;
     }
 
     /** Signed speed along the chassis' local +Z (m/s). */
@@ -254,13 +281,13 @@ export class CarBehavior extends Component {
         folder.add(this, 'speedKmh').name('Speed (km/h)').listen().disable();
         folder.add(this, 'rpm').name('Engine (RPM)').listen().disable();
         folder.add(this, 'gear').name('Gear').listen().disable();
-
         folder
             .add(this, 'handBrakeLateralGrip', 0, 1, 0.05)
             .name('Hand brake lat. grip')
             .onChange(() => {
                 this.rearLateralScale = -1;
             });
+        folder.add(this, 'roughnessEnabled').name('Surface grain');
 
         this.registerChassisDebug(folder);
         this.registerEngineDebug(folder);
@@ -268,6 +295,11 @@ export class CarBehavior extends Component {
         this.registerDifferentialDebug(folder);
         for (const [i, name] of WHEEL_NAMES.entries()) {
             this.registerWheelDebug(folder, name, i, i < 2);
+        }
+
+        const surfaces = gui.addFolder('Surfaces');
+        for (const [id, surface] of SURFACES.entries()) {
+            this.registerSurfaceDebug(surfaces, surface, id);
         }
     }
 
@@ -394,18 +426,16 @@ export class CarBehavior extends Component {
     }
 
     private registerWheelDebug(parent: GUI, name: string, index: number, withSteer: boolean): void {
-        const Jolt = this.physics.Jolt;
-        const wheel = Jolt.castObject(this.constraint.GetWheel(index), Jolt.WheelWV);
+        const wheel = this.wheels[index];
+        const readout = this.readouts[index];
+        if (!wheel || !readout) return;
         const settings = wheel.GetSettings();
         const spring = settings.mSuspensionSpring;
         const f = parent.addFolder(name);
         f.close();
-        const readout = this.slip[index];
-        if (readout) {
-            f.add(readout, 'long', -1, 1, 0.01).name('Long. slip').listen().disable();
-            f.add(readout, 'lat', 0, 90, 0.5).name('Lat. slip (°)').listen().disable();
-            f.add(readout, 'surface', 0, 2, 0.01).name('Surface grip').listen().disable();
-        }
+        f.add(readout, 'surface').name('Surface').listen().disable();
+        f.add(readout, 'long', -1, 1, 0.01).name('Long. slip').listen().disable();
+        f.add(readout, 'lat', 0, 90, 0.5).name('Lat. slip (°)').listen().disable();
         const cfg = {
             maxSteerAngle: settings.mMaxSteerAngle,
             brakeTorque: settings.mMaxBrakeTorque,
@@ -414,7 +444,6 @@ export class CarBehavior extends Component {
             suspensionMax: settings.mSuspensionMaxLength,
             suspensionFreq: spring.mFrequency,
             suspensionDamping: spring.mDamping,
-            angularDamping: settings.mAngularDamping,
         };
         if (withSteer) {
             f.add(cfg, 'maxSteerAngle', 0, Math.PI / 2, 0.02)
@@ -453,33 +482,38 @@ export class CarBehavior extends Component {
             .onChange((v: number) => {
                 spring.mDamping = v;
             });
-        f.add(cfg, 'angularDamping', 0, 5, 0.05)
-            .name('Wheel angular damping')
-            .onChange((v: number) => {
-                settings.mAngularDamping = v;
-            });
+    }
 
-        const fri = f.addFolder('Friction');
-        addCurveEditor(fri, {
+    private registerSurfaceDebug(parent: GUI, surface: Surface, id: number): void {
+        const f = parent.addFolder(surface.name);
+        f.close();
+        f.add(surface, 'rollingDamping', 0, 10, 0.05)
+            .name('Rolling damping')
+            .onChange(() => {
+                this.reapplySurface(id);
+            });
+        f.add(surface, 'drag', 0, 500, 5).name('Drag (N per m/s)');
+        f.add(surface, 'roughness', 0, 2, 0.05).name('Roughness');
+        addCurveEditor(f, {
             xRange: [0, 1],
-            yRange: [0, 2.5],
+            yRange: [0, 2],
             xLabel: 'slip',
             yLabel: 'long. μ',
-            initialPoints: LONGITUDINAL_DEFAULT,
+            initialPoints: surface.longitudinal,
             onChange: (pts) => {
-                this.longitudinalPoints[index] = [...pts];
-                this.applyLongitudinal(index);
+                surface.longitudinal = [...pts];
+                this.reapplySurface(id);
             },
         });
-        addCurveEditor(fri, {
+        addCurveEditor(f, {
             xRange: [0, 30],
-            yRange: [0, 2.5],
+            yRange: [0, 2],
             xLabel: 'slip°',
             yLabel: 'lat. μ',
-            initialPoints: LATERAL_DEFAULT,
+            initialPoints: surface.lateral,
             onChange: (pts) => {
-                this.lateralPoints[index] = [...pts];
-                this.applyLateral(index);
+                surface.lateral = [...pts];
+                this.reapplySurface(id);
             },
         });
     }

@@ -3,39 +3,41 @@ import type GUI from 'lil-gui';
 import { Heightmap, type HeightmapOptions } from './heightmap';
 import { createTerrainMaterial } from './terrainMaterial';
 import { Track } from './track';
+import { SurfaceMap } from './surfaceMap';
+import { SURFACE_NAMES } from './surfaces';
 import { Component, GameObject } from '../../engine/gameObject';
 import { BodyComponent, MeshComponent } from '../../engine/components';
 import { LAYER_NON_MOVING, type Physics } from '../../engine/physics';
 
-// Surface grip is handled per wheel by the car (it scales its tyre curves
-// from TerrainData.frictionAt), so the Jolt body friction stays at 1 and
-// drops out of Jolt's sqrt(tyre * ground) combine.
+// Surface grip is handled per wheel by the car from the surface map, so the
+// Jolt body friction stays at 1 and drops out of Jolt's sqrt(tyre * ground).
 const BODY_FRICTION = 1;
-// Multipliers on the tyre friction curves. 1 = the tyre's own peak.
-const TRACK_FRICTION = 1.0;
-const OFFROAD_FRICTION = 0.55;
 
 export class TerrainData extends Component {
-    trackFriction = TRACK_FRICTION;
-    offroadFriction = OFFROAD_FRICTION;
-
     constructor(
         public readonly heightmap: Heightmap,
         public readonly track: Track,
+        public readonly surfaceMap: SurfaceMap,
     ) {
         super();
     }
 
-    /** Tyre friction multiplier at a world position: blends track → verge over the track feather. */
-    frictionAt(x: number, z: number): number {
-        const w = this.track.weightAt(x, z);
-        return this.offroadFriction * (1 - w) + this.trackFriction * w;
+    /** Surface id under a world position. */
+    surfaceAt(x: number, z: number): number {
+        return this.surfaceMap.surfaceAt(x, z);
     }
 
     override registerDebug(gui: GUI): void {
         const f = gui.addFolder('Terrain');
-        f.add(this, 'trackFriction', 0, 2, 0.05).name('Track friction');
-        f.add(this, 'offroadFriction', 0, 2, 0.05).name('Offroad friction');
+        const o = this.surfaceMap.options;
+        const rebuild = (): void => {
+            this.surfaceMap.rebuild();
+        };
+        f.add(o, 'track', SURFACE_NAMES).name('Track surface').onChange(rebuild);
+        f.add(o, 'verge', SURFACE_NAMES).name('Verge surface').onChange(rebuild);
+        f.add(o, 'patches', SURFACE_NAMES).name('Patches surface').onChange(rebuild);
+        f.add(o, 'patchThreshold', -1, 1, 0.05).name('Patch threshold').onChange(rebuild);
+        f.add(o, 'patchFrequency', 0.005, 0.2, 0.005).name('Patch frequency').onChange(rebuild);
     }
 }
 
@@ -46,17 +48,18 @@ export function createTerrain(
 ): GameObject {
     const heightmap = new Heightmap(options);
     const track = new Track(heightmap);
-    const mesh = buildTerrainMesh(heightmap, track);
+    const surfaceMap = new SurfaceMap(heightmap, track);
+    const mesh = buildTerrainMesh(heightmap, surfaceMap);
     const body = buildTerrainBody(heightmap, physics);
 
     return new GameObject('terrain', [
         new MeshComponent(scene, mesh),
         new BodyComponent(physics, body),
-        new TerrainData(heightmap, track),
+        new TerrainData(heightmap, track, surfaceMap),
     ]);
 }
 
-function buildTerrainMesh(heightmap: Heightmap, track: Track): THREE.Mesh {
+function buildTerrainMesh(heightmap: Heightmap, surfaceMap: SurfaceMap): THREE.Mesh {
     const { heights, size, segments } = heightmap;
     const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
     geometry.rotateX(-Math.PI / 2);
@@ -66,12 +69,7 @@ function buildTerrainMesh(heightmap: Heightmap, track: Track): THREE.Mesh {
     }
     positions.needsUpdate = true;
     geometry.computeVertexNormals();
-    const material = createTerrainMaterial({
-        trackMask: track.maskTexture,
-        terrainSize: size,
-        trackWidth: track.width,
-        trackFeather: track.feather,
-    });
+    const material = createTerrainMaterial({ surfaceMap: surfaceMap.texture });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = true;
     return mesh;
