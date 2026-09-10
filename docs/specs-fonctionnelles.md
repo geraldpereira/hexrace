@@ -168,6 +168,8 @@ Progression prévue :
 
 <TODO> Caractéristiques chiffrées (vitesse, accélération, maniabilité, robustesse) et améliorations achetables.
 
+<GPE> prévoir propulsion, traction ou 4x4
+
 ### 3.2 Ressenti de conduite
 
 Arcade, sans être basique. Après dix secondes le joueur doit sentir trois choses : **la glisse**, **la différence entre deux revêtements**, et **les suspensions** qui travaillent sur les bosses et les atterrissages.

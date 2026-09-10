@@ -50,6 +50,8 @@ Les alternatives regardées et écartées :
 
 <TODO> Mesurer le poids du wasm et son temps d'initialisation sur mobile ; en faire une des métriques du POC 1.
 
+<GPE> question: Comment éviter les raccords entre tiles: Si par exemple une tuile avec une déclivité forte est suivi d'une tuile plate, il risque d'y avoir une cassure. cela va être chiant pour la conduite.
+
 ### 1.5 Écrans et interface
 
 **Angular**, comme hexact, et **partout** : tous les packages sont des bibliothèques Angular faites de services `@Injectable({ providedIn: 'root' })` ; seul le package `hud` contient des composants et des templates. Le canvas three.js est un élément persistant, les écrans Angular vivent par-dessus ou à côté. Angular Material est envisageable pour les menus.
@@ -68,21 +70,21 @@ Comme hexact : TypeScript strict, Angular build pour l'application et Vitest pou
 
 Briques techniques :
 
-| Package | Ce qu'il possède |
-|---|---|
-| `inputs` | L'interface d'entrées et ses trois implémentations : manette, clavier, tactile. Repris de rally-game. |
-| `camera` | La caméra qui suit le joueur, dont la hauteur suit la vitesse et qui s'oriente vers la prochaine tuile [F 3.9]. |
-| `hud` | **Le seul package avec des composants Angular.** Sous-modules : `commons`, `menus`, `game`, `editor`, `dialog`, `debug`. |
+| Package  | Ce qu'il possède                                                                                                         |
+|----------|--------------------------------------------------------------------------------------------------------------------------|
+| `inputs` | L'interface d'entrées et ses trois implémentations : manette, clavier, tactile. Repris de rally-game.                    |
+| `camera` | La caméra qui suit le joueur, dont la hauteur suit la vitesse et qui s'oriente vers la prochaine tuile [F 3.9].          |
+| `hud`    | **Le seul package avec des composants Angular.** Sous-modules : `commons`, `menus`, `game`, `editor`, `dialog`, `debug`. |
 
 Briques fonctionnelles :
 
-| Package | Ce qu'il possède |
-|---|---|
-| `tile` | Une tuile : son modèle de données, son modèle physique et son modèle 3D. |
-| `car` | Une voiture : modèle de données (type, améliorations), affichage, modèle physique. |
-| `track` | L'assemblage de tuiles en piste, le format de fichier, l'affichage et le masquage des tuiles selon la position et le rythme du joueur [F 9.2, F 4.4]. |
-| `editor` | L'assemblage d'une piste à la main [F 5.2]. |
-| `game` | Un module par mode (`track`, `rally`, `collapse`) et un module `game-commons` pour le tronc commun [F 4.1]. |
+| Package  | Ce qu'il possède                                                                                                                                      |
+|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `tile`   | Une tuile : son modèle de données, son modèle physique et son modèle 3D.                                                                              |
+| `car`    | Une voiture : modèle de données (type, améliorations), affichage, modèle physique.                                                                    |
+| `track`  | L'assemblage de tuiles en piste, le format de fichier, l'affichage et le masquage des tuiles selon la position et le rythme du joueur [F 9.2, F 4.4]. |
+| `editor` | L'assemblage d'une piste à la main [F 5.2].                                                                                                           |
+| `game`   | Un module par mode (`track`, `rally`, `collapse`) et un module `game-commons` pour le tronc commun [F 4.1].                                           |
 
 **Sous-modules.** `tile` et `car` mêlent modèle de données, physique et 3D. Comme dans hexact, où un package est fait de dossiers sous `src/` exposés par un seul `index.ts`, chacun se découpe en trois sous-modules :
 
