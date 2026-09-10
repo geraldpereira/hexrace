@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import type initJolt from 'jolt-physics';
 import type GUI from 'lil-gui';
 import { Heightmap, type HeightmapOptions } from './heightmap';
 import { createTerrainMaterial } from './terrainMaterial';
@@ -8,30 +7,35 @@ import { Component, GameObject } from '../../engine/gameObject';
 import { BodyComponent, MeshComponent } from '../../engine/components';
 import { LAYER_NON_MOVING, type Physics } from '../../engine/physics';
 
-type JoltAPI = Awaited<ReturnType<typeof initJolt>>;
-type JoltBody = InstanceType<JoltAPI['Body']>;
-
-// Jolt combines tyre and ground friction as sqrt(tyre_curve * ground), so
-// this multiplies with the wheel friction curves rather than capping them.
-const DEFAULT_GROUND_FRICTION = 1.5;
+// Surface grip is handled per wheel by the car (it scales its tyre curves
+// from TerrainData.frictionAt), so the Jolt body friction stays at 1 and
+// drops out of Jolt's sqrt(tyre * ground) combine.
+const BODY_FRICTION = 1;
+// Multipliers on the tyre friction curves. 1 = the tyre's own peak.
+const TRACK_FRICTION = 1.0;
+const OFFROAD_FRICTION = 0.55;
 
 export class TerrainData extends Component {
+    trackFriction = TRACK_FRICTION;
+    offroadFriction = OFFROAD_FRICTION;
+
     constructor(
         public readonly heightmap: Heightmap,
         public readonly track: Track,
-        private readonly body: JoltBody,
     ) {
         super();
     }
 
+    /** Tyre friction multiplier at a world position: blends track → verge over the track feather. */
+    frictionAt(x: number, z: number): number {
+        const w = this.track.weightAt(x, z);
+        return this.offroadFriction * (1 - w) + this.trackFriction * w;
+    }
+
     override registerDebug(gui: GUI): void {
         const f = gui.addFolder('Terrain');
-        const cfg = { friction: this.body.GetFriction() };
-        f.add(cfg, 'friction', 0, 4, 0.05)
-            .name('Ground friction')
-            .onChange((v: number) => {
-                this.body.SetFriction(v);
-            });
+        f.add(this, 'trackFriction', 0, 2, 0.05).name('Track friction');
+        f.add(this, 'offroadFriction', 0, 2, 0.05).name('Offroad friction');
     }
 }
 
@@ -48,7 +52,7 @@ export function createTerrain(
     return new GameObject('terrain', [
         new MeshComponent(scene, mesh),
         new BodyComponent(physics, body),
-        new TerrainData(heightmap, track, body),
+        new TerrainData(heightmap, track),
     ]);
 }
 
@@ -102,7 +106,7 @@ function buildTerrainBody(heightmap: Heightmap, physics: Physics) {
         Jolt.EMotionType_Static,
         LAYER_NON_MOVING,
     );
-    bodySettings.mFriction = DEFAULT_GROUND_FRICTION;
+    bodySettings.mFriction = BODY_FRICTION;
     const body = physics.bodyInterface.CreateBody(bodySettings);
     physics.bodyInterface.AddBody(body.GetID(), Jolt.EActivation_DontActivate);
     Jolt.destroy(bodySettings);

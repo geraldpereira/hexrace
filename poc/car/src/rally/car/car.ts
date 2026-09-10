@@ -187,7 +187,7 @@ export function createCar(physics: Physics, scene: THREE.Scene, terrain: Terrain
     return new GameObject('car', [
         new BodyComponent(physics, body),
         new MeshComponent(scene, chassisGroup),
-        new CarBehavior(physics, body, constraint, controller, chassisGroup, wheelMeshes),
+        new CarBehavior(physics, body, constraint, controller, chassisGroup, wheelMeshes, terrain),
     ]);
 }
 

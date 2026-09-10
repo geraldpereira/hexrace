@@ -28,6 +28,9 @@ export class Track {
     readonly feather: number;
     readonly maskTexture: THREE.DataTexture;
     readonly curve: THREE.CatmullRomCurve3;
+    private readonly distance: Float32Array;
+    private readonly size: number;
+    private readonly segments: number;
 
     constructor(heightmap: Heightmap, options: Partial<TrackOptions> = {}) {
         const o = { ...DEFAULTS, ...options };
@@ -45,6 +48,33 @@ export class Track {
         const { distance, trackHeight } = Track.buildFields(heightmap, samples, smoothedHeights);
         Track.carve(heightmap, distance, trackHeight, this.width, this.feather);
         this.maskTexture = Track.buildTexture(distance, heightmap.segments + 1);
+        this.distance = distance;
+        this.size = heightmap.size;
+        this.segments = heightmap.segments;
+    }
+
+    /** Distance (m) from the track centreline, bilinearly sampled like the shader's mask. */
+    distanceAt(x: number, z: number): number {
+        const fi = (x / this.size + 0.5) * this.segments;
+        const fj = (z / this.size + 0.5) * this.segments;
+        const i = Math.max(0, Math.min(this.segments - 1, Math.floor(fi)));
+        const j = Math.max(0, Math.min(this.segments - 1, Math.floor(fj)));
+        const tx = Math.max(0, Math.min(1, fi - i));
+        const tz = Math.max(0, Math.min(1, fj - j));
+        const n = this.segments + 1;
+        const d00 = this.distance[i + j * n] ?? 0;
+        const d10 = this.distance[i + 1 + j * n] ?? 0;
+        const d01 = this.distance[i + (j + 1) * n] ?? 0;
+        const d11 = this.distance[i + 1 + (j + 1) * n] ?? 0;
+        const a = d00 * (1 - tx) + d10 * tx;
+        const b = d01 * (1 - tx) + d11 * tx;
+        return a * (1 - tz) + b * tz;
+    }
+
+    /** 1 on the track surface, 0 on the verge, same feather as the shader. */
+    weightAt(x: number, z: number): number {
+        const halfW = this.width / 2;
+        return 1 - THREE.MathUtils.smoothstep(this.distanceAt(x, z), halfW, halfW + this.feather);
     }
 
     private static buildCurve(size: number, o: TrackOptions): THREE.CatmullRomCurve3 {
@@ -150,5 +180,4 @@ export class Track {
         }
         return out;
     }
-
 }
