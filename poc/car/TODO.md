@@ -16,7 +16,7 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
       sur la conduite seulement, pas de dégâts (hors POC 1).
 - [ ] **Caméra de la spec.** Vue du dessus qui suit l'orientation de la voiture, hauteur qui monte
       avec la vitesse (3.9). Remplace la caméra de poursuite : la glisse et le braquage se perçoivent
-      autrement, régler le ressenti avec la bonne caméra avant le POC 2.
+      autrement, régler le ressenti avec la bonne caméra avant le POC 3.
 - [ ] **Tactile.** Source d'entrée tactile dans `src/engine/input/` : palonnier vertical à gauche
       (accélérer / freiner), palonnier horizontal à droite (direction), bouton central frein à main
       (3.3). Y brancher l'amortissement de lacet si la manette n'en veut pas.

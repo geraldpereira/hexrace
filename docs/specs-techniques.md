@@ -50,8 +50,6 @@ Les alternatives regardées et écartées :
 
 <TODO> Mesurer le poids du wasm et son temps d'initialisation sur mobile ; en faire une des métriques du POC 1.
 
-<GPE> question: Comment éviter les raccords entre tiles: Si par exemple une tuile avec une déclivité forte est suivi d'une tuile plate, il risque d'y avoir une cassure. cela va être chiant pour la conduite.
-
 ### 1.5 Écrans et interface
 
 **Angular**, comme hexact, et **partout** : tous les packages sont des bibliothèques Angular faites de services `@Injectable({ providedIn: 'root' })` ; seul le package `hud` contient des composants et des templates. Le canvas three.js est un élément persistant, les écrans Angular vivent par-dessus ou à côté. Angular Material est envisageable pour les menus.
@@ -148,6 +146,7 @@ Pas fixe pour la physique, rendu à la fréquence de l'écran, interpolation ent
   *Implémentation des règles [F 2.6] et [F 5.5] : jonctions, départ et arrivée, auto-intersection, fermeture en Track. Où elle s'exécute (éditeur, générateur, chargement).*
 - 3.5 Géométrie d'une tuile
   *Comment on construit le maillage d'une tuile depuis ses paramètres : piste, bas-côtés, paysage, transition au milieu, pente. Partage des sommets aux jonctions.*
+  <TODO> Une forte déclivité suivie d'une tuile plate fait une arête au milieu de la tuile plate, là où la pente s'arrête : à la jonction les hauteurs coïncident mais pas les pentes. Regarder dans le POC 2 si l'arête se voit, dans le POC 3 si elle gêne la conduite ; les remèdes possibles sont un arrondi de la transition ou une borne sur l'écart de déclivité entre deux tuiles consécutives.
 - 3.6 Obstacles
   *Modèle de données (emprise en unités le long de la piste), modèle physique, modèle visuel, et comment l'environnement les habille [F 2.4].*
 - 3.7 Environnements et surfaces
@@ -308,8 +307,10 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 - 12.1 POC 1 : voiture et surfaces
   *Ce qu'on construit techniquement pour [F 10.1], dans quel ordre, et ce qui est jetable.*
 - 12.2 POC 2 : tuiles et pistes
-  *Idem pour [F 10.2] : parser, placement, géométrie, générateur.*
-- 12.3 Du POC au MVP
+  *Idem pour [F 10.2] : types, placement, géométrie, parser, validation, générateur, fenêtre de tuiles. Terrain seul, sans Jolt.*
+- 12.3 POC 3 : la voiture sur les tuiles
+  *Idem pour [F 10.3] : surface par roue depuis les coordonnées locales de la tuile, collider de tuile, fenêtre de tuiles en mouvement.*
+- 12.4 Du POC au MVP
   *Ce qui passe tel quel, ce qui est réécrit, ce qui est jeté.*
 
 ---

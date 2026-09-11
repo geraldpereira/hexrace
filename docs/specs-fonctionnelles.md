@@ -74,9 +74,7 @@ Un **hexagone** (ou **tuile**) est l'unité de construction d'une piste. Il est 
 
 **Nommage des faces.** Les six faces sont nommées par les **heures d'une horloge** : avec le côté plat vers l'avant, la face de devant est 12, celle de derrière 6, et les quatre faces latérales 2, 4, 8 et 10. Dans le fichier de piste, l'entrée d'une tuile est toujours la face 6 par convention (on vient de derrière), et seule la face de sortie est écrite : 12 pour une droite, 10 ou 2 pour un virage à 60°, 8 ou 4 pour un virage à 120°. L'orientation absolue d'une tuile se déduit de celle de la précédente.
 
-<CHOIX> Convention à confirmer : heures d'horloge (ci-dessus) plutôt que points cardinaux. Voir la discussion en 11.2.
-
-<GPE> ok pour les heures
+Les heures s'écrivent en deux caractères et se manipulent comme des nombres : un virage à 60° est un écart de 2, la face opposée un écart de 6. C'est ce qui les fait préférer aux points cardinaux.
 
 ### 2.2 Catalogue des surfaces
 
@@ -108,7 +106,7 @@ Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 - Deux tuiles consécutives se raccordent à la même hauteur (voir 2.6). Le changement de hauteur se fait **au milieu de la tuile** : la moitié d'entrée est à la hauteur d'entrée, la moitié de sortie à la hauteur de sortie, et une pente les relie.
 - Les sauts se font sur des **rampes** et des **dos d'âne** posés comme obstacles sur la piste, pas par le relief des tuiles.
 
-<CHOIX> Différence de hauteur maximale entre l'entrée et la sortie d'une même tuile. Une pente trop raide en huit unités devient un mur ; à mesurer dans le POC 2.
+<CHOIX> Différence de hauteur maximale entre l'entrée et la sortie d'une même tuile. Une pente trop raide en huit unités devient un mur ; à mesurer dans le POC 3, le seul où l'on conduit sur des tuiles.
 
 ### 2.4 Habillage d'une tuile
 
@@ -120,8 +118,13 @@ Un obstacle est un **bloc** qui occupe **X unités de large** dans le modèle de
 | Rampe     | Sur la piste                                                    | Fait décoller                                       |
 | Dos d'âne | Sur la piste                                                    | Fait sauter légèrement, déstabilise à haute vitesse |
 | Hazard    | Sur la piste ou le bas-côté                                     | Obstacle à éviter, collision avec dégâts            |
+| Plaque    | Sur la piste                                                    | Zone d'un autre revêtement, change le grip, sans collision |
 
-Exemples de hazards : balle de foin, véhicule en panne, rocher, tas de troncs. L'environnement décide de l'apparence de chaque élément : une barrière est une rambarde en Europe, un talus de neige dans le Nord.
+Exemples de hazards : balle de foin, véhicule en panne, rocher, tas de troncs. Exemples de plaques : flaque de boue sur une piste en gravier, plaque de glace sur une piste en neige, gravillons sur une piste en asphalte. La plaque prend son revêtement dans la palette de l'environnement (voir 2.2), c'est un piège de grip là où on ne l'attend pas. L'environnement décide de l'apparence de chaque élément : une barrière est une rambarde en Europe, un talus de neige dans le Nord.
+
+**Emprise d'un obstacle.** Un obstacle se place par sa **distance depuis l'entrée de la tuile**, le long de la piste, et occupe une **longueur** en unités entières dans cette direction. En largeur, une barrière, une rampe ou un dos d'âne prennent toute la zone où ils se posent ; un hazard ou une plaque ont une largeur et une position depuis la gauche, comme le bloc piste d'un profil (voir 2.1). Ordres de grandeur : 1 unité pour une balle de foin ou un rocher, 2 pour un véhicule en panne ou une plaque, 2 à 3 pour une rampe, jusqu'à la tuile entière pour une barrière.
+
+<CHOIX> Cette modélisation de l'emprise reste à confirmer, et les longueurs par élément à mesurer une fois qu'on roule dessus (POC 3).
 
 Il n'y a **aucun décor** hors des tuiles : le monde se limite aux hexagones, éclairés par une lumière d'ambiance. Le paysage d'une tuile (voir 2.2) est ce qu'on voit au-delà du bas-côté.
 
@@ -169,6 +172,7 @@ Progression prévue :
 **Caractéristiques d'une voiture.** Ce qui fait son caractère, fixé par le modèle et non modifiable au garage :
 
 - vitesse de pointe, accélération, robustesse ;
+- **transmission** : propulsion, traction ou quatre roues motrices. La propulsion pousse au survirage et se conduit à l'accélérateur, la traction tire la voiture en sortie de virage et pardonne plus, les quatre roues motrices collent au sol sur les revêtements meubles. Trois caractères de conduite pour le prix d'un réglage de différentiels, à essayer dans le POC 1 ;
 - **braquage dégressif avec la vitesse** : l'angle de braquage maximal décroît linéairement d'une valeur à l'arrêt à une valeur à haute vitesse, atteinte à une vitesse donnée. Trois nombres par voiture (angle à l'arrêt, angle à vitesse, vitesse de plein effet) qui règlent la maniabilité : la petite voiture garde beaucoup de braquage à haute vitesse, vive mais instable ; la grosse berline le perd vite, stable mais paresseuse en entrée de virage. Validé dans le POC 1 avec 32° à l'arrêt et 12° à 100 km/h.
 
 **Options achetables au garage.** Des aides à la conduite que le joueur achète avec ses crédits, voiture par voiture, puis règle à son goût. Elles sont **coupées par défaut** : à la manette la conduite brute est plus plaisante, l'option compense une entrée moins précise ou un pilote moins sûr.
@@ -181,9 +185,7 @@ Chaque option a un prix d'achat ; ses réglages sont libres une fois achetée. L
 
 **Piste d'essai.** Le garage donne accès à une **piste d'essai** où le joueur roule avec la voiture telle qu'il vient de la configurer, sans chrono ni enjeu. Les options et leurs réglages s'y changent **en direct**, sans repasser par un menu, pour sentir immédiatement ce que change un aileron, un ABS ou un curseur. La piste enchaîne les situations utiles : une ligne droite pour la vitesse de pointe et l'appui, des virages rapides et une épingle, au moins deux revêtements dont un meuble, une bosse ou un saut pour les suspensions.
 
-<TODO> Caractéristiques chiffrées par voiture (vitesse, accélération, robustesse, les trois nombres du braquage) et prix des options.
-
-<GPE> prévoir propulsion, traction ou 4x4
+<TODO> Caractéristiques chiffrées par voiture (vitesse, accélération, robustesse, transmission, les trois nombres du braquage) et prix des options.
 
 ### 3.2 Ressenti de conduite
 
@@ -244,9 +246,7 @@ Si le joueur **abuse de la glisse, il part en tête-à-queue**. Il s'en sort en 
 
 **Pas de contrôle en vol**, ou un contrôle très léger. La trajectoire se décide avant la rampe : c'est ce qui rend les sauts intéressants.
 
-<CHOIX> Voiture retournée : se remet seule sur ses roues après un court délai, ou reste sur le toit jusqu'au reset manuel.
-
-<GPE> Reset manuel
+**Voiture retournée** : elle reste sur le toit, pas de remise automatique sur ses roues. Le joueur s'en sort par le reset manuel (voir 3.8).
 
 ### 3.7 Collisions
 
@@ -307,7 +307,7 @@ La piste est **générée procéduralement** (voir 5.3) et n'a pas de fin.
 
 Le HUD porte un indicateur du front de disparition (voir 7.2).
 
-<TODO> Fixer X, Y et la courbe du rythme dans le POC 2, une fois les vitesses des voitures connues.
+<TODO> Fixer X et Y dans le POC 2 pour la caméra, la courbe du rythme dans le POC 3, une fois les vitesses des voitures connues.
 
 ### 4.5 Fin de partie et résultats
 
@@ -441,9 +441,11 @@ Rien de spécifique pour l'instant.
 
 ### 8.1 Style visuel
 
-Low poly. Textures pixelisées ou flat shading.
+Low poly. Textures pixelisées ou flat shading, ou un rendu plus daté genre *Destruction Derby 2* sur PlayStation : polygones bruts, textures basses et tremblantes.
 
-<CHOIX> Flat shading pur, ou textures pixelisées avec un post-traitement. À trancher en testant directement dans le POC 1, sur mobile, au niveau de performance visé.
+**Le gameplay passe avant la beauté graphique.** Quel que soit le style retenu, il ne doit **jamais dégrader la lisibilité de la piste** : depuis la caméra de la spec (voir 3.9), à la vitesse de pointe, on doit distinguer la piste du bas-côté et du paysage, reconnaître le revêtement (voir 8.2), voir venir un obstacle, une plaque ou une rampe à temps pour réagir. Un post-traitement qui floute, tremble, assombrit ou noie la piste sous un effet est refusé, même s'il est beau. On juge un style d'abord à la lisibilité en course, sur mobile, ensuite à son cachet.
+
+<CHOIX> Flat shading pur, textures pixelisées avec un post-traitement, ou rendu à la PlayStation. À trancher en testant directement dans le POC 1, sur mobile, au niveau de performance visé, avec la lisibilité comme premier critère.
 
 ### 8.2 Lisibilité des surfaces
 
@@ -512,24 +514,38 @@ Anglais uniquement, avec un texte minimaliste.
 
 ### 10.2 POC 2 : construction d'un terrain hexagonal
 
-**Objectif** : valider le modèle de tuile paramétrée et les règles d'assemblage.
+**Objectif** : valider le modèle de tuile paramétrée, les règles d'assemblage et la génération. **Terrain seul, sans voiture** : la conduite sur tuiles est l'affaire du POC 3, et les surfaces sont réglées dans le POC 1. Ici les zones d'une tuile sont de simples couleurs.
 
-**Ce qu'on doit pouvoir faire** : décrire une piste dans un fichier texte, la voir apparaître, la parcourir avec la voiture du POC 1. Générer une suite de tuiles à partir d'une graine, respectant 2.6 et 5.5.
+**Ce qu'on doit pouvoir faire** : décrire une piste dans un fichier texte, la voir apparaître, l'inspecter avec une caméra libre. Générer une suite de tuiles à partir d'une graine, respectant 2.6 et 5.5. Déplacer un curseur « position du joueur » le long de la piste pour voir la fenêtre de tuiles se charger et se décharger.
 
 **Validé quand** :
 
-- toute suite de tuiles respectant 2.6 se raccorde sans couture visible ni accroc à la conduite,
+- toute suite de tuiles respectant 2.6 se raccorde sans couture visible,
 - une piste fermée se referme sur elle-même,
+- une piste invalide au sens de 5.5 est refusée avec la raison,
+- toute graine donne une piste qui passe la validation,
+- la taille de tuile (8 unités par côté) est confirmée ou corrigée : le profil et les transitions au milieu restent lisibles,
+- la fenêtre d'affichage (X devant, Y derrière) ne se voit pas depuis une caméra placée comme celle de 3.9 au-dessus du curseur.
+
+### 10.3 POC 3 : la voiture sur le terrain hexagonal
+
+**Objectif** : marier les deux premiers POC et trouver ce qui ne se voit qu'en conduisant.
+
+**Ce qu'on doit pouvoir faire** : parcourir avec la voiture du POC 1 une piste du POC 2, chaque roue prenant le grip de la zone et du revêtement de la tuile où elle se trouve.
+
+**Validé quand** :
+
+- toute suite de tuiles respectant 2.6 se passe sans accroc à la conduite,
 - les changements de largeur, de position, de hauteur et de type au milieu d'une tuile se conduisent bien,
 - une sortie légère sur le bas-côté à la jonction de deux tuiles ne fait pas tomber du terrain,
-- la taille de tuile (8 unités par côté) et la hauteur maximale par tuile sont confirmées ou corrigées,
-- la fenêtre d'affichage (X devant, Y derrière) ne se voit pas depuis la caméra.
+- la hauteur maximale par tuile est fixée (2.3) et le raccord d'une pente avec une tuile plate ne gêne pas,
+- la fenêtre d'affichage ne se voit pas depuis la vraie caméra de la spec, à la vitesse de pointe.
 
-### 10.3 MVP : première version jouable
+### 10.4 MVP : première version jouable
 
 **Un environnement, une voiture, une piste**, en mode Track. Avec le compte à rebours, le chrono, l'écran de résultats et la sauvegarde du meilleur temps. Sans garage, sans éditeur, sans Rally ni Collapse.
 
-### 10.4 Après le MVP
+### 10.5 Après le MVP
 
 Par ordre d'envie :
 
@@ -576,15 +592,20 @@ Par ordre d'envie :
 | 2026-09-11 | ABS et contrôle de traction = options achetables et réglables au garage            | Dépenser ses crédits ; coupées par défaut, la conduite brute prime          |
 | 2026-09-11 | Aileron = option garage à effet réel (appui aéro), pas seulement visuelle          | Une option qui se sent en conduite, pas un skin                             |
 | 2026-09-11 | Piste d'essai accessible depuis le garage, réglages modifiables en direct          | Sentir une option avant de sortir du garage                                 |
+| 2026-09-11 | Faces nommées par les heures d'horloge                                             | Se calculent comme des nombres, deux caractères                             |
+| 2026-09-11 | Voiture retournée : reste sur le toit jusqu'au reset manuel                        | Pas de magie ; le reset existe déjà                                         |
+| 2026-09-11 | Transmission (propulsion, traction, 4x4) = caractéristique de la voiture           | Trois caractères de conduite sans toucher à la physique                     |
+| 2026-09-11 | Plaques (boue, glace, gravillons) ajoutées aux obstacles                           | Un piège de grip, sans collision, dans la palette de l'environnement        |
+| 2026-09-11 | POC 2 = terrain seul ; POC 3 = voiture sur le terrain                              | Se concentrer sur la génération ; les surfaces sont réglées dans le POC 1   |
+| 2026-09-11 | Le gameplay passe avant la beauté graphique                                        | Aucun style ni post-traitement ne doit dégrader la lisibilité de la piste   |
 
 ### 11.2 Questions ouvertes
 
 | Réf. | Question                                                                                                                                                                                                                                                                                                                                    |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1  | Nommage des faces : heures d'horloge (12, 2, 4, 6, 8, 10) ou points cardinaux (N, NE, SE, S, SW, NW). Les heures se manipulent comme des nombres (un virage à 60° est un écart de 2, la face opposée un écart de 6) et s'écrivent en deux caractères ; les cardinaux se lisent mieux mais ne se calculent pas. Recommandation : les heures. |
-| 2.3  | Différence de hauteur maximale dans une tuile                                                                                                                                                                                                                                                                                               |
-| 3.6  | Voiture retournée : remise automatique ou reset manuel                                                                                                                                                                                                                                                                                      |
-| 8.1  | Flat shading ou textures pixelisées avec post-traitement, à tester dans le POC 1                                                                                                                                                                                                                                                            |
+| 2.3  | Différence de hauteur maximale dans une tuile, à mesurer dans le POC 3                                                                                                                                                                                                                                                                      |
+| 2.4  | Emprise des obstacles : position et longueur le long de la piste, largeur et position en travers ; longueurs par élément                                                                                                                                                                                                                    |
+| 8.1  | Flat shading, textures pixelisées avec post-traitement ou rendu à la PlayStation, à tester dans le POC 1 ; la lisibilité de la piste tranche                                                                                                                                                                                                 |
 
 ---
 
