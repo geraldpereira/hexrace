@@ -47,7 +47,15 @@ export class CameraFollowBehavior extends Component {
     override registerDebug(gui: GUI): void {
         const folder = gui.addFolder('Camera');
         folder.add(this.offset, 'y', 1, 20, 0.5).name('Height');
-        folder.add(this.offset, 'z', 2, 30, 0.5).name('Distance');
+        // The camera sits behind the car, i.e. at negative local Z. Expose
+        // the distance as a positive number so the slider can't flip it.
+        const cfg = { distance: -this.offset.z };
+        folder
+            .add(cfg, 'distance', 2, 30, 0.5)
+            .name('Distance')
+            .onChange((v: number) => {
+                this.offset.z = -v;
+            });
         folder.add(this, 'lerp', 0.5, 20, 0.1).name('Smoothing');
     }
 }
