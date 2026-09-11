@@ -32,8 +32,11 @@ export function createTerrainMaterial(options: TerrainMaterialOptions): THREE.Me
             .replace('#include <common>', `#include <common>\n${GLSL_DECL}`)
             .replace(
                 '#include <begin_vertex>',
+                // PlaneGeometry puts v = 1 on its first vertex row, which after
+                // the -90° X rotation is the -z edge; the surface map stores that
+                // row (z = -size/2) at v = 0. Flip v so colours match the physics.
                 `#include <begin_vertex>
-         vSurfaceUv = uv;`,
+         vSurfaceUv = vec2(uv.x, 1.0 - uv.y);`,
             );
 
         shader.fragmentShader = shader.fragmentShader

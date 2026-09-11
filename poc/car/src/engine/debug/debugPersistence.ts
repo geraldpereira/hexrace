@@ -1,4 +1,5 @@
 import type GUI from 'lil-gui';
+import { FunctionController, type Controller } from 'lil-gui';
 
 const DEFAULT_STORAGE_KEY = 'rally-game.debug.gui';
 
@@ -7,8 +8,13 @@ interface FolderState {
     folders: Record<string, FolderState>;
 }
 
+interface ValuesState {
+    controllers: Record<string, unknown>;
+    folders: Record<string, ValuesState>;
+}
+
 interface PersistedState {
-    values?: object;
+    values?: ValuesState;
     ui?: FolderState;
 }
 
@@ -22,6 +28,10 @@ interface PersistedState {
  *
  * Saves on `onFinishChange` (not `onChange`) so dragging a slider doesn't
  * thrash localStorage on every frame, and on `onOpenClose` for folder toggles.
+ *
+ * Disabled controllers are read-only readouts (speed, slip, surface under a
+ * wheel…): they are neither saved nor loaded, otherwise a stale value from
+ * the previous session would be shown until the readout next changes.
  */
 export function installGuiPersistence(gui: GUI, storageKey = DEFAULT_STORAGE_KEY): void {
     const raw = localStorage.getItem(storageKey);
@@ -30,7 +40,7 @@ export function installGuiPersistence(gui: GUI, storageKey = DEFAULT_STORAGE_KEY
             const parsed: unknown = JSON.parse(raw);
             if (parsed && typeof parsed === 'object') {
                 const state = parsed as PersistedState;
-                if (state.values) gui.load(state.values);
+                if (state.values) loadValues(gui, state.values);
                 if (state.ui) loadFolderState(gui, state.ui);
             }
         } catch (e) {
@@ -41,7 +51,7 @@ export function installGuiPersistence(gui: GUI, storageKey = DEFAULT_STORAGE_KEY
 
     const save = (): void => {
         const state: PersistedState = {
-            values: gui.save(),
+            values: saveValues(gui),
             ui: saveFolderState(gui),
         };
         localStorage.setItem(storageKey, JSON.stringify(state));
@@ -66,6 +76,33 @@ function addResetButton(target: GUI, save: () => void, all = false): void {
         },
     };
     target.add(actions, label);
+}
+
+/** Same shape as `gui.save()`, minus function buttons and disabled readouts. */
+function saveValues(gui: GUI): ValuesState {
+    const controllers: Record<string, unknown> = {};
+    for (const c of gui.controllers) {
+        if (!persistable(c)) continue;
+        controllers[c._name] = c.save();
+    }
+    const folders: Record<string, ValuesState> = {};
+    for (const f of gui.folders) folders[f._title] = saveValues(f);
+    return { controllers, folders };
+}
+
+function loadValues(gui: GUI, state: ValuesState): void {
+    for (const c of gui.controllers) {
+        if (!persistable(c)) continue;
+        if (c._name in state.controllers) c.load(state.controllers[c._name]);
+    }
+    for (const f of gui.folders) {
+        const sub = state.folders[f._title];
+        if (sub) loadValues(f, sub);
+    }
+}
+
+function persistable(c: Controller): boolean {
+    return !(c instanceof FunctionController) && !c._disabled;
 }
 
 function saveFolderState(gui: GUI): FolderState {
