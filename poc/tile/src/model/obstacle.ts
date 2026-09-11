@@ -1,4 +1,5 @@
 import type { Vec2 } from './layout';
+import type { SPoint } from './geometry';
 import { SIDE, add, hexCorners, scale } from './layout';
 import type { RoadType } from './profile';
 import type { Placement } from './placement';
@@ -69,10 +70,10 @@ const BAND_SAMPLES = 12;
 
 export interface Footprint {
     readonly obstacle: Obstacle;
-    /** Ce que l'obstacle réserve dans les données de la tuile. */
-    readonly outline: Vec2[];
+    /** Ce que l'obstacle réserve dans les données de la tuile ; chaque point connaît son avancement. */
+    readonly outline: SPoint[];
     /** Ce qu'on voit et qu'on touche ; identique à l'emprise sauf pour la barrière. */
-    readonly body: Vec2[];
+    readonly body: SPoint[];
 }
 
 export function obstacleFootprint(sweep: TileSweep, obstacle: Obstacle): Footprint {
@@ -83,12 +84,13 @@ export function obstacleFootprint(sweep: TileSweep, obstacle: Obstacle): Footpri
             const center = add(b.center, scale(b.right, obstacle.offset));
             const along = scale(b.travel, length / 2);
             const across = scale(b.right, width / 2);
+            // Un objet rigide est de niveau : tous ses coins à la hauteur de son centre.
             const outline = [
                 add(add(center, along), across),
                 add(add(center, along), scale(across, -1)),
                 add(add(center, scale(along, -1)), scale(across, -1)),
                 add(add(center, scale(along, -1)), across),
-            ];
+            ].map((p) => ({ ...p, s: obstacle.at }));
             return { obstacle, outline, body: outline };
         }
         case 'barrier': {
@@ -128,13 +130,14 @@ function band(
     from: number,
     to: number,
     edges: (b: ReturnType<typeof boundariesAt>) => [Vec2, Vec2],
-): Vec2[] {
-    const left: Vec2[] = [];
-    const right: Vec2[] = [];
+): SPoint[] {
+    const left: SPoint[] = [];
+    const right: SPoint[] = [];
     for (let i = 0; i <= BAND_SAMPLES; i++) {
-        const [l, r] = edges(boundariesAt(sweep, from + ((to - from) * i) / BAND_SAMPLES));
-        left.push(l);
-        right.push(r);
+        const s = from + ((to - from) * i) / BAND_SAMPLES;
+        const [l, r] = edges(boundariesAt(sweep, s));
+        left.push({ ...l, s });
+        right.push({ ...r, s });
     }
     return [...left, ...right.reverse()];
 }

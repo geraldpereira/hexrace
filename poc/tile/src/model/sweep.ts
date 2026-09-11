@@ -107,13 +107,18 @@ function normalize(v: Vec2): Vec2 {
 /** Une unité de hauteur de profil (spec 2.1), en unités du monde. À confirmer en roulant (POC 3). */
 export const HEIGHT_UNIT = 1;
 
-/**
- * Hauteur du terrain en un point quelconque de la tuile : celle de l'axe au point le plus proche,
- * interpolée de l'entrée à la sortie avec la transition lissée. Sur une face, tous les points ont
- * la hauteur du profil, donc deux tuiles voisines par la route se raccordent exactement.
- */
-export function tileHeightAt(sweep: TileSweep, p: Vec2): number {
-    const s = axisParameter(sweep.center, sweep.heading, sweep.exit, p);
+/** Hauteur de l'axe à l'avancement `s`, interpolée de l'entrée à la sortie avec la transition lissée. */
+export function heightOfS(sweep: TileSweep, s: number): number {
     const t = transition(s, sweep.transition ?? DEFAULT_TRANSITION);
     return (sweep.entry.height + (sweep.exitProfile.height - sweep.entry.height) * t) * HEIGHT_UNIT;
+}
+
+/**
+ * Hauteur du terrain en un point quelconque de la tuile : celle de l'axe au point le plus proche.
+ * Sur une face, tous les points ont la hauteur du profil, donc deux tuiles voisines par la route se
+ * raccordent exactement. Sert aux requêtes (une roue, un obstacle) ; le maillage, lui, prend la
+ * hauteur de sa tranche.
+ */
+export function tileHeightAt(sweep: TileSweep, p: Vec2): number {
+    return heightOfS(sweep, axisParameter(sweep.center, sweep.heading, sweep.exit, p));
 }

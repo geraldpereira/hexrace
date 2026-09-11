@@ -1,18 +1,19 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type { Obstacle, Placement, TransitionSpan, Vec2 } from './model';
+import type { Obstacle, Placement, TransitionSpan } from './model';
 import {
     HEIGHT_UNIT,
     SIDE,
     cellToWorld,
+    heightOf,
     hexCorners,
     obstacleFootprint,
     tileBoundary,
     tileHeightAt,
-    tilePolygons,
+    tileQuads,
     tileSweep,
 } from './model';
-import type { TileSweep } from './model';
+import type { SPoint, TileSweep } from './model';
 import { OBSTACLE, ROAD, zoneColor } from './palette';
 
 /**
@@ -75,10 +76,10 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         const skirtBase = lowest * HEIGHT_UNIT - SKIRT_DEPTH;
         for (const placed of placement.tiles) {
             const sweep = tileSweep(placed, transition);
-            const heightAt = (p: Vec2): number => tileHeightAt(sweep, p);
-            for (const zone of tilePolygons(sweep)) {
-                color.set(zoneColor(zone.zone, zone.type));
-                triangulate(zone.points, heightAt, positions, colors, color);
+            const heightAt = (p: SPoint): number => heightOf(sweep, p);
+            for (const quad of tileQuads(sweep)) {
+                color.set(zoneColor(quad.zone, quad.type));
+                fan(quad.points, heightAt, positions, colors, color);
             }
             for (const obstacle of placed.tile.obstacles ?? []) {
                 obstacleMesh(sweep, obstacle, heightAt, positions, colors);
@@ -88,12 +89,15 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
             const corners = hexCorners(cellToWorld(placed.cell));
             const line = new THREE.LineLoop(
                 new THREE.BufferGeometry().setFromPoints(
-                    corners.map((p) => new THREE.Vector3(p.x, heightAt(p) + FLAT_LIFT / 2, -p.y)),
+                    corners.map(
+                        (p) => new THREE.Vector3(p.x, tileHeightAt(sweep, p) + FLAT_LIFT / 2, -p.y),
+                    ),
                 ),
                 new THREE.LineBasicMaterial({ color: '#0c0a09' }),
             );
             edges.add(line);
-            for (const c of corners) box.expandByPoint(new THREE.Vector3(c.x, heightAt(c), -c.y));
+            for (const c of corners)
+                box.expandByPoint(new THREE.Vector3(c.x, tileHeightAt(sweep, c), -c.y));
         }
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -134,11 +138,15 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
     return { setPlacement, setEdges, resize };
 }
 
-type HeightAt = (p: Vec2) => number;
+type HeightAt = (p: SPoint) => number;
 
-/** Triangule un polygone du plan, chaque sommet à la hauteur du terrain plus `lift`, dans une couleur. */
-function triangulate(
-    points: Vec2[],
+/**
+ * Un polygone convexe en éventail depuis son premier sommet, chaque sommet à la hauteur de son
+ * avancement plus `lift`. Les quadrilatères de zones et les emprises d'obstacles sont convexes ou
+ * presque ; une bande qui suit un virage est découpée en quadrilatères par la fonction appelante.
+ */
+function fan(
+    points: SPoint[],
     heightAt: HeightAt,
     positions: number[],
     colors: number[],
@@ -147,21 +155,37 @@ function triangulate(
 ): void {
     const contour = dedupe(points);
     if (contour.length < 3) return;
-    const shape = contour.map((p) => new THREE.Vector2(p.x, p.y));
-    for (const triangle of THREE.ShapeUtils.triangulateShape(shape, [])) {
-        for (const i of triangle) {
-            const p = contour[i];
-            if (!p) continue;
+    const first = contour[0];
+    if (!first) return;
+    for (let i = 1; i + 1 < contour.length; i++) {
+        const b = contour[i];
+        const c = contour[i + 1];
+        if (!b || !c) continue;
+        for (const p of [first, b, c]) {
             positions.push(p.x, heightAt(p) + lift, -p.y);
             colors.push(color.r, color.g, color.b);
         }
     }
 }
 
+/** Une bande (bord gauche à l'aller, bord droit au retour) découpée en quadrilatères entre échantillons voisins. */
+function bandQuads(points: SPoint[]): SPoint[][] {
+    const n = points.length / 2;
+    const quads: SPoint[][] = [];
+    for (let i = 0; i + 1 < n; i++) {
+        const a = points[i];
+        const b = points[i + 1];
+        const c = points[2 * n - 2 - i];
+        const d = points[2 * n - 1 - i];
+        if (a && b && c && d) quads.push([a, b, c, d]);
+    }
+    return quads;
+}
+
 /** Un quadrilatère vertical entre deux points du sol et leur projection à `base`. */
 function wall(
-    a: Vec2,
-    b: Vec2,
+    a: SPoint,
+    b: SPoint,
     top: HeightAt,
     base: HeightAt,
     positions: number[],
@@ -183,7 +207,7 @@ function wall(
 
 /** Les jupes : le contour de la tuile descendu jusqu'à `base`. */
 function skirt(
-    outline: Vec2[],
+    outline: SPoint[],
     heightAt: HeightAt,
     base: number,
     positions: number[],
@@ -199,7 +223,8 @@ function skirt(
 
 /**
  * Un obstacle en volume : sa face du dessus suit le terrain à `raised` au-dessus, ses flancs
- * descendent jusqu'au sol. Les objets à plat n'ont qu'une face, légèrement soulevée.
+ * descendent jusqu'au sol. Les objets à plat n'ont qu'une face, légèrement soulevée. Un hazard est
+ * un rectangle de niveau ; une bande suit la piste et se découpe en quadrilatères.
  */
 function obstacleMesh(
     sweep: TileSweep,
@@ -208,7 +233,7 @@ function obstacleMesh(
     positions: number[],
     colors: number[],
 ): void {
-    const body = dedupe(obstacleFootprint(sweep, obstacle).body);
+    const body = obstacleFootprint(sweep, obstacle).body;
     const raised =
         obstacle.kind === 'hazard'
             ? HAZARD_HEIGHT
@@ -220,22 +245,22 @@ function obstacleMesh(
             ? (ROAD[obstacle.road - 1] ?? '#000')
             : OBSTACLE[obstacle.kind].body;
     const color = new THREE.Color(fill);
-    if (raised === 0) {
-        triangulate(body, heightAt, positions, colors, color, FLAT_LIFT);
-        return;
-    }
-    triangulate(body, heightAt, positions, colors, color, raised);
+    const pieces = obstacle.kind === 'hazard' ? [body] : bandQuads(body);
+    for (const piece of pieces)
+        fan(piece, heightAt, positions, colors, color, raised > 0 ? raised : FLAT_LIFT);
+    if (raised === 0) return;
     const side = color.clone().multiplyScalar(0.7);
-    for (let i = 0; i < body.length; i++) {
-        const a = body[i];
-        const b = body[(i + 1) % body.length];
+    const outline = dedupe(body);
+    for (let i = 0; i < outline.length; i++) {
+        const a = outline[i];
+        const b = outline[(i + 1) % outline.length];
         if (a && b) wall(a, b, (p) => heightAt(p) + raised, heightAt, positions, colors, side);
     }
 }
 
 /** Retire les points consécutifs confondus, qui font échouer la triangulation. */
-function dedupe(points: Vec2[]): Vec2[] {
-    const result: Vec2[] = [];
+function dedupe(points: SPoint[]): SPoint[] {
+    const result: SPoint[] = [];
     for (const p of points) {
         const last = result[result.length - 1];
         if (!last || Math.hypot(p.x - last.x, p.y - last.y) > 1e-6) result.push(p);

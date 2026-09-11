@@ -136,3 +136,12 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   faces) : le paysage intérieur s'arrête à 0,01 unité du sommet. Jupes verticales sous le contour
   jusqu'à deux unités sous la tuile la plus basse, obstacles en prismes qui suivent la pente.
   Une unité de hauteur = une unité de largeur, à confirmer en roulant.
+- **Découpage en tranches** (`tileSlices`, `tileQuads`). Première version : bandes triangulées par
+  earcut et hauteur par reprojection de chaque sommet ; vue de côté sur la Ligne droite, la piste
+  se penchait en travers dans les transitions et le bas-côté passait dessous puis dessus. Cause :
+  earcut reliait des sommets de tranches éloignées, et les bords de piste, perpendiculaires à la
+  tangente de la piste et non à l'axe, se reprojetaient à des avancements différents. Maintenant
+  chaque point porte son avancement `s`, tous les points d'une tranche ont la même hauteur, et les
+  quadrilatères ne relient que deux tranches voisines. Un hazard est de niveau à la hauteur de son
+  centre, une bande d'obstacle prend la hauteur de chaque échantillon. `tileHeightAt` (par
+  reprojection) reste pour les requêtes ponctuelles du POC 3.

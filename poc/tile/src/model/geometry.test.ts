@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { EXIT_FACES } from './face';
-import { APEX_RADIUS, HEX_AREA, polygonArea, tileBoundary, tilePolygons } from './geometry';
+import {
+    APEX_RADIUS,
+    HEX_AREA,
+    polygonArea,
+    tileBoundary,
+    tilePolygons,
+    tileQuads,
+} from './geometry';
 import { APOTHEM, SIDE, cellToWorld } from './layout';
 import type { Heading } from './placement';
 import type { Profile } from './profile';
@@ -109,6 +116,22 @@ describe('polygones d’une tuile', () => {
             for (const p of boundary) {
                 expect(Math.hypot(p.x, p.y)).toBeLessThanOrEqual(SIDE + 1e-6);
             }
+        }
+    });
+});
+
+describe('tranches', () => {
+    it('met tous les points d’une tranche au même avancement et les quadrilatères entre deux tranches voisines', () => {
+        const sweep: TileSweep = {
+            center: { x: 0, y: 0 },
+            heading: 0,
+            exit: 2,
+            entry: wideLeft,
+            exitProfile: narrowRight,
+        };
+        for (const quad of tileQuads(sweep)) {
+            const values = [...new Set(quad.points.map((p) => p.s))];
+            expect(values).toHaveLength(2);
         }
     });
 });
