@@ -21,6 +21,7 @@ type JoltVec3 = InstanceType<JoltAPI['Vec3']>;
 export const WHEEL_COUNT = 4;
 const WHEEL_NAMES = ['Front left', 'Front right', 'Back left', 'Back right'] as const;
 const REAR_WHEELS = [2, 3] as const;
+const FRONT_WHEELS = [0, 1] as const;
 
 const GRAVITY = 9.81;
 // Stick response: blend between linear and cubic. The centre gets softer
@@ -28,6 +29,10 @@ const GRAVITY = 9.81;
 const STEER_RESPONSE = 0.6;
 const THROTTLE_RESPONSE = 0.3;
 const BRAKE_RESPONSE = 0.3;
+// Speed-sensitive steering: the maximum steer angle shrinks linearly from
+// the wheel's own value at rest down to this at (and above) this speed.
+const STEER_AT_SPEED_DEG = 12;
+const STEER_FULL_EFFECT_KMH = 100;
 const RAD_TO_DEG = 180 / Math.PI;
 // Pressing "back" while rolling forward brakes; once (nearly) stopped it
 // engages reverse. Mirrors the Jolt vehicle example.
@@ -90,6 +95,13 @@ export class CarBehavior extends Component {
     steerResponse = STEER_RESPONSE;
     throttleResponse = THROTTLE_RESPONSE;
     brakeResponse = BRAKE_RESPONSE;
+    speedSteerEnabled = true;
+    /** Max steer angle at rest (°); seeded from the front wheel settings. */
+    steerAtRestDeg = 0;
+    steerAtSpeedDeg = STEER_AT_SPEED_DEG;
+    steerFullEffectKmh = STEER_FULL_EFFECT_KMH;
+    /** Current max steer angle (°), debug readout. */
+    steerMaxDeg = 0;
     readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
 
     private input!: GameInput;
@@ -125,6 +137,7 @@ export class CarBehavior extends Component {
         for (let i = 0; i < WHEEL_COUNT; i++) {
             this.wheels.push(Jolt.castObject(this.constraint.GetWheel(i), Jolt.WheelWV));
         }
+        this.steerAtRestDeg = (this.wheels[0]?.GetSettings().mMaxSteerAngle ?? 0) * RAD_TO_DEG;
         // Start every wheel on the track surface so the first tick has valid curves.
         for (let i = 0; i < WHEEL_COUNT; i++)
             this.setWheelSurface(i, terrain.surfaceMap.options.track);
@@ -163,6 +176,7 @@ export class CarBehavior extends Component {
             this.steerResponse,
         );
 
+        this.applySpeedSteer(Math.abs(forwardSpeed) * 3.6);
         this.updateSurfaces();
         this.applyRearLateralScale(handBrake > 0 ? this.handBrakeLateralGrip : 1);
         const surfaceForces = this.applySurfaceForces(Math.abs(forwardSpeed));
@@ -181,6 +195,21 @@ export class CarBehavior extends Component {
             if (!readout) continue;
             readout.long = wheel.get_mLongitudinalSlip();
             readout.lat = wheel.get_mLateralSlip() * RAD_TO_DEG;
+        }
+    }
+
+    /** Shrink the front wheels' max steer angle with speed so the car is calmer when fast. */
+    private applySpeedSteer(speedKmh: number): void {
+        let deg = this.steerAtRestDeg;
+        if (this.speedSteerEnabled && this.steerFullEffectKmh > 0) {
+            const t = Math.min(speedKmh / this.steerFullEffectKmh, 1);
+            deg = this.steerAtRestDeg + (this.steerAtSpeedDeg - this.steerAtRestDeg) * t;
+        }
+        this.steerMaxDeg = deg;
+        const rad = deg / RAD_TO_DEG;
+        for (const i of FRONT_WHEELS) {
+            const wheel = this.wheels[i];
+            if (wheel) wheel.GetSettings().mMaxSteerAngle = rad;
         }
     }
 
@@ -324,12 +353,13 @@ export class CarBehavior extends Component {
         folder.add(this, 'roughnessEnabled').name('Surface grain');
 
         this.registerInputDebug(folder);
+        this.registerSteeringDebug(folder);
         this.registerChassisDebug(folder);
         this.registerEngineDebug(folder);
         this.registerTransmissionDebug(folder);
         this.registerDifferentialDebug(folder);
         for (const [i, name] of WHEEL_NAMES.entries()) {
-            this.registerWheelDebug(folder, name, i, i < 2);
+            this.registerWheelDebug(folder, name, i);
         }
 
         const surfaces = gui.addFolder('Surfaces');
@@ -343,6 +373,15 @@ export class CarBehavior extends Component {
         f.add(this, 'steerResponse', 0, 1, 0.05).name('Steering (0 lin → 1 cubic)');
         f.add(this, 'throttleResponse', 0, 1, 0.05).name('Throttle (0 lin → 1 cubic)');
         f.add(this, 'brakeResponse', 0, 1, 0.05).name('Brake (0 lin → 1 cubic)');
+    }
+
+    private registerSteeringDebug(parent: GUI): void {
+        const f = parent.addFolder('Steering');
+        f.add(this, 'speedSteerEnabled').name('Speed-sensitive');
+        f.add(this, 'steerAtRestDeg', 5, 45, 0.5).name('Max at rest (°)');
+        f.add(this, 'steerAtSpeedDeg', 2, 45, 0.5).name('Max at speed (°)');
+        f.add(this, 'steerFullEffectKmh', 20, 200, 5).name('Full effect at (km/h)');
+        f.add(this, 'steerMaxDeg', 0, 45, 0.1).name('Current max (°)').listen().disable();
     }
 
     private registerChassisDebug(parent: GUI): void {
@@ -467,7 +506,7 @@ export class CarBehavior extends Component {
         }
     }
 
-    private registerWheelDebug(parent: GUI, name: string, index: number, withSteer: boolean): void {
+    private registerWheelDebug(parent: GUI, name: string, index: number): void {
         const wheel = this.wheels[index];
         const readout = this.readouts[index];
         if (!wheel || !readout) return;
@@ -479,7 +518,6 @@ export class CarBehavior extends Component {
         f.add(readout, 'long', -1, 1, 0.01).name('Long. slip').listen().disable();
         f.add(readout, 'lat', 0, 90, 0.5).name('Lat. slip (°)').listen().disable();
         const cfg = {
-            maxSteerAngle: settings.mMaxSteerAngle,
             brakeTorque: settings.mMaxBrakeTorque,
             handBrakeTorque: settings.mMaxHandBrakeTorque,
             suspensionMin: settings.mSuspensionMinLength,
@@ -487,13 +525,6 @@ export class CarBehavior extends Component {
             suspensionFreq: spring.mFrequency,
             suspensionDamping: spring.mDamping,
         };
-        if (withSteer) {
-            f.add(cfg, 'maxSteerAngle', 0, Math.PI / 2, 0.02)
-                .name('Max steer (rad)')
-                .onChange((v: number) => {
-                    settings.mMaxSteerAngle = v;
-                });
-        }
         f.add(cfg, 'brakeTorque', 0, 8000, 50)
             .name('Brake torque')
             .onChange((v: number) => {

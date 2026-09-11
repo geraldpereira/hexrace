@@ -5,8 +5,8 @@
 Assistances à insérer entre l'entrée manette et Jolt, chacune avec un curseur debug pour la doser.
 Les trois premières d'abord, elles règlent l'essentiel sans changer le caractère de la glisse.
 
-- [ ] **1. Braquage dégressif avec la vitesse.** Angle max de 32° à l'arrêt, ~12° à 100 km/h,
-      interpolation entre les deux. Réduit la nervosité à haute vitesse.
+- [x] **1. Braquage dégressif avec la vitesse.** Angle max de 32° à l'arrêt, 12° à 100 km/h,
+      interpolation linéaire entre les deux, dossier Steering du GUI (le curseur par roue a disparu).
 - [ ] **2. Amortissement de lacet.** Couple opposé à la vitesse angulaire autour de l'axe vertical,
       proportionnel à celle-ci. La voiture glisse toujours mais ne part plus en toupie, le
       contre-braquage a le temps d'agir. Préférer un couple pur en lacet à l'amortissement
