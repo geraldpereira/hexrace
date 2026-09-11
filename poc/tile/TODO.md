@@ -15,10 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Types du domaine.** `Tile`, `Profile`, `Face`, `Track` en TypeScript pur, sans three.js
-      (spec 2.1, 2.6). Faces nommées par les heures d'horloge : entrée toujours 6, sortie 12, 2, 4, 8
-      ou 10. Profil = largeur et position de la piste, bas-côtés 0 ou 1, hauteur entière, types de
-      piste / bas-côté / paysage. Invariants vérifiés dans les tests vitest.
 - [ ] **Placement.** Une liste ordonnée de tuiles devient des positions et des orientations dans le
       monde, sans aucune position dans les données (2.6, 5.4). Grille côté plat vers l'avant, côté de
       8 unités. À valider d'abord sur une **carte 2D vue du dessus** (canvas), avant toute 3D : la
@@ -80,4 +76,9 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Fait
 
-Rien encore.
+- **Types du domaine** (`src/model/`). `Face` et `ExitFace` en heures d'horloge avec le virage qu'elles
+  impliquent ; `Profile` avec ses invariants (piste 1 à 5, bloc au plus 6, une unité de paysage de
+  chaque côté, hauteur 1 à 20) et ses zones unité par unité ; `Tile` = face de sortie + profil de
+  sortie, comme une ligne du croquis 6 ; `Track` = en-tête + liste ordonnée, le profil d'entrée d'une
+  tuile étant celui de sortie de la précédente (2.6 tenue par construction), la tuile de départ
+  entrant par la sortie de la dernière en boucle. Le Petit Anneau du croquis en fixture, 18 tests.
