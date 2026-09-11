@@ -7,10 +7,10 @@ Les trois premières d'abord, elles règlent l'essentiel sans changer le caract�
 
 - [x] **1. Braquage dégressif avec la vitesse.** Angle max de 32° à l'arrêt, 12° à 100 km/h,
       interpolation linéaire entre les deux, dossier Steering du GUI (le curseur par roue a disparu).
-- [ ] **2. Amortissement de lacet.** Couple opposé à la vitesse angulaire autour de l'axe vertical,
-      proportionnel à celle-ci. La voiture glisse toujours mais ne part plus en toupie, le
-      contre-braquage a le temps d'agir. Préférer un couple pur en lacet à l'amortissement
-      angulaire Jolt, qui touche aussi tangage et roulis.
+- [x] **2. Amortissement de lacet.** Couple pur opposé à la vitesse de lacet autour de l'axe
+      vertical du châssis, exprimé en taux de décroissance (1/s) grâce à l'inertie de lacet lue
+      dans Jolt. Appliqué seulement roues au sol. Dossier Yaw damping du GUI. Désactivé par
+      défaut, préréglé à 1 : à la manette la glisse brute est préférable, à garder pour le tactile.
 - [x] **3. Courbe de réponse du stick.** Mélange linéaire / cube sur la direction, l'accélérateur
       et le frein, un curseur par axe dans le dossier Input response. Centre plus doux, plein
       débattement conservé en bout de course. Plus du confort qu'une assistance.

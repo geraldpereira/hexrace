@@ -33,6 +33,14 @@ const BRAKE_RESPONSE = 0.3;
 // the wheel's own value at rest down to this at (and above) this speed.
 const STEER_AT_SPEED_DEG = 12;
 const STEER_FULL_EFFECT_KMH = 100;
+// Yaw damping: a torque opposing the yaw rate, scaled by the yaw inertia
+// so the value is a decay rate in 1/s (1 = the spin halves in ~0.7 s).
+// A pure yaw torque, unlike Jolt's angular damping, leaves pitch and roll
+// alone. Only applied with a wheel on the ground: nothing damps a jump.
+// Off by default: with a gamepad the raw slide feels better; meant for
+// touch controls where steering is less precise.
+const YAW_DAMPING = 1;
+const YAW_DAMPING_ENABLED = false;
 const RAD_TO_DEG = 180 / Math.PI;
 // Pressing "back" while rolling forward brakes; once (nearly) stopped it
 // engages reverse. Mirrors the Jolt vehicle example.
@@ -102,6 +110,10 @@ export class CarBehavior extends Component {
     steerFullEffectKmh = STEER_FULL_EFFECT_KMH;
     /** Current max steer angle (°), debug readout. */
     steerMaxDeg = 0;
+    yawDampingEnabled = YAW_DAMPING_ENABLED;
+    yawDamping = YAW_DAMPING;
+    /** Yaw rate (°/s), debug readout. */
+    yawRateDeg = 0;
     readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
 
     private input!: GameInput;
@@ -115,6 +127,8 @@ export class CarBehavior extends Component {
     private readonly wheelRight: JoltVec3;
     private readonly wheelUp: JoltVec3;
     private readonly tmpForce: JoltVec3;
+    /** Chassis inertia around its local up axis (kg·m²). */
+    private readonly yawInertia: number;
     private readonly noise = createNoise2D(mulberry32(7));
 
     constructor(
@@ -133,7 +147,9 @@ export class CarBehavior extends Component {
         this.wheelRight = new Jolt.Vec3(0, 1, 0);
         this.wheelUp = new Jolt.Vec3(1, 0, 0);
         this.tmpForce = new Jolt.Vec3(0, 0, 0);
-        this.mass = 1 / body.GetMotionProperties().GetInverseMass();
+        const motion = body.GetMotionProperties();
+        this.mass = 1 / motion.GetInverseMass();
+        this.yawInertia = 1 / motion.GetInverseInertiaDiagonal().GetY();
         for (let i = 0; i < WHEEL_COUNT; i++) {
             this.wheels.push(Jolt.castObject(this.constraint.GetWheel(i), Jolt.WheelWV));
         }
@@ -180,6 +196,7 @@ export class CarBehavior extends Component {
         this.updateSurfaces();
         this.applyRearLateralScale(handBrake > 0 ? this.handBrakeLateralGrip : 1);
         const surfaceForces = this.applySurfaceForces(Math.abs(forwardSpeed));
+        this.applyYawDamping();
         this.controller.SetDriverInput(forward, right, brake, handBrake);
         if (surfaceForces || forward !== 0 || right !== 0 || brake !== 0 || handBrake !== 0) {
             this.physics.bodyInterface.ActivateBody(this.body.GetID());
@@ -304,6 +321,34 @@ export class CarBehavior extends Component {
         return applied;
     }
 
+    /** Torque against the yaw rate around the chassis' local up axis. */
+    private applyYawDamping(): void {
+        const up = this.localUp();
+        const w = this.body.GetAngularVelocity();
+        const yawRate = up.x * w.GetX() + up.y * w.GetY() + up.z * w.GetZ();
+        this.yawRateDeg = yawRate * RAD_TO_DEG;
+        if (!this.yawDampingEnabled || this.yawDamping === 0 || yawRate === 0) return;
+        if (!this.wheels.some((wheel) => wheel.HasContact())) return;
+        const torque = -this.yawDamping * this.yawInertia * yawRate;
+        this.tmpForce.Set(up.x * torque, up.y * torque, up.z * torque);
+        this.body.AddTorque(this.tmpForce);
+    }
+
+    /** Chassis' local +Y axis in world space. */
+    private localUp(): { x: number; y: number; z: number } {
+        const rot = this.body.GetRotation();
+        const qx = rot.GetX();
+        const qy = rot.GetY();
+        const qz = rot.GetZ();
+        const qw = rot.GetW();
+        // Local +Y column of the rotation matrix.
+        return {
+            x: 2 * (qx * qy - qw * qz),
+            y: 1 - 2 * (qx * qx + qz * qz),
+            z: 2 * (qy * qz + qw * qx),
+        };
+    }
+
     /** Signed speed along the chassis' local +Z (m/s). */
     private localForwardSpeed(): number {
         const rot = this.body.GetRotation();
@@ -354,6 +399,7 @@ export class CarBehavior extends Component {
 
         this.registerInputDebug(folder);
         this.registerSteeringDebug(folder);
+        this.registerYawDebug(folder);
         this.registerChassisDebug(folder);
         this.registerEngineDebug(folder);
         this.registerTransmissionDebug(folder);
@@ -373,6 +419,13 @@ export class CarBehavior extends Component {
         f.add(this, 'steerResponse', 0, 1, 0.05).name('Steering (0 lin → 1 cubic)');
         f.add(this, 'throttleResponse', 0, 1, 0.05).name('Throttle (0 lin → 1 cubic)');
         f.add(this, 'brakeResponse', 0, 1, 0.05).name('Brake (0 lin → 1 cubic)');
+    }
+
+    private registerYawDebug(parent: GUI): void {
+        const f = parent.addFolder('Yaw damping');
+        f.add(this, 'yawDampingEnabled').name('Enabled');
+        f.add(this, 'yawDamping', 0, 10, 0.1).name('Damping (1/s)');
+        f.add(this, 'yawRateDeg', -360, 360, 1).name('Yaw rate (°/s)').listen().disable();
     }
 
     private registerSteeringDebug(parent: GUI): void {
