@@ -113,6 +113,7 @@ Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 
 - Deux tuiles consécutives se raccordent à la même hauteur (voir 2.6). Le changement de hauteur se fait **à l'intérieur de la tuile**, sur l'étendue de transition de l'environnement (voir 2.2), par une pente lissée aux deux bouts ; si l'étendue est plus courte que la tuile, un palier à la hauteur d'entrée précède la pente et un palier à la hauteur de sortie la suit.
 - Les sauts se font sur des **rampes** et des **dos d'âne** posés comme obstacles sur la piste, pas par le relief des tuiles.
+- La hauteur n'est fixée que sur les faces d'entrée et de sortie. Deux tuiles qui se touchent par une face latérale sans y être reliées par la piste peuvent y avoir des hauteurs différentes : il en résulte une **marche dans le paysage**, acceptée comme relief. Une marche n'est jamais admise **sur la piste ni sur les bas-côtés**, ce que garantit déjà la règle d'assemblage 2.6.
 
 <CHOIX> Différence de hauteur maximale entre l'entrée et la sortie d'une même tuile. Une pente trop raide en huit unités devient un mur ; à mesurer dans le POC 3, le seul où l'on conduit sur des tuiles.
 
@@ -625,6 +626,7 @@ Par ordre d'envie :
 | 2026-09-11 | Aperçu des tuiles suivantes dans le HUD, carte complète toujours refusée           | Anticiper la piste ; réutilise la carte 2D du POC 2                         |
 | 2026-09-11 | Étendue de la transition dans une tuile = paramètre d'environnement                | Comme les grips ; toute la tuile lisse les courbes, à régler en roulant     |
 | 2026-09-11 | Surfaces nommées par rang dans la palette, ordonnées par adhérence, jamais par matière | Transposition entre environnements ; l'asphalte n'est qu'un habillage   |
+| 2026-09-11 | Marches acceptées dans le paysage entre tuiles voisines par le côté, jamais sur la piste ni les bas-côtés | Le modèle ne fixe la hauteur qu'aux faces d'entrée et de sortie ; c'est du relief |
 
 ### 11.2 Questions ouvertes
 

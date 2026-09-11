@@ -69,11 +69,9 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 - [ ] **Densité de sommets** pour que le balayage soit propre en flat shading, surtout en épingle
       (rayon 4, axe de 8,4 unités) : 24 échantillons par tuile aujourd'hui, quelques facettes sombres
       visibles sur la piste d'une épingle qui change de hauteur.
-- [ ] **Falaises entre tuiles voisines par le côté.** Le modèle ne fixe la hauteur que sur les faces
-      d'entrée et de sortie ; deux tuiles qui se touchent par une face latérale sans y être reliées
-      par la route peuvent y avoir des hauteurs différentes, d'où une marche dans le paysage. Les
-      jupes la rendent lisible, mais le générateur et la validation (5.5) devront soit l'interdire,
-      soit l'accepter comme relief.
+- [x] **Marches entre tuiles voisines par le côté.** Tranchée : acceptées dans le paysage comme
+      relief, jamais sur la piste ni les bas-côtés, ce que la règle d'assemblage garantit déjà
+      (spec 2.3). Rien à faire dans la validation.
 
 ## Fait
 
