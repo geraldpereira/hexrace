@@ -6,6 +6,10 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
 
 ## Valider les critères de la spec
 
+
+- [ ] Gestion boite de vitesse et régime moteur. Ajout du son.
+- [ ] Collisions. Dégats. 
+- [ ] Traces de pneus et particules.
 - [ ] **Chrono au tour.** Ligne de départ sur la boucle, temps au tour courant et meilleur tour dans
       le HUD. Seul moyen de juger « sur asphalte glisser fait perdre du temps, sur gravier ne pas
       glisser en fait perdre » autrement qu'au ressenti.
