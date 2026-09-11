@@ -24,6 +24,11 @@ const REAR_WHEELS = [2, 3] as const;
 
 const GRAVITY = 9.81;
 const STEER_SPEED = 5;
+// Stick response: blend between linear and cubic. The centre gets softer
+// while full deflection still reaches 1. 0 = linear, 1 = pure cube.
+const STEER_RESPONSE = 0.6;
+const THROTTLE_RESPONSE = 0.3;
+const BRAKE_RESPONSE = 0.3;
 const RAD_TO_DEG = 180 / Math.PI;
 // Pressing "back" while rolling forward brakes; once (nearly) stopped it
 // engages reverse. Mirrors the Jolt vehicle example.
@@ -66,6 +71,11 @@ function applyCurve(target: JoltLinearCurve, points: readonly CurvePoint[], scal
     target.Sort();
 }
 
+function shapeInput(x: number, cubic: number): number {
+    const a = Math.abs(x);
+    return Math.sign(x) * ((1 - cubic) * a + cubic * a * a * a);
+}
+
 interface WheelReadout {
     long: number;
     lat: number;
@@ -78,6 +88,9 @@ export class CarBehavior extends Component {
     gear = 0;
     handBrakeLateralGrip = HAND_BRAKE_LATERAL_GRIP;
     roughnessEnabled = true;
+    steerResponse = STEER_RESPONSE;
+    throttleResponse = THROTTLE_RESPONSE;
+    brakeResponse = BRAKE_RESPONSE;
     readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
 
     private input!: GameInput;
@@ -128,9 +141,10 @@ export class CarBehavior extends Component {
     override fixedUpdate(): void {
         const merged = this.input;
         // Right trigger = throttle, left trigger = brake (reverse once
-        // stopped), left bumper = hand brake. Either stick steers.
-        const throttle = merged.rightTrigger;
-        const back = merged.leftTrigger;
+        // stopped), left bumper = hand brake. Either stick steers. Analog
+        // axes go through their response curve first.
+        const throttle = shapeInput(merged.rightTrigger, this.throttleResponse);
+        const back = shapeInput(merged.leftTrigger, this.brakeResponse);
         const handBrake = merged.leftBumper;
 
         const forwardSpeed = this.localForwardSpeed();
@@ -145,7 +159,10 @@ export class CarBehavior extends Component {
         if (idle) brake = IDLE_BRAKE;
 
         // Smooth the raw stick so keyboard steering isn't a step function.
-        const inputRight = Math.max(-1, Math.min(1, merged.leftStickX + merged.rightStickX));
+        const inputRight = shapeInput(
+            Math.max(-1, Math.min(1, merged.leftStickX + merged.rightStickX)),
+            this.steerResponse,
+        );
         if (inputRight > this.currentRight) {
             this.currentRight = Math.min(
                 this.currentRight + STEER_SPEED * PHYSICS_TIMESTEP,
@@ -319,6 +336,7 @@ export class CarBehavior extends Component {
             });
         folder.add(this, 'roughnessEnabled').name('Surface grain');
 
+        this.registerInputDebug(folder);
         this.registerChassisDebug(folder);
         this.registerEngineDebug(folder);
         this.registerTransmissionDebug(folder);
@@ -331,6 +349,13 @@ export class CarBehavior extends Component {
         for (const [id, surface] of SURFACES.entries()) {
             this.registerSurfaceDebug(surfaces, surface, id);
         }
+    }
+
+    private registerInputDebug(parent: GUI): void {
+        const f = parent.addFolder('Input response');
+        f.add(this, 'steerResponse', 0, 1, 0.05).name('Steering (0 lin → 1 cubic)');
+        f.add(this, 'throttleResponse', 0, 1, 0.05).name('Throttle (0 lin → 1 cubic)');
+        f.add(this, 'brakeResponse', 0, 1, 0.05).name('Brake (0 lin → 1 cubic)');
     }
 
     private registerChassisDebug(parent: GUI): void {

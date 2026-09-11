@@ -11,8 +11,9 @@ Les trois premières d'abord, elles règlent l'essentiel sans changer le caract�
       proportionnel à celle-ci. La voiture glisse toujours mais ne part plus en toupie, le
       contre-braquage a le temps d'agir. Préférer un couple pur en lacet à l'amortissement
       angulaire Jolt, qui touche aussi tangage et roulis.
-- [ ] **3. Courbe de réponse du stick.** Mélange stick linéaire / stick³ sur la direction : centre
-      plus doux, plein braquage conservé en bout de course.
+- [x] **3. Courbe de réponse du stick.** Mélange linéaire / cube sur la direction, l'accélérateur
+      et le frein, un curseur par axe dans le dossier Input response. Centre plus doux, plein
+      débattement conservé en bout de course. Plus du confort qu'une assistance.
 - [ ] **4. Assistance au contre-braquage.** Au-delà d'un seuil d'angle de dérive du châssis, ajouter
       automatiquement une fraction du contre-braquage qui ramène les roues avant vers la direction
       de la vitesse. Dosable de 0 (sim) à 1 (drift auto-tenu). À n'activer que si 1-3 ne suffisent pas.
