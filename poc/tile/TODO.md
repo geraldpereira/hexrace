@@ -67,8 +67,13 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       référence.
 - [ ] **Taille de tuile** (8 unités par côté) : confirmer que le profil piste + bas-côtés + paysage
       tient et que les transitions au milieu restent lisibles.
-- [ ] **Géométrie de la transition** : linéaire ou lissée, en largeur comme en hauteur ; densité de
-      sommets nécessaire pour que ce soit propre en flat shading.
+- [ ] **Étendue de la transition.** La spec (2.3, croquis 4) la met dans la bande centrale ; le
+      curseur de la page montre qu'à 40 % de la tuile un décalage de 3 unités en virage fait une
+      chicane, et qu'à 100 % (transition sur toute la tuile, interpolation quintique, faces
+      inchangées) les mêmes tuiles donnent des courbes régulières. Recommandation : 100 % pour la
+      position et la largeur, à confirmer pour la hauteur en roulant (POC 3), puis corriger la spec.
+- [ ] **Densité de sommets** pour que le balayage soit propre en flat shading, surtout en épingle
+      (rayon 4, axe de 8,4 unités).
 
 ## Fait
 
@@ -85,5 +90,24 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   (côté 8, apothème 4√3), repères de face vus par le conducteur, test que la face de sortie d'une
   tuile coïncide point par point avec la face d'entrée de la suivante. Carte 2D sur canvas avec
   cinq fixtures (Petit Anneau, Triangle, Hexagone, Ligne droite, Recoupe) : le Petit Anneau se
-  referme exactement et reproduit le croquis 5. La transition au milieu de la tuile y est un simple
-  quadrilatère, à faire proprement dans la géométrie 3D, surtout en virage serré.
+  referme exactement et reproduit le croquis 5.
+- **Axe d'une tuile** (`path.ts`). La courbe que suit le milieu de la piste, tangente aux deux faces :
+  segment en ligne droite, arc de rayon 12 centré sur le centre de la tuile voisine pour un virage à
+  60°, arc de rayon 4 centré sur le sommet commun pour un virage à 120°. Le profil est balayé le long
+  de l'axe, constant sur 30 % à chaque bout, transition linéaire au milieu. La carte 2D dessine la
+  piste ainsi, à largeur constante en virage. Longueurs d'axe : 13,9 en droite, 12,6 en virage
+  large, 8,4 en virage serré. La géométrie 3D reprendra le même balayage avec la hauteur.
+- **Bords des zones** (`sweep.ts`). Le centre de la piste suit sa propre courbe (axe de la tuile
+  décalé du centre du profil courant) et les largeurs de piste et de bas-côtés se mesurent
+  perpendiculairement à sa tangente, pas à l'axe de la tuile : sinon une piste qui se déplace en
+  biais paraît plus étroite. Test : largeur constante à 1e-6 pendant un décalage en virage, bords
+  exactement sur les profils des faces aux deux bouts. C'est ce que le maillage 3D utilisera.
+- **Fixture Courbes** : catalogue de virages à 60° où la piste passe de la position 1 à la 6 et
+  retour, virages qui se resserrent, s'ouvrent, grand virage à 120° sur deux tuiles, chicane,
+  ouverture progressive d'une unité par tuile, bas-côtés des deux côtés. Rayons de l'axe de la piste : 9,5 à 14,5
+  en virage large selon la position, 1,5 à 6,5 en virage serré, l'angle par tuile restant 0, 60 ou
+  120°. Piste choisie mémorisée dans l'URL, canvas plein écran, notes `p1→6` et `h5→6` sur la carte,
+  curseur d'étendue de la transition.
+- **Fixture Catalogue** : les cinq sorties combinées à des décalages de position, en droite, en virage
+  large et en épingle, vers l'intérieur comme vers l'extérieur, plus un décrochement épingle droite
+  puis épingle gauche. Tout se raccorde et se dessine à largeur constante.

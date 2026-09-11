@@ -1,0 +1,84 @@
+import type { ExitFace } from './face';
+import type { Vec2 } from './layout';
+import { SIDE, add, scale } from './layout';
+import type { TransitionSpan } from './path';
+import { DEFAULT_TRANSITION, transition, worldPath } from './path';
+import type { Heading } from './placement';
+import type { Profile } from './profile';
+
+/**
+ * Les bords des zones d'une tuile, balayés le long de son axe.
+ *
+ * Le centre de la piste suit sa propre courbe : l'axe de la tuile, décalé latéralement du centre
+ * du profil (qui change pendant la transition). Les largeurs de piste et de bas-côtés se mesurent
+ * perpendiculairement à la tangente de cette courbe, et non à l'axe de la tuile : sinon une piste
+ * qui se déplace en biais paraît plus étroite, d'un facteur cos(angle de biais).
+ */
+
+export interface Boundaries {
+    /** Centre de la piste et sa direction de marche. */
+    readonly center: Vec2;
+    readonly travel: Vec2;
+    readonly blockLeft: Vec2;
+    readonly roadLeft: Vec2;
+    readonly roadRight: Vec2;
+    readonly blockRight: Vec2;
+}
+
+export interface TileSweep {
+    readonly center: Vec2;
+    readonly heading: Heading;
+    readonly exit: ExitFace;
+    readonly entry: Profile;
+    readonly exitProfile: Profile;
+    /** Étendue de la transition ; celle de la spec par défaut. */
+    readonly transition?: TransitionSpan;
+}
+
+const EPSILON = 1e-3;
+
+export function boundariesAt(sweep: TileSweep, s: number): Boundaries {
+    const center = roadCenter(sweep, s);
+    // Différence centrée, en débordant de l'axe aux deux bouts : l'axe se prolonge naturellement et
+    // la corde d'un arc centrée sur s a exactement la direction de la tangente.
+    const before = roadCenter(sweep, s - EPSILON);
+    const after = roadCenter(sweep, s + EPSILON);
+    const travel = normalize({ x: after.x - before.x, y: after.y - before.y });
+    const right = { x: travel.y, y: -travel.x };
+    const t = transition(s, sweep.transition ?? DEFAULT_TRANSITION);
+    const halfRoad = lerp(sweep.entry.roadWidth, sweep.exitProfile.roadWidth, t) / 2;
+    const leftShoulder = lerp(sweep.entry.leftShoulder, sweep.exitProfile.leftShoulder, t);
+    const rightShoulder = lerp(sweep.entry.rightShoulder, sweep.exitProfile.rightShoulder, t);
+    return {
+        center,
+        travel,
+        blockLeft: add(center, scale(right, -halfRoad - leftShoulder)),
+        roadLeft: add(center, scale(right, -halfRoad)),
+        roadRight: add(center, scale(right, halfRoad)),
+        blockRight: add(center, scale(right, halfRoad + rightShoulder)),
+    };
+}
+
+/** Le centre de la piste : l'axe de la tuile décalé du centre du profil courant. */
+export function roadCenter(sweep: TileSweep, s: number): Vec2 {
+    const sample = worldPath(sweep.center, sweep.heading, sweep.exit, s);
+    const u = lerp(
+        roadCenterUnit(sweep.entry),
+        roadCenterUnit(sweep.exitProfile),
+        transition(s, sweep.transition ?? DEFAULT_TRANSITION),
+    );
+    return add(sample.point, scale(sample.right, u - SIDE / 2));
+}
+
+function roadCenterUnit(profile: Profile): number {
+    return profile.position + profile.roadWidth / 2;
+}
+
+function lerp(a: number, b: number, t: number): number {
+    return a + (b - a) * t;
+}
+
+function normalize(v: Vec2): Vec2 {
+    const length = Math.hypot(v.x, v.y);
+    return length === 0 ? { x: 0, y: 1 } : { x: v.x / length, y: v.y / length };
+}

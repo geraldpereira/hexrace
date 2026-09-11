@@ -6,3 +6,7 @@ export * from './fixtures/petitAnneau';
 export * from './placement';
 export * from './layout';
 export * from './fixtures/petitesBoucles';
+export * from './path';
+export * from './fixtures/courbes';
+export * from './sweep';
+export * from './fixtures/catalogue';
