@@ -24,6 +24,10 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       la jonction, aucune couture ni trou visible en caméra libre. C'est ici qu'on regarde la
       question de la spec technique (1.4, `<GPE>`) : une forte déclivité suivie d'une tuile plate
       fait une arête ; on la voit ici, on la conduira dans le POC suivant.
+- [ ] **Environnement.** Un objet par environnement : palette de huit types nommés par rang (piste 1 à
+      3, bas-côté 1 à 3, paysage 1 à 2, ordonnés par adhérence décroissante), couleurs pour la carte,
+      étendue de la transition. Le balayage lit l'étendue dans l'environnement de la piste au lieu du
+      curseur ; les fixtures cessent de nommer leurs surfaces autrement que par rang (spec 2.2).
 - [ ] **Format de fichier.** Fichier texte lisible à la main : en-tête avec format et version, paires
       clé / valeur, liste des tuiles (5.4, croquis 6). Parser avec messages d'erreur, sérialiseur,
       rechargement à chaud. Deux ou trois pistes d'exemple dans `tracks/`, dont la boucle du croquis.
@@ -67,11 +71,10 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       référence.
 - [ ] **Taille de tuile** (8 unités par côté) : confirmer que le profil piste + bas-côtés + paysage
       tient et que les transitions au milieu restent lisibles.
-- [ ] **Étendue de la transition.** La spec (2.3, croquis 4) la met dans la bande centrale ; le
-      curseur de la page montre qu'à 40 % de la tuile un décalage de 3 unités en virage fait une
-      chicane, et qu'à 100 % (transition sur toute la tuile, interpolation quintique, faces
-      inchangées) les mêmes tuiles donnent des courbes régulières. Recommandation : 100 % pour la
-      position et la largeur, à confirmer pour la hauteur en roulant (POC 3), puis corriger la spec.
+- [x] **Étendue de la transition.** Tranchée : paramètre d'environnement (spec 2.2), le POC ayant
+      montré qu'à 40 % de la tuile un décalage de 3 unités en virage fait une chicane et qu'à 100 %
+      les mêmes tuiles donnent des courbes régulières. Valeur par environnement à régler en roulant
+      (POC 3) ; le curseur de la page reste pour comparer.
 - [ ] **Densité de sommets** pour que le balayage soit propre en flat shading, surtout en épingle
       (rayon 4, axe de 8,4 unités).
 

@@ -68,7 +68,7 @@ Un **hexagone** (ou **tuile**) est l'unité de construction d'une piste. Il est 
   - chaque **bas-côté** fait **0 ou 1 unité** ;
   - piste plus bas-côtés font **6 unités au plus**, de sorte qu'il reste **au moins 1 unité de paysage de chaque côté**. Une piste de 5 unités n'a donc qu'un bas-côté au plus ;
   - la **position** du bloc piste plus bas-côtés sur la face se donne en unités depuis la gauche.
-- **Variation dans la tuile** : largeur, position et types peuvent différer entre l'entrée et la sortie. La piste se resserre, s'élargit ou se décale dans la tuile. Une piste étroite peut entrer à gauche d'une face et sortir à droite d'une autre.
+- **Variation dans la tuile** : largeur, position et types peuvent différer entre l'entrée et la sortie. La piste se resserre, s'élargit ou se décale dans la tuile, le long de son axe, sur une **étendue de transition** fixée par l'environnement (voir 2.2) ; aux faces, le profil est exactement celui écrit. Une piste étroite peut entrer à gauche d'une face et sortir à droite d'une autre.
 - **Hauteur** : chaque tuile porte une hauteur d'entrée et une hauteur de sortie, entières, bornées (1 à 20 pour fixer les idées). Leur différence est la **déclivité** de la tuile, positive, négative ou nulle.
 - **Obstacles** : une tuile peut porter des obstacles le long de la piste (voir 2.4).
 
@@ -97,13 +97,21 @@ Une tuile porte un type de piste, un type de bas-côté et un type de paysage, c
 
 Une tuile est **transposable** d'un environnement à l'autre : sa géométrie ne change pas, seuls changent les grips et l'apparence. Le type « piste 2 » d'Europe et le type « piste 2 » d'Afrique sont des revêtements différents à la même place dans la palette. Une piste dessinée en Europe se joue donc en Afrique sans être redessinée.
 
+**Noms génériques.** Comme les obstacles (voir 2.4), les surfaces ne sont **jamais nommées par leur matière** dans les données, le code ou les fichiers de piste : pas d'asphalte, de gravier ni de glace, mais un **rang dans la palette**, piste 1 à 3, bas-côté 1 à 3, paysage 1 à 2. Pour que la transposition garde un sens, les rangs sont **ordonnés par adhérence décroissante** : la piste 1 est la plus adhérente de son environnement, la piste 3 la plus glissante ; de même pour les bas-côtés. Le paysage 2 est celui qui peut être bloquant. « Asphalte » ou « neige » ne sont que les habillages que l'environnement donne à ces rangs.
+
+**Ce qu'un environnement définit** :
+
+- pour chacun de ses huit types de surface : adhérence longitudinale et latérale, freinage, effet sur la vitesse de pointe, grain, et l'apparence (voir 3.4 et 8.2) ;
+- l'**étendue de la transition** dans une tuile (voir 2.3 et 2.6) : la fraction de l'axe sur laquelle largeur, position, types et hauteur passent du profil d'entrée au profil de sortie. Le POC 2 montre qu'une transition sur toute la tuile donne des courbes régulières là où une transition sur la bande centrale fait des chicanes ; la valeur par environnement se règle en roulant ;
+- l'habillage de chaque obstacle (voir 2.4).
+
 <TODO> Lister les trois pistes, trois bas-côtés et deux paysages de chaque environnement, et pour chacun ce que le joueur doit ressentir. Le POC 1 sert précisément à trouver ces valeurs.
 
 ### 2.3 Relief
 
 Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 
-- Deux tuiles consécutives se raccordent à la même hauteur (voir 2.6). Le changement de hauteur se fait **au milieu de la tuile** : la moitié d'entrée est à la hauteur d'entrée, la moitié de sortie à la hauteur de sortie, et une pente les relie.
+- Deux tuiles consécutives se raccordent à la même hauteur (voir 2.6). Le changement de hauteur se fait **à l'intérieur de la tuile**, sur l'étendue de transition de l'environnement (voir 2.2), par une pente lissée aux deux bouts ; si l'étendue est plus courte que la tuile, un palier à la hauteur d'entrée précède la pente et un palier à la hauteur de sortie la suit.
 - Les sauts se font sur des **rampes** et des **dos d'âne** posés comme obstacles sur la piste, pas par le relief des tuiles.
 
 <CHOIX> Différence de hauteur maximale entre l'entrée et la sortie d'une même tuile. Une pente trop raide en huit unités devient un mur ; à mesurer dans le POC 3, le seul où l'on conduit sur des tuiles.
@@ -154,7 +162,7 @@ Deux tuiles s'enchaînent si la face de sortie de la première et la face d'entr
 - même hauteur,
 - mêmes types de piste, de bas-côté et de paysage.
 
-Tout changement se fait au milieu d'une tuile, jamais à la jonction. Une tuile est donc un « connecteur » entre un profil d'entrée et un profil de sortie.
+Tout changement se fait à l'intérieur d'une tuile, jamais à la jonction : la transition est finie quand on atteint la face, quelle que soit son étendue (voir 2.2). Une tuile est donc un « connecteur » entre un profil d'entrée et un profil de sortie.
 
 Une piste est une **liste ordonnée de tuiles** : chaque tuile suit la précédente, et sa position dans l'espace se déduit de la liste. Il faut donc **interdire trop de virages serrés consécutifs** pour que la piste ne se recoupe pas (voir 5.5).
 
@@ -241,6 +249,8 @@ C'est le cœur du POC 1. Le principe : **chaque surface impose une manière de p
 - Sur **asphalte**, il est plus rapide d'éviter la glisse : on freine, on tourne, on réaccélère.
 - Sur **sable et gravier**, éviter la glisse est impossible : les virages se prennent en dérapage.
 - Une **épingle** doit se passer efficacement au frein à main, quelle que soit la surface.
+
+Asphalte, gravier et les autres sont ici des exemples de ressenti ; dans les données ce sont des rangs de la palette d'un environnement (voir 2.2) : l'asphalte est la piste 1 d'Europe, le gravier la piste 2 ou 3 d'Afrique.
 
 <TODO> Neige et glace : à définir, sans doute une glisse encore plus longue et un freinage très allongé.
 
@@ -613,6 +623,8 @@ Par ordre d'envie :
 | 2026-09-11 | Hazards nommés par taille (small, medium, large), pas par aspect                   | L'aspect dépend de l'environnement, la taille du gameplay                   |
 | 2026-09-11 | La barrière se pose sur l'unité qui borde la piste, sans contrainte sur le bas-côté | Jonctions simples entre une tuile avec barrière et une sans                 |
 | 2026-09-11 | Aperçu des tuiles suivantes dans le HUD, carte complète toujours refusée           | Anticiper la piste ; réutilise la carte 2D du POC 2                         |
+| 2026-09-11 | Étendue de la transition dans une tuile = paramètre d'environnement                | Comme les grips ; toute la tuile lisse les courbes, à régler en roulant     |
+| 2026-09-11 | Surfaces nommées par rang dans la palette, ordonnées par adhérence, jamais par matière | Transposition entre environnements ; l'asphalte n'est qu'un habillage   |
 
 ### 11.2 Questions ouvertes
 
