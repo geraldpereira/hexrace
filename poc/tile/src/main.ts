@@ -1,15 +1,51 @@
-import { petitAnneau, trackErrors, turnKind } from './model';
+import { drawTrackMap } from './map2d';
+import type { Track } from './model';
+import {
+    closureError,
+    hexagone,
+    ligne,
+    overlapErrors,
+    petitAnneau,
+    placeTrack,
+    recoupe,
+    trackErrors,
+    triangle,
+} from './model';
 
-// Placeholder tant qu'il n'y a pas de vue : on affiche la piste du croquis en texte.
+const tracks: Track[] = [petitAnneau, triangle, hexagone, ligne, recoupe];
+
 const app = document.querySelector<HTMLDivElement>('#app');
 if (app) {
-    const errors = trackErrors(petitAnneau);
-    const lines = petitAnneau.tiles.map(
-        (tile, i) =>
-            `${String(i).padStart(2)}  sortie ${String(tile.exit).padStart(2)}  ${turnKind(tile.exit).padEnd(8)}` +
-            `  pos ${tile.profile.position}  piste ${tile.profile.roadWidth}  h ${tile.profile.height}`,
-    );
-    app.innerHTML = `<h1>${petitAnneau.name}</h1><pre>${lines.join('\n')}</pre><p>${
-        errors.length === 0 ? 'Piste valide.' : errors.join('<br>')
-    }</p>`;
+    app.innerHTML = `
+        <label>Piste <select id="track"></select></label>
+        <p id="status"></p>
+        <canvas id="map" width="900" height="600"></canvas>
+    `;
+    const select = app.querySelector<HTMLSelectElement>('#track');
+    const status = app.querySelector<HTMLParagraphElement>('#status');
+    const canvas = app.querySelector<HTMLCanvasElement>('#map');
+    if (!select || !status || !canvas) throw new Error('page incomplète');
+
+    tracks.forEach((track, i) => {
+        select.add(new Option(track.name, String(i)));
+    });
+
+    const show = (): void => {
+        const track = tracks[Number(select.value)];
+        if (!track) return;
+        const placement = placeTrack(track);
+        const errors = [
+            ...trackErrors(track),
+            ...overlapErrors(placement),
+            ...(closureError(track, placement) ? [closureError(track, placement) ?? ''] : []),
+        ];
+        status.textContent =
+            errors.length === 0
+                ? `${track.mode} · ${track.tiles.length} tuiles · valide`
+                : errors.join(' ; ');
+        status.style.color = errors.length === 0 ? '#86efac' : '#fca5a5';
+        drawTrackMap(canvas, placement);
+    };
+    select.addEventListener('change', show);
+    show();
 }

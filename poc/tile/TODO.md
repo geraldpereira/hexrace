@@ -15,10 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Placement.** Une liste ordonnée de tuiles devient des positions et des orientations dans le
-      monde, sans aucune position dans les données (2.6, 5.4). Grille côté plat vers l'avant, côté de
-      8 unités. À valider d'abord sur une **carte 2D vue du dessus** (canvas), avant toute 3D : la
-      boucle de douze tuiles du croquis 5 doit se refermer exactement.
 - [ ] **Maillage plat d'une tuile.** Piste, bas-côtés et paysage en zones colorées, sans hauteur ni
       variation, profil identique en entrée et en sortie. Rendu three.js d'une piste entière.
 - [ ] **Changements au milieu de la tuile.** Largeur, position et types différents entre l'entrée et
@@ -82,3 +78,12 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   sortie, comme une ligne du croquis 6 ; `Track` = en-tête + liste ordonnée, le profil d'entrée d'une
   tuile étant celui de sortie de la précédente (2.6 tenue par construction), la tuile de départ
   entrant par la sortie de la dernière en boucle. Le Petit Anneau du croquis en fixture, 18 tests.
+- **Placement** (`placement.ts`, `layout.ts`, `map2d.ts`). Grille axiale entière côté plat vers
+  l'avant, orientation = direction de la face 12 en rang horaire depuis le nord ; la tuile suivante
+  est la voisine derrière la face de sortie, orientée dans la direction de sortie. Fermeture d'une
+  boucle et tuiles superposées détectées avec un message en clair. Passage aux unités du monde
+  (côté 8, apothème 4√3), repères de face vus par le conducteur, test que la face de sortie d'une
+  tuile coïncide point par point avec la face d'entrée de la suivante. Carte 2D sur canvas avec
+  cinq fixtures (Petit Anneau, Triangle, Hexagone, Ligne droite, Recoupe) : le Petit Anneau se
+  referme exactement et reproduit le croquis 5. La transition au milieu de la tuile y est un simple
+  quadrilatère, à faire proprement dans la géométrie 3D, surtout en virage serré.
