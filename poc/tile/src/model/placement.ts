@@ -4,6 +4,7 @@ import type { Profile } from './profile';
 import type { Tile } from './tile';
 import type { Track } from './track';
 import { entryProfile, isClosed } from './track';
+import { faceSlopes } from './slope';
 
 /**
  * Placement d'une piste sur la grille (spec 2.6, 5.4) : une liste ordonnée de tuiles devient des
@@ -70,6 +71,9 @@ export interface PlacedTile extends Pose {
     readonly index: number;
     readonly tile: Tile;
     readonly entry: Profile;
+    /** Pentes de la piste aux faces d'entrée et de sortie, déduites des tuiles voisines (voir slope.ts). */
+    readonly entrySlope: number;
+    readonly exitSlope: number;
 }
 
 export interface Placement {
@@ -83,9 +87,17 @@ export const ORIGIN: Pose = { cell: { q: 0, r: 0 }, heading: 0 };
 /** Place les tuiles l'une après l'autre à partir de `start`, la première tuile pointant au nord. */
 export function placeTrack(track: Track, start: Pose = ORIGIN): Placement {
     const tiles: PlacedTile[] = [];
+    const slopes = faceSlopes(track);
     let pose = start;
     track.tiles.forEach((tile, index) => {
-        tiles.push({ ...pose, index, tile, entry: entryProfile(track, index) });
+        tiles.push({
+            ...pose,
+            index,
+            tile,
+            entry: entryProfile(track, index),
+            entrySlope: slopes[index] ?? 0,
+            exitSlope: slopes[index + 1] ?? 0,
+        });
         pose = {
             cell: neighbor(pose.cell, exitHeading(pose.heading, tile.exit)),
             heading: exitHeading(pose.heading, tile.exit),
@@ -108,6 +120,29 @@ export function closureError(track: Track, placement: Placement): string | null 
         `la boucle ne se referme pas : après la dernière tuile on arrive en (${cell.q}, ${cell.r}) ` +
         `orienté ${heading}, le départ est en (${first.cell.q}, ${first.cell.r}) orienté ${first.heading}`
     );
+}
+
+/** Index de la première tuile posée sur une case déjà occupée, ou null si la piste ne se recoupe pas. */
+export function firstOverlap(placement: Placement): number | null {
+    const seen = new Set<string>();
+    for (const placed of placement.tiles) {
+        const key = cellKey(placed.cell);
+        if (seen.has(key)) return placed.index;
+        seen.add(key);
+    }
+    return null;
+}
+
+/** Ce qu'on peut construire d'une piste qui se recoupe : les tuiles jusqu'à la première fautive exclue. */
+export function validPrefix(placement: Placement): Placement {
+    const index = firstOverlap(placement);
+    if (index === null) return placement;
+    const tiles = placement.tiles.slice(0, index);
+    const faulty = placement.tiles[index];
+    return {
+        tiles,
+        next: faulty ? { cell: faulty.cell, heading: faulty.heading } : placement.next,
+    };
 }
 
 /** Tuiles posées sur une case déjà occupée : la piste se recoupe (spec 5.5). */

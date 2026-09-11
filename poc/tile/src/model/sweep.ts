@@ -2,7 +2,8 @@ import type { ExitFace } from './face';
 import type { Vec2 } from './layout';
 import { SIDE, add, scale } from './layout';
 import type { TransitionSpan } from './path';
-import { DEFAULT_TRANSITION, axisParameter, transition, worldPath } from './path';
+import { DEFAULT_TRANSITION, axisParameter, pathLength, transition, worldPath } from './path';
+import { hermite } from './slope';
 import type { Heading, PlacedTile } from './placement';
 import { cellToWorld } from './layout';
 import { exitHeading } from './placement';
@@ -34,8 +35,11 @@ export interface TileSweep {
     readonly exit: ExitFace;
     readonly entry: Profile;
     readonly exitProfile: Profile;
-    /** Étendue de la transition ; celle de la spec par défaut. */
+    /** Étendue de la transition de largeur, de position et de types ; celle de la spec par défaut. */
     readonly transition?: TransitionSpan;
+    /** Pentes aux faces, en unités de hauteur par unité d'axe ; nulles par défaut (tuile isolée). */
+    readonly entrySlope?: number;
+    readonly exitSlope?: number;
 }
 
 const EPSILON = 1e-3;
@@ -48,6 +52,8 @@ export function tileSweep(placed: PlacedTile, transition?: TransitionSpan): Tile
         exit: placed.tile.exit,
         entry: placed.entry,
         exitProfile: placed.tile.profile,
+        entrySlope: placed.entrySlope,
+        exitSlope: placed.exitSlope,
         ...(transition ? { transition } : {}),
     };
 }
@@ -107,10 +113,22 @@ function normalize(v: Vec2): Vec2 {
 /** Une unité de hauteur de profil (spec 2.1), en unités du monde. À confirmer en roulant (POC 3). */
 export const HEIGHT_UNIT = 1;
 
-/** Hauteur de l'axe à l'avancement `s`, interpolée de l'entrée à la sortie avec la transition lissée. */
+/**
+ * Hauteur de l'axe à l'avancement `s` : cubique de Hermite entre les hauteurs des deux faces, avec
+ * les pentes déduites des tuiles voisines (slope.ts). Pentes nulles = smoothstep, l'ancien
+ * comportement. La hauteur ne dépend pas de l'étendue de transition, réservée à la largeur, à la
+ * position et aux types.
+ */
 export function heightOfS(sweep: TileSweep, s: number): number {
-    const t = transition(s, sweep.transition ?? DEFAULT_TRANSITION);
-    return (sweep.entry.height + (sweep.exitProfile.height - sweep.entry.height) * t) * HEIGHT_UNIT;
+    const length = pathLength(sweep.exit);
+    const h = hermite(
+        sweep.entry.height,
+        (sweep.entrySlope ?? 0) * length,
+        sweep.exitProfile.height,
+        (sweep.exitSlope ?? 0) * length,
+        Math.min(1, Math.max(0, s)),
+    );
+    return h * HEIGHT_UNIT;
 }
 
 /**

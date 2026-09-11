@@ -146,7 +146,7 @@ Pas fixe pour la physique, rendu à la fréquence de l'écran, interpolation ent
   *Implémentation des règles [F 2.6] et [F 5.5] : jonctions, départ et arrivée, auto-intersection, fermeture en Track. Où elle s'exécute (éditeur, générateur, chargement).*
 - 3.5 Géométrie d'une tuile
   *Comment on construit le maillage d'une tuile depuis ses paramètres : piste, bas-côtés, paysage, transition au milieu, pente. Partage des sommets aux jonctions.*
-  <TODO> Une forte déclivité suivie d'une tuile plate fait une arête au milieu de la tuile plate, là où la pente s'arrête : à la jonction les hauteurs coïncident mais pas les pentes. Regarder dans le POC 2 si l'arête se voit, dans le POC 3 si elle gêne la conduite ; les remèdes possibles sont un arrondi de la transition ou une borne sur l'écart de déclivité entre deux tuiles consécutives.
+  *Réglé dans le POC 2 : la hauteur est une cubique de Hermite par tuile dont les pentes aux faces sont déduites des tuiles voisines (méthode de Steffen) ; les deux tuiles d'une jonction calculent la même pente, donc pas d'arête, et une tuile plate qui suit une pente reste plate.*
 - 3.6 Obstacles
   *Modèle de données (emprise en unités le long de la piste), modèle physique, modèle visuel, et comment l'environnement les habille [F 2.4].*
 - 3.7 Environnements et surfaces

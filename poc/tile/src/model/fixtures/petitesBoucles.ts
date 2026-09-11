@@ -64,3 +64,24 @@ export const recoupe: Track = {
     mode: 'rally',
     tiles: [tile(2), tile(2), tile(2), tile(2), tile(2), tile(2), tile(12)],
 };
+
+/**
+ * Une ligne droite pour juger le relief seul : montée régulière sur trois tuiles, crête et descente
+ * immédiate, plat, puis creux et remontée. La pente à chaque face se déduit des tuiles voisines.
+ */
+export const relief: Track = {
+    id: 'europe-relief-01',
+    name: 'Relief',
+    environment: 'europe',
+    mode: 'rally',
+    tiles: [3, 4, 5, 6, 5, 4, 4, 5, 6].map((height, i) =>
+        tile(12, {
+            height,
+            position: 3,
+            roadWidth: 2,
+            leftShoulder: 1,
+            rightShoulder: 1,
+            road: i < 4 ? 1 : 2,
+        }),
+    ),
+};

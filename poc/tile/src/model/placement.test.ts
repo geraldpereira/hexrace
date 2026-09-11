@@ -6,10 +6,12 @@ import {
     HEADING_OFFSETS,
     closureError,
     exitHeading,
+    firstOverlap,
     neighbor,
     overlapErrors,
     placeTrack,
     turnHeading,
+    validPrefix,
 } from './placement';
 
 describe('placement', () => {
@@ -73,10 +75,15 @@ describe('placement', () => {
         );
     });
 
-    it('voit une tuile posée sur une autre', () => {
-        expect(overlapErrors(placeTrack(recoupe))).toEqual([
-            'la tuile 6 recouvre la tuile 0 en (0,0)',
-        ]);
+    it('voit une tuile posée sur une autre et sait s’arrêter avant', () => {
+        const placement = placeTrack(recoupe);
+        expect(overlapErrors(placement)).toEqual(['la tuile 6 recouvre la tuile 0 en (0,0)']);
+        expect(firstOverlap(placement)).toBe(6);
+        const prefix = validPrefix(placement);
+        expect(prefix.tiles).toHaveLength(6);
+        expect(prefix.next).toEqual({ cell: { q: 0, r: 0 }, heading: 0 });
+        expect(firstOverlap(placeTrack(petitAnneau))).toBeNull();
+        expect(validPrefix(placeTrack(petitAnneau)).tiles).toHaveLength(12);
     });
 
     it('donne à chaque tuile posée son profil d’entrée', () => {

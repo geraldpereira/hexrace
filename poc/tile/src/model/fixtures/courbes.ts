@@ -22,8 +22,8 @@ const base: Profile = {
     landscape: 1,
 };
 
-function tile(exit: ExitFace, position: number): Tile {
-    return { exit, profile: { ...base, position } };
+function tile(exit: ExitFace, position: number, height = base.height): Tile {
+    return { exit, profile: { ...base, position, height } };
 }
 
 export const courbes: Track = {
@@ -41,15 +41,15 @@ export const courbes: Track = {
         tile(10, 5), // gauche qui s'ouvre
         tile(10, 5), // gauche large constante, rayon 13,5
         tile(12, 2), // ligne droite avec décalage de 5 à 2
-        tile(2, 2), // grand virage à droite sur deux tuiles, 120° au rayon 13,5
-        tile(2, 2),
-        tile(12, 3), // ligne droite, recentrage
-        tile(10, 3), // chicane gauche-droite près du centre de la face, rayon 12
-        tile(2, 3),
-        tile(12, 2), // recentrage à gauche sur une droite
-        tile(10, 3), // gauche qui s'ouvre progressivement : une unité par tuile
-        tile(10, 4),
-        tile(10, 5),
-        tile(12, 5),
+        tile(2, 2, 4), // grand virage à droite sur deux tuiles, 120° au rayon 13,5, et montée
+        tile(2, 2, 5), // d'une unité par tuile sur trois tuiles
+        tile(12, 3, 6), // ligne droite, recentrage, fin de la montée
+        tile(10, 3, 6), // chicane gauche-droite près du centre de la face, rayon 12
+        tile(2, 3, 6),
+        tile(12, 2, 6), // recentrage à gauche sur une droite
+        tile(10, 3, 5), // gauche qui s'ouvre progressivement : une unité par tuile, en descente
+        tile(10, 4, 4),
+        tile(10, 5, 3),
+        tile(12, 5, 3),
     ],
 };

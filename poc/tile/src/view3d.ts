@@ -32,6 +32,8 @@ const SKIRT_COLOR = '#292524';
 export interface View3d {
     setPlacement(placement: Placement, transition?: TransitionSpan): void;
     setEdges(visible: boolean): void;
+    /** Caméra en hauteur au sud de la piste, ou au ras du sol à l'est pour lire le relief de profil. */
+    lookFrom(where: 'above' | 'side'): void;
     resize(): void;
 }
 
@@ -114,10 +116,18 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
             ),
         );
 
-        const center = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3());
+        bounds.copy(box);
+        lookFrom('above');
+    };
+
+    const bounds = new THREE.Box3();
+    const lookFrom = (where: 'above' | 'side'): void => {
+        const center = bounds.getCenter(new THREE.Vector3());
+        const size = bounds.getSize(new THREE.Vector3());
         const distance = Math.max(size.x, size.z, SIDE * 4) * 0.9;
-        camera.position.set(center.x, distance * 0.8, center.z + distance * 0.8);
+        if (where === 'above')
+            camera.position.set(center.x, distance * 0.8, center.z + distance * 0.8);
+        else camera.position.set(center.x + distance * 1.1, center.y + distance * 0.12, center.z);
         controls.target.copy(center);
         controls.update();
     };
@@ -135,7 +145,7 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
     };
     resize();
     loop();
-    return { setPlacement, setEdges, resize };
+    return { setPlacement, setEdges, lookFrom, resize };
 }
 
 type HeightAt = (p: SPoint) => number;

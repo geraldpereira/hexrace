@@ -11,13 +11,24 @@ import {
     placeTrack,
     placedObstacleErrors,
     recoupe,
+    relief,
     trackErrors,
     transitionOfExtent,
     triangle,
+    validPrefix,
 } from './model';
 import { createView3d } from './view3d';
 
-const tracks: Track[] = [petitAnneau, triangle, hexagone, ligne, recoupe, courbes, catalogue];
+const tracks: Track[] = [
+    petitAnneau,
+    triangle,
+    hexagone,
+    ligne,
+    relief,
+    recoupe,
+    courbes,
+    catalogue,
+];
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (app) {
@@ -28,6 +39,7 @@ if (app) {
                 <input id="extent" type="range" min="0.2" max="1" step="0.1" value="0.4" style="vertical-align:middle" /></label>
             <label><input id="edges" type="checkbox" /> Contours des tuiles</label>
             <label><input id="showMap" type="checkbox" checked /> Carte 2D</label>
+            <span>Vue <button id="above" type="button">Dessus</button> <button id="side" type="button">Profil</button></span>
             <p id="status"></p>
         </div>
         <div id="stage">
@@ -43,7 +55,20 @@ if (app) {
     const extentValue = app.querySelector<HTMLOutputElement>('#extentValue');
     const edges = app.querySelector<HTMLInputElement>('#edges');
     const showMap = app.querySelector<HTMLInputElement>('#showMap');
-    if (!select || !status || !map || !gl || !extent || !extentValue || !edges || !showMap) {
+    const above = app.querySelector<HTMLButtonElement>('#above');
+    const side = app.querySelector<HTMLButtonElement>('#side');
+    if (
+        !select ||
+        !status ||
+        !map ||
+        !gl ||
+        !extent ||
+        !extentValue ||
+        !edges ||
+        !showMap ||
+        !above ||
+        !side
+    ) {
         throw new Error('page incomplète');
     }
 
@@ -72,7 +97,8 @@ if (app) {
         extentValue.value = String(Math.round(Number(extent.value) * 100));
         const transition = transitionOfExtent(Number(extent.value));
         drawTrackMap(map, placement, transition);
-        view.setPlacement(placement, transition);
+        // La 3D ne construit que ce qui est valide : jusqu'à la première tuile qui en recouvre une autre.
+        view.setPlacement(validPrefix(placement), transition);
     };
     const fromHash = tracks.findIndex((track) => `#${track.id}` === window.location.hash);
     if (fromHash >= 0) select.value = String(fromHash);
@@ -83,6 +109,12 @@ if (app) {
     });
     showMap.addEventListener('change', () => {
         map.hidden = !showMap.checked;
+    });
+    above.addEventListener('click', () => {
+        view.lookFrom('above');
+    });
+    side.addEventListener('click', () => {
+        view.lookFrom('side');
     });
     window.addEventListener('resize', () => {
         view.resize();

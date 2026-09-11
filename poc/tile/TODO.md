@@ -66,6 +66,11 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       montré qu'à 40 % de la tuile un décalage de 3 unités en virage fait une chicane et qu'à 100 %
       les mêmes tuiles donnent des courbes régulières. Valeur par environnement à régler en roulant
       (POC 3) ; le curseur de la page reste pour comparer.
+- [x] **Pente aux faces.** Tranchée sans toucher au fichier de piste : la pente à une face se déduit
+      des deux tuiles qui s'y touchent (spline cubique monotone, méthode de Steffen), et la hauteur
+      dans la tuile est une cubique de Hermite. Montée régulière = rampe rectiligne, tuile plate =
+      plate, pente nulle aux bouts d'une piste ouverte et là où la piste change de sens ; jamais
+      d'arête. Spec 2.3 et 2.2 mises à jour, TODO technique 3.5 fermé.
 - [ ] **Densité de sommets** pour que le balayage soit propre en flat shading, surtout en épingle
       (rayon 4, axe de 8,4 unités) : 24 échantillons par tuile aujourd'hui, quelques facettes sombres
       visibles sur la piste d'une épingle qui change de hauteur.
@@ -145,3 +150,15 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   quadrilatères ne relient que deux tranches voisines. Un hazard est de niveau à la hauteur de son
   centre, une bande d'obstacle prend la hauteur de chaque échantillon. `tileHeightAt` (par
   reprojection) reste pour les requêtes ponctuelles du POC 3.
+- **Piste qui se recoupe** : la 3D ne construit que les tuiles jusqu'à la première qui en recouvre
+  une autre (`validPrefix`), comme le fera l'éditeur qui refuse la tuile ; la carte 2D montre tout
+  pour le diagnostic. Plus de scintillement sur la fixture Recoupe.
+- **Relief dans les fixtures** : Courbes monte d'une unité par tuile sur les tuiles 9 à 11 et
+  redescend sur 15 à 17 ; Catalogue monte sur 1 à 3 et redescend sur 12 à 14. Les marches entre
+  tuiles voisines par le côté y apparaissent comme des fentes sombres dans le paysage.
+- **Pente déduite des voisines** (`slope.ts`). `faceSlopes` donne la pente à chaque face d'une piste
+  (Steffen), portée par les tuiles posées et utilisée par `heightOfS` (Hermite). Fixture Relief :
+  ligne droite qui monte sur trois tuiles, crête et descente immédiate, plat, creux et remontée ;
+  vue de profil, une seule courbe lisse sans palier. Boutons de vue « Dessus » et « Profil » dans la
+  page. La hauteur ne dépend plus de l'étendue de transition, réservée à la largeur, la position et
+  les types.

@@ -102,7 +102,7 @@ Une tuile est **transposable** d'un environnement à l'autre : sa géométrie ne
 **Ce qu'un environnement définit** :
 
 - pour chacun de ses huit types de surface : adhérence longitudinale et latérale, freinage, effet sur la vitesse de pointe, grain, et l'apparence (voir 3.4 et 8.2) ;
-- l'**étendue de la transition** dans une tuile (voir 2.3 et 2.6) : la fraction de l'axe sur laquelle largeur, position, types et hauteur passent du profil d'entrée au profil de sortie. Le POC 2 montre qu'une transition sur toute la tuile donne des courbes régulières là où une transition sur la bande centrale fait des chicanes ; la valeur par environnement se règle en roulant ;
+- l'**étendue de la transition** dans une tuile (voir 2.6) : la fraction de l'axe sur laquelle largeur, position et types passent du profil d'entrée au profil de sortie. La hauteur ne dépend pas de ce réglage, elle suit la courbe de 2.3. Le POC 2 montre qu'une transition sur toute la tuile donne des courbes régulières là où une transition sur la bande centrale fait des chicanes ; la valeur par environnement se règle en roulant ;
 - l'habillage de chaque obstacle (voir 2.4).
 
 <TODO> Lister les trois pistes, trois bas-côtés et deux paysages de chaque environnement, et pour chacun ce que le joueur doit ressentir. Le POC 1 sert précisément à trouver ces valeurs.
@@ -111,7 +111,7 @@ Une tuile est **transposable** d'un environnement à l'autre : sa géométrie ne
 
 Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 
-- Deux tuiles consécutives se raccordent à la même hauteur (voir 2.6). Le changement de hauteur se fait **à l'intérieur de la tuile**, sur l'étendue de transition de l'environnement (voir 2.2), par une pente lissée aux deux bouts ; si l'étendue est plus courte que la tuile, un palier à la hauteur d'entrée précède la pente et un palier à la hauteur de sortie la suit.
+- Deux tuiles consécutives se raccordent à la même hauteur (voir 2.6). Le long de la piste, la hauteur suit une **courbe lisse qui passe par la hauteur de chaque face** ; la pente à une face n'est pas écrite dans les données, elle se **déduit des deux tuiles qui s'y touchent** (spline cubique monotone). Ainsi une montée d'une unité par tuile sur plusieurs tuiles est une rampe rectiligne et non une suite de paliers, une tuile plate reste plate, la pente est nulle là où la piste change de sens de pente et aux deux bouts d'une piste ouverte, et il n'y a jamais d'arête à une jonction puisque les deux tuiles calculent la même pente.
 - Les sauts se font sur des **rampes** et des **dos d'âne** posés comme obstacles sur la piste, pas par le relief des tuiles.
 - La hauteur n'est fixée que sur les faces d'entrée et de sortie. Deux tuiles qui se touchent par une face latérale sans y être reliées par la piste peuvent y avoir des hauteurs différentes : il en résulte une **marche dans le paysage**, acceptée comme relief. Une marche n'est jamais admise **sur la piste ni sur les bas-côtés**, ce que garantit déjà la règle d'assemblage 2.6.
 
@@ -627,6 +627,7 @@ Par ordre d'envie :
 | 2026-09-11 | Étendue de la transition dans une tuile = paramètre d'environnement                | Comme les grips ; toute la tuile lisse les courbes, à régler en roulant     |
 | 2026-09-11 | Surfaces nommées par rang dans la palette, ordonnées par adhérence, jamais par matière | Transposition entre environnements ; l'asphalte n'est qu'un habillage   |
 | 2026-09-11 | Marches acceptées dans le paysage entre tuiles voisines par le côté, jamais sur la piste ni les bas-côtés | Le modèle ne fixe la hauteur qu'aux faces d'entrée et de sortie ; c'est du relief |
+| 2026-09-11 | Hauteur le long de la piste = spline monotone par les faces, pente déduite des voisines       | Une montée régulière est une rampe, pas des paliers ; rien de plus dans le fichier |
 
 ### 11.2 Questions ouvertes
 
