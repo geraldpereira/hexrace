@@ -15,10 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Hauteur et pente.** Hauteur d'entrée et de sortie, pente au milieu (2.3). Sommets partagés à
-      la jonction, aucune couture ni trou visible en caméra libre. C'est ici qu'on regarde la
-      question de la spec technique (1.4, `<GPE>`) : une forte déclivité suivie d'une tuile plate
-      fait une arête ; on la voit ici, on la conduira dans le POC suivant.
 - [ ] **Environnement.** Un objet par environnement : palette de huit types nommés par rang (piste 1 à
       3, bas-côté 1 à 3, paysage 1 à 2, ordonnés par adhérence décroissante), couleurs pour la carte,
       étendue de la transition. Le balayage lit l'étendue dans l'environnement de la piste au lieu du
@@ -71,7 +67,13 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       les mêmes tuiles donnent des courbes régulières. Valeur par environnement à régler en roulant
       (POC 3) ; le curseur de la page reste pour comparer.
 - [ ] **Densité de sommets** pour que le balayage soit propre en flat shading, surtout en épingle
-      (rayon 4, axe de 8,4 unités).
+      (rayon 4, axe de 8,4 unités) : 24 échantillons par tuile aujourd'hui, quelques facettes sombres
+      visibles sur la piste d'une épingle qui change de hauteur.
+- [ ] **Falaises entre tuiles voisines par le côté.** Le modèle ne fixe la hauteur que sur les faces
+      d'entrée et de sortie ; deux tuiles qui se touchent par une face latérale sans y être reliées
+      par la route peuvent y avoir des hauteurs différentes, d'où une marche dans le paysage. Les
+      jupes la rendent lisible, mais le générateur et la validation (5.5) devront soit l'interdire,
+      soit l'accepter comme relief.
 
 ## Fait
 
@@ -125,3 +127,14 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   tuiles en option, carte 2D en médaillon qui utilise les mêmes polygones. Aucune couture visible
   entre tuiles sur le Petit Anneau ni le Catalogue. Les changements de largeur, de position et de
   type au milieu de la tuile viennent du balayage, rien de plus à faire pour eux.
+- **Hauteur et pente.** Tout point d'une tuile prend la hauteur de l'axe au point le plus proche
+  (`axisParameter`), interpolée de l'entrée à la sortie avec la même transition lissée que le
+  profil : sur une face, tous les points ont la hauteur du profil, les tuiles voisines par la route
+  se raccordent exactement, et la pente est nulle aux faces donc **pas d'arête à la jonction**,
+  la question de la spec technique 1.4 est réglée par construction. Le paysage est découpé en
+  bandes le long des lignes d'égale hauteur (perpendiculaires à l'axe, rayons en virage), avec un
+  échantillon par sommet de l'hexagone, ce qui recouvre l'hexagone exactement et évite les grands
+  triangles vrillés. Au sommet commun d'une épingle, la hauteur est ambiguë (il appartient aux deux
+  faces) : le paysage intérieur s'arrête à 0,01 unité du sommet. Jupes verticales sous le contour
+  jusqu'à deux unités sous la tuile la plus basse, obstacles en prismes qui suivent la pente.
+  Une unité de hauteur = une unité de largeur, à confirmer en roulant.

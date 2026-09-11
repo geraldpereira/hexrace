@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EXIT_FACES } from './face';
-import { HEX_AREA, polygonArea, tilePolygons } from './geometry';
-import { cellToWorld } from './layout';
+import { APEX_RADIUS, HEX_AREA, polygonArea, tileBoundary, tilePolygons } from './geometry';
+import { APOTHEM, SIDE, cellToWorld } from './layout';
 import type { Heading } from './placement';
 import type { Profile } from './profile';
 import type { TileSweep } from './sweep';
@@ -72,7 +72,7 @@ describe('polygones d’une tuile', () => {
         expect(tilePolygons(sweep).filter((p) => p.zone === 'shoulder')).toHaveLength(0);
     });
 
-    it('réduit un paysage au seul sommet commun en épingle', () => {
+    it('laisse un trou minuscule au sommet commun en épingle, jamais le sommet lui-même', () => {
         const sweep: TileSweep = {
             center: { x: 0, y: 0 },
             heading: 0,
@@ -80,10 +80,35 @@ describe('polygones d’une tuile', () => {
             entry: wideLeft,
             exitProfile: wideLeft,
         };
-        const right = tilePolygons(sweep, 8).find(
+        const vertex = { x: 4, y: -APOTHEM };
+        const inner = tilePolygons(sweep, 8).filter(
             (p) => p.zone === 'landscape' && p.side === 'right',
         );
-        // 9 échantillons du bord droit du bloc + 1 sommet.
-        expect(right?.points).toHaveLength(10);
+        expect(inner.length).toBeGreaterThan(0);
+        for (const poly of inner) {
+            for (const p of poly.points) {
+                const d = Math.hypot(p.x - vertex.x, p.y - vertex.y);
+                expect(d).toBeGreaterThan(APEX_RADIUS - 1e-9);
+            }
+        }
+    });
+
+    it('donne un contour qui suit exactement l’hexagone, sommets compris', () => {
+        for (const exit of EXIT_FACES) {
+            const sweep: TileSweep = {
+                center: { x: 0, y: 0 },
+                heading: 2,
+                exit,
+                entry: wideLeft,
+                exitProfile: narrowRight,
+            };
+            const boundary = tileBoundary(sweep);
+            expect(Math.abs(Math.abs(polygonArea(boundary)) - HEX_AREA) / HEX_AREA).toBeLessThan(
+                1e-4,
+            );
+            for (const p of boundary) {
+                expect(Math.hypot(p.x, p.y)).toBeLessThanOrEqual(SIDE + 1e-6);
+            }
+        }
     });
 });

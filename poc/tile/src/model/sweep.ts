@@ -2,7 +2,7 @@ import type { ExitFace } from './face';
 import type { Vec2 } from './layout';
 import { SIDE, add, scale } from './layout';
 import type { TransitionSpan } from './path';
-import { DEFAULT_TRANSITION, transition, worldPath } from './path';
+import { DEFAULT_TRANSITION, axisParameter, transition, worldPath } from './path';
 import type { Heading, PlacedTile } from './placement';
 import { cellToWorld } from './layout';
 import { exitHeading } from './placement';
@@ -102,4 +102,18 @@ function lerp(a: number, b: number, t: number): number {
 function normalize(v: Vec2): Vec2 {
     const length = Math.hypot(v.x, v.y);
     return length === 0 ? { x: 0, y: 1 } : { x: v.x / length, y: v.y / length };
+}
+
+/** Une unité de hauteur de profil (spec 2.1), en unités du monde. À confirmer en roulant (POC 3). */
+export const HEIGHT_UNIT = 1;
+
+/**
+ * Hauteur du terrain en un point quelconque de la tuile : celle de l'axe au point le plus proche,
+ * interpolée de l'entrée à la sortie avec la transition lissée. Sur une face, tous les points ont
+ * la hauteur du profil, donc deux tuiles voisines par la route se raccordent exactement.
+ */
+export function tileHeightAt(sweep: TileSweep, p: Vec2): number {
+    const s = axisParameter(sweep.center, sweep.heading, sweep.exit, p);
+    const t = transition(s, sweep.transition ?? DEFAULT_TRANSITION);
+    return (sweep.entry.height + (sweep.exitProfile.height - sweep.entry.height) * t) * HEIGHT_UNIT;
 }

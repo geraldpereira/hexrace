@@ -115,6 +115,41 @@ export function lerpSpan(
     return [entry[0] + (exit[0] - entry[0]) * t, entry[1] + (exit[1] - entry[1]) * t];
 }
 
+/** Inverse de `rotate` : ramène un vecteur du monde dans le repère local d'une tuile orientée `heading`. */
+export function unrotate(v: Vec2, heading: Heading): Vec2 {
+    return rotate(v, ((6 - heading) % 6) as Heading);
+}
+
+/**
+ * Paramètre `s` du point de l'axe le plus proche d'un point du repère local. Sert à donner une
+ * hauteur à n'importe quel point de la tuile, paysage compris. Au sommet d'une épingle, tous les
+ * points de l'axe sont à égale distance : on rend 0,5.
+ */
+export function localAxisParameter(exit: ExitFace, p: Vec2): number {
+    const turn = turnOf(exit);
+    if (turn === 0) return clamp01((p.y + APOTHEM) / (2 * APOTHEM));
+    const sweep = (Math.abs(turn) * Math.PI) / 3;
+    const radius = Math.abs(turn) === 1 ? WIDE_TURN_RADIUS : SHARP_TURN_RADIUS;
+    const side = Math.sign(turn);
+    const dx = p.x - side * radius;
+    const dy = p.y + APOTHEM;
+    if (Math.hypot(dx, dy) < 1e-9) return 0.5;
+    const start = side > 0 ? Math.PI : 0;
+    const period = (2 * Math.PI) / sweep;
+    let s = ((start - Math.atan2(dy, dx)) * side) / sweep;
+    s = ((s % period) + period) % period;
+    if (s > 1 + (period - 1) / 2) s -= period;
+    return clamp01(s);
+}
+
+export function axisParameter(center: Vec2, heading: Heading, exit: ExitFace, p: Vec2): number {
+    return localAxisParameter(exit, unrotate({ x: p.x - center.x, y: p.y - center.y }, heading));
+}
+
+function clamp01(value: number): number {
+    return Math.min(1, Math.max(0, value));
+}
+
 function rightOf(travel: Vec2): Vec2 {
     return { x: travel.y, y: -travel.x };
 }

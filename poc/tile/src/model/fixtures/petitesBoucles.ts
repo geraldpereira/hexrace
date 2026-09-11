@@ -24,7 +24,7 @@ export const triangle: Track = {
     name: 'Triangle',
     environment: 'africa',
     mode: 'track',
-    tiles: [tile(4), tile(4), tile(4)],
+    tiles: [tile(4), tile(4, { height: 4 }), tile(4)],
 };
 
 export const hexagone: Track = {
@@ -48,7 +48,12 @@ export const ligne: Track = {
     name: 'Ligne droite',
     environment: 'europe',
     mode: 'rally',
-    tiles: [tile(12), tile(12, { roadWidth: 1, position: 4, leftShoulder: 0 }), tile(12), tile(12)],
+    tiles: [
+        tile(12),
+        tile(12, { roadWidth: 1, position: 4, leftShoulder: 0, height: 4 }),
+        tile(12, { height: 7 }),
+        tile(12, { height: 7 }),
+    ],
 };
 
 /** Six virages larges puis une droite : la septième tuile retombe sur la première. */
