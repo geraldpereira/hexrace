@@ -31,6 +31,6 @@ Clavier : `W` accélérer, `S` freiner / marche arrière, `A` / `D` ou flèches 
 - Tenue de route sur la piste, sous-virage / survirage au frein à main.
 - Sauts et réception (suspension longue course, barres anti-roulis).
 - Revêtements : asphalte, gravier, terre, boue (`src/rally/terrain/surfaces.ts`). Chaque revêtement a ses
-  courbes de friction, sa résistance au roulement, sa traînée et son grain procédural (bruit de force
-  vertical sous chaque roue). La carte des surfaces se règle dans le dossier Terrain du panneau debug,
+  courbes de friction, sa résistance au roulement, sa traînée et son grain procédural (bosses virtuelles
+  sous chaque roue, injectées dans la précharge de suspension, et force latérale bruitée). La carte des surfaces se règle dans le dossier Terrain du panneau debug,
   les revêtements eux-mêmes dans le dossier Surfaces.

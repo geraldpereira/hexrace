@@ -1,17 +1,5 @@
 # TODO — POC voiture
 
-## Grain procédural (revêtements)
-
-Force bruitée appliquée au point de contact de chaque roue, échantillonnée sur la distance parcourue
-(`CarBehavior.applySurfaceForces`). Longueur d'onde et composantes verticale / latérale par
-revêtement, curseurs dans le dossier Surfaces.
-
-- [x] **Longueur d'onde par revêtement.** `Surface.wavelength` : gravier court (0,3 m, vibration),
-      terre long (1,5 m, ornières), boue très long (3 m).
-- [x] **Composante latérale.** `Surface.lateralRoughness`, force horizontale le long de l'axe
-      latéral de la roue, bruit décalé pour ne pas être corrélé au vertical.
-- [ ] **À doser en jeu.** Les valeurs par défaut sont un premier jet, à régler manette en main.
-
 ## Conduite plus arcade
 
 Assistances à insérer entre l'entrée manette et Jolt, chacune avec un curseur debug pour la doser.

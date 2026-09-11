@@ -14,11 +14,17 @@ export interface Surface {
     rollingDamping: number;
     /** Horizontal drag on the chassis per wheel in contact, in N per m/s. */
     drag: number;
-    /** Vertical force noise at each wheel, as a fraction of its static load at the reference speed. */
-    roughness: number;
+    /**
+     * Height of the virtual bumps under each wheel, in metres (noise
+     * amplitude). Fed to the suspension as a preload and to the wheel mesh
+     * as an offset, so the wheel visibly rides over ground that isn't in
+     * the heightmap and the chassis reacts through the spring.
+     */
+    bumpHeight: number;
     /**
      * Sideways force noise at each wheel (perpendicular to its rolling
-     * direction), same unit as `roughness`. Ruts and stones tugging the car.
+     * direction), as a fraction of its static load at the reference speed.
+     * Ruts and stones tugging the car.
      */
     lateralRoughness: number;
     /** Distance between two grain bumps, in metres. Short = vibration, long = ruts. */
@@ -50,7 +56,7 @@ export const SURFACES: readonly Surface[] = [
         ],
         rollingDamping: 0.2,
         drag: 0,
-        roughness: 0,
+        bumpHeight: 0,
         lateralRoughness: 0,
         wavelength: 0.5,
     },
@@ -71,7 +77,7 @@ export const SURFACES: readonly Surface[] = [
         ],
         rollingDamping: 0.5,
         drag: 5,
-        roughness: 0.35,
+        bumpHeight: 0.02,
         lateralRoughness: 0.2,
         wavelength: 0.3,
     },
@@ -92,7 +98,7 @@ export const SURFACES: readonly Surface[] = [
         ],
         rollingDamping: 0.8,
         drag: 15,
-        roughness: 0.6,
+        bumpHeight: 0.05,
         lateralRoughness: 0.35,
         wavelength: 1.5,
     },
@@ -114,7 +120,7 @@ export const SURFACES: readonly Surface[] = [
         ],
         rollingDamping: 6.0,
         drag: 250,
-        roughness: 0.15,
+        bumpHeight: 0.03,
         lateralRoughness: 0.15,
         wavelength: 3,
     },

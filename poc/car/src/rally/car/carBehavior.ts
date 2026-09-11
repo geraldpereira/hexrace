@@ -39,11 +39,14 @@ const IDLE_BRAKE_SPEED_KMH = 5;
 // held gives the arcade "pull and flick" slide.
 const HAND_BRAKE_LATERAL_GRIP = 0.3;
 
-// Procedural surface grain: vertical and sideways force noise applied at
-// each wheel contact, sampled along the distance travelled (in surface
-// wavelengths) so a parked car is still. The amplitude ramps up with speed
-// and caps at twice the surface value. The two components read the noise
-// field far apart so they aren't correlated.
+// Procedural surface grain, sampled along the distance travelled (in
+// surface wavelengths) so a parked car is still. Vertical: a virtual bump
+// height pushed into the suspension preload (the spring acts as if the
+// ground had risen) and mirrored on the wheel mesh. A force couldn't do
+// this — at 5+ Hz even a full-load force moves a 1300 kg chassis by
+// millimetres. Lateral: a sideways force that ramps up with speed and caps
+// at twice the surface value. The two read the noise field far apart so
+// they aren't correlated.
 const ROUGHNESS_REF_SPEED = 10;
 const ROUGHNESS_MAX_SPEED_FACTOR = 2;
 const ROUGHNESS_WHEEL_OFFSET = 7.31;
@@ -83,6 +86,8 @@ export class CarBehavior extends Component {
     private travelled = 0;
     private readonly mass: number;
     private readonly wheelSurface: number[] = WHEEL_NAMES.map(() => -1);
+    /** Current virtual bump height under each wheel (m), applied to the wheel mesh. */
+    private readonly bump: number[] = WHEEL_NAMES.map(() => 0);
     private readonly wheels: JoltWheelWV[] = [];
     private readonly wheelRight: JoltVec3;
     private readonly wheelUp: JoltVec3;
@@ -219,7 +224,7 @@ export class CarBehavior extends Component {
         for (const i of REAR_WHEELS) this.applySurface(i);
     }
 
-    /** Drag and grain forces at each wheel contact. Returns true if anything was applied. */
+    /** Drag, grain bumps and grain forces at each wheel contact. Returns true if anything was applied. */
     private applySurfaceForces(speed: number): boolean {
         this.travelled += speed * PHYSICS_TIMESTEP;
         const lv = this.body.GetLinearVelocity();
@@ -233,17 +238,17 @@ export class CarBehavior extends Component {
             const surface = SURFACES[this.wheelSurface[i] ?? 0];
             if (!surface) continue;
             const drag = surface.drag;
-            let fy = 0;
             let fx = -drag * vx;
             let fz = -drag * vz;
+            let bump = 0;
             if (this.roughnessEnabled) {
-                const grain = loadPerWheel * speedFactor;
                 const phase = this.travelled / surface.wavelength;
                 const wheelOffset = i * ROUGHNESS_WHEEL_OFFSET;
-                fy = surface.roughness * grain * this.noise(wheelOffset, phase);
+                bump = surface.bumpHeight * this.noise(wheelOffset, phase);
                 const side =
                     surface.lateralRoughness *
-                    grain *
+                    loadPerWheel *
+                    speedFactor *
                     this.noise(wheelOffset + ROUGHNESS_LATERAL_OFFSET, phase);
                 if (side !== 0) {
                     // Horizontal part of the wheel's sideways axis: ruts pull
@@ -253,8 +258,13 @@ export class CarBehavior extends Component {
                     fz += side * lat.GetZ();
                 }
             }
-            if (fx === 0 && fy === 0 && fz === 0) continue;
-            this.tmpForce.Set(fx, fy, fz);
+            if (bump !== (this.bump[i] ?? 0)) {
+                this.bump[i] = bump;
+                wheel.GetSettings().mSuspensionPreloadLength = bump;
+                applied = true;
+            }
+            if (fx === 0 && fz === 0) continue;
+            this.tmpForce.Set(fx, 0, fz);
             this.body.AddForce(this.tmpForce, wheel.GetContactPosition());
             applied = true;
         }
@@ -289,7 +299,10 @@ export class CarBehavior extends Component {
         const t = this.constraint.GetWheelLocalTransform(index, this.wheelRight, this.wheelUp);
         const translation = t.GetTranslation();
         const rotation = t.GetRotation().GetQuaternion();
-        mesh.position.set(translation.GetX(), translation.GetY(), translation.GetZ());
+        // Lift the wheel by the virtual bump so it rides over ground the
+        // heightmap doesn't have; the suspension preload does the same physically.
+        const lift = this.bump[index] ?? 0;
+        mesh.position.set(translation.GetX(), translation.GetY() + lift, translation.GetZ());
         mesh.quaternion.set(rotation.GetX(), rotation.GetY(), rotation.GetZ(), rotation.GetW());
     }
 
@@ -510,7 +523,7 @@ export class CarBehavior extends Component {
                 this.reapplySurface(id);
             });
         f.add(surface, 'drag', 0, 500, 5).name('Drag (N per m/s)');
-        f.add(surface, 'roughness', 0, 2, 0.05).name('Roughness');
+        f.add(surface, 'bumpHeight', 0, 0.15, 0.005).name('Bump height (m)');
         f.add(surface, 'lateralRoughness', 0, 2, 0.05).name('Lateral roughness');
         f.add(surface, 'wavelength', 0.1, 5, 0.1).name('Grain wavelength (m)');
         addCurveEditor(f, {
