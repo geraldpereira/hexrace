@@ -17,8 +17,10 @@ Les trois premières d'abord, elles règlent l'essentiel sans changer le caract�
 - [ ] **4. Assistance au contre-braquage.** Au-delà d'un seuil d'angle de dérive du châssis, ajouter
       automatiquement une fraction du contre-braquage qui ramène les roues avant vers la direction
       de la vitesse. Dosable de 0 (sim) à 1 (drift auto-tenu). À n'activer que si 1-3 ne suffisent pas.
-- [ ] **5. Contrôle de traction.** Réduire le couple moteur quand le glissement longitudinal arrière
-      dépasse un seuil. Évite le patinage qui déclenche le survirage en sortie de virage, surtout
-      sur terre et boue.
+- [x] **5. Contrôle de traction et ABS.** Deux limiteurs de glissement partagent le même code :
+      au-delà d'un seuil de glissement longitudinal (le ratio Jolt, celui des courbes de friction),
+      l'accélérateur (TC) ou le frein (ABS) est réduit, avec seuil, plage, force, vitesse mini et
+      temps de relâchement. Le frein à main n'est pas touché. Dossiers Traction control et ABS du
+      GUI, coupés par défaut : ce seront des options à acheter au garage pour chaque voiture.
 - [ ] **6. Appui aérodynamique.** Force vers le bas proportionnelle au carré de la vitesse : plus
       d'adhérence et de stabilité à haute vitesse.

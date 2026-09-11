@@ -41,6 +41,85 @@ const STEER_FULL_EFFECT_KMH = 100;
 // touch controls where steering is less precise.
 const YAW_DAMPING = 1;
 const YAW_DAMPING_ENABLED = false;
+
+// Traction control and ABS both watch Jolt's longitudinal slip ratio (the
+// quantity the friction curves key on, so a threshold sits naturally just
+// past the μ peak) and scale the driver input down. The cut rises at once
+// and releases over a short time so it modulates rather than chatters.
+// Both off by default: meant as garage upgrades bought per car.
+const TRACTION_CONTROL: SlipLimiterSettings = {
+    enabled: false,
+    slipThreshold: 0.3,
+    slipRange: 0.25,
+    strength: 0.5,
+    minSpeedKmh: 5,
+    releaseTime: 0.1,
+};
+const ABS: SlipLimiterSettings = {
+    enabled: false,
+    slipThreshold: 0.3,
+    slipRange: 0.5,
+    strength: 0.5,
+    minSpeedKmh: 5,
+    releaseTime: 0.1,
+};
+
+interface SlipLimiterSettings {
+    enabled: boolean;
+    /** Slip ratio where the cut starts. */
+    slipThreshold: number;
+    /** Slip ratio span over which the cut goes from 0 to full. */
+    slipRange: number;
+    /** Fraction of the input removed at full cut. */
+    strength: number;
+    /** Below this speed the slip ratio is meaningless (v ≈ 0), so the limiter stays out. */
+    minSpeedKmh: number;
+    /** Time (s) for the cut to fall back from 1 to 0 once the slip is gone. */
+    releaseTime: number;
+}
+
+/** Scales an input down as the wheels' longitudinal slip rises past a threshold. */
+class SlipLimiter {
+    enabled: boolean;
+    slipThreshold: number;
+    slipRange: number;
+    strength: number;
+    minSpeedKmh: number;
+    releaseTime: number;
+    /** Current cut, 0 (untouched) to 1 (full), debug readout. */
+    cut = 0;
+
+    constructor(s: SlipLimiterSettings) {
+        this.enabled = s.enabled;
+        this.slipThreshold = s.slipThreshold;
+        this.slipRange = s.slipRange;
+        this.strength = s.strength;
+        this.minSpeedKmh = s.minSpeedKmh;
+        this.releaseTime = s.releaseTime;
+    }
+
+    /** Returns the multiplier to apply to the input this tick. */
+    update(slip: number, speedKmh: number, active: boolean): number {
+        let target = 0;
+        if (this.enabled && active && speedKmh >= this.minSpeedKmh && this.slipRange > 0) {
+            target = Math.min(Math.max((slip - this.slipThreshold) / this.slipRange, 0), 1);
+        }
+        const release = this.releaseTime > 0 ? PHYSICS_TIMESTEP / this.releaseTime : 1;
+        this.cut = Math.max(target, this.cut - release);
+        return 1 - this.strength * this.cut;
+    }
+
+    registerDebug(parent: GUI, title: string): void {
+        const f = parent.addFolder(title);
+        f.add(this, 'enabled').name('Enabled');
+        f.add(this, 'slipThreshold', 0.05, 1, 0.01).name('Slip threshold');
+        f.add(this, 'slipRange', 0.05, 1, 0.01).name('Slip range');
+        f.add(this, 'strength', 0, 1, 0.05).name('Strength');
+        f.add(this, 'minSpeedKmh', 0, 30, 1).name('Active above (km/h)');
+        f.add(this, 'releaseTime', 0, 0.5, 0.01).name('Release time (s)');
+        f.add(this, 'cut', 0, 1, 0.01).name('Cut').listen().disable();
+    }
+}
 const RAD_TO_DEG = 180 / Math.PI;
 // Pressing "back" while rolling forward brakes; once (nearly) stopped it
 // engages reverse. Mirrors the Jolt vehicle example.
@@ -114,6 +193,8 @@ export class CarBehavior extends Component {
     yawDamping = YAW_DAMPING;
     /** Yaw rate (°/s), debug readout. */
     yawRateDeg = 0;
+    readonly tractionControl = new SlipLimiter(TRACTION_CONTROL);
+    readonly abs = new SlipLimiter(ABS);
     readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
 
     private input!: GameInput;
@@ -185,6 +266,13 @@ export class CarBehavior extends Component {
             forward === 0 && brake === 0 && handBrake === 0 && this.speedKmh < IDLE_BRAKE_SPEED_KMH;
         if (idle) brake = IDLE_BRAKE;
 
+        // Slip is one step stale (see readouts), fine for a limiter. The
+        // hand brake is left alone: locking the rears is the point of it.
+        const slip = this.maxLongitudinalSlip();
+        const speedKmh = Math.abs(forwardSpeed) * 3.6;
+        forward *= this.tractionControl.update(slip, speedKmh, forward !== 0 && brake === 0);
+        brake *= this.abs.update(slip, speedKmh, brake > 0 && !idle);
+
         // No extra smoothing here: the keyboard source already filters its
         // 0/1 keys (Input > Keyboard smoothing), the gamepad is analog.
         const right = shapeInput(
@@ -192,7 +280,7 @@ export class CarBehavior extends Component {
             this.steerResponse,
         );
 
-        this.applySpeedSteer(Math.abs(forwardSpeed) * 3.6);
+        this.applySpeedSteer(speedKmh);
         this.updateSurfaces();
         this.applyRearLateralScale(handBrake > 0 ? this.handBrakeLateralGrip : 1);
         const surfaceForces = this.applySurfaceForces(Math.abs(forwardSpeed));
@@ -213,6 +301,15 @@ export class CarBehavior extends Component {
             readout.long = wheel.get_mLongitudinalSlip();
             readout.lat = wheel.get_mLateralSlip() * RAD_TO_DEG;
         }
+    }
+
+    /** Largest longitudinal slip ratio among the wheels touching the ground. */
+    private maxLongitudinalSlip(): number {
+        let max = 0;
+        for (const wheel of this.wheels) {
+            if (wheel.HasContact()) max = Math.max(max, wheel.get_mLongitudinalSlip());
+        }
+        return max;
     }
 
     /** Shrink the front wheels' max steer angle with speed so the car is calmer when fast. */
@@ -400,6 +497,8 @@ export class CarBehavior extends Component {
         this.registerInputDebug(folder);
         this.registerSteeringDebug(folder);
         this.registerYawDebug(folder);
+        this.tractionControl.registerDebug(folder, 'Traction control');
+        this.abs.registerDebug(folder, 'ABS');
         this.registerChassisDebug(folder);
         this.registerEngineDebug(folder);
         this.registerTransmissionDebug(folder);
