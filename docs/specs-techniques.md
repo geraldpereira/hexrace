@@ -307,7 +307,7 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 - 12.1 POC 1 : voiture et surfaces
   *Ce qu'on construit techniquement pour [F 10.1], dans quel ordre, et ce qui est jetable.*
 - 12.2 POC 2 : tuiles et pistes
-  *Idem pour [F 10.2] : types, placement, géométrie, parser, validation, générateur, fenêtre de tuiles. Terrain seul, sans Jolt.*
+  *Idem pour [F 10.2] : types, placement, géométrie, parser, validation, générateur, fenêtre de tuiles. Terrain seul, sans Jolt. La carte 2D du POC (canvas, balayage des zones et des obstacles) est candidate à passer telle quelle dans `hud` pour l'aperçu des tuiles suivantes [F 7.2].*
 - 12.3 POC 3 : la voiture sur les tuiles
   *Idem pour [F 10.3] : surface par roue depuis les coordonnées locales de la tuile, collider de tuile, fenêtre de tuiles en mouvement.*
 - 12.4 Du POC au MVP

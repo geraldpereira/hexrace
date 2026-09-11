@@ -7,9 +7,11 @@ import {
     cellToWorld,
     entryFrame,
     hexCorners,
+    obstacleFootprint,
     scale,
+    tileSweep,
 } from './model';
-import type { Boundaries, TileSweep, TransitionSpan, Vec2 } from './model';
+import type { Boundaries, Obstacle, TransitionSpan, Vec2 } from './model';
 
 /**
  * Carte 2D vue du dessus d'une piste placée : sert à vérifier le placement à l'œil avant toute 3D.
@@ -20,6 +22,13 @@ import type { Boundaries, TileSweep, TransitionSpan, Vec2 } from './model';
 const LANDSCAPE = ['#4d7c0f', '#365314'];
 const SHOULDER = ['#a8a29e', '#78716c', '#d6d3d1'];
 const ROAD = ['#3f3f46', '#57534e', '#1c1917'];
+const OBSTACLE: Record<Obstacle['kind'], { outline: string; body: string }> = {
+    hazard: { outline: 'rgba(251, 146, 60, 0.35)', body: '#f97316' },
+    barrier: { outline: 'rgba(255, 255, 255, 0.15)', body: '#ef4444' },
+    ramp: { outline: 'rgba(250, 204, 21, 0.35)', body: '#facc15' },
+    bump: { outline: 'rgba(163, 163, 163, 0.35)', body: '#a3a3a3' },
+    patch: { outline: 'rgba(96, 165, 250, 0.35)', body: '#60a5fa' },
+};
 
 /** Échantillons le long de l'axe d'une tuile. */
 const SAMPLES = 24;
@@ -68,19 +77,22 @@ export function drawTrackMap(
         if (!center) return;
         const { entry, tile } = placed;
         polygon(hexCorners(center), LANDSCAPE[entry.landscape - 1] ?? '#000', '#0c0a09');
-        const sweep: TileSweep = {
-            center,
-            heading: placed.heading,
-            exit: tile.exit,
-            entry,
-            exitProfile: tile.profile,
-            ...(transition ? { transition } : {}),
-        };
+        const sweep = tileSweep(placed, transition);
         const samples = Array.from({ length: SAMPLES + 1 }, (_, i) =>
             boundariesAt(sweep, i / SAMPLES),
         );
         polygon(strip(samples, 'blockLeft', 'blockRight'), SHOULDER[entry.shoulder - 1] ?? '#000');
         polygon(strip(samples, 'roadLeft', 'roadRight'), ROAD[entry.road - 1] ?? '#000');
+        for (const obstacle of tile.obstacles ?? []) {
+            const { outline, body } = obstacleFootprint(sweep, obstacle);
+            const colors = OBSTACLE[obstacle.kind];
+            if (obstacle.kind === 'patch')
+                polygon(body, ROAD[obstacle.road - 1] ?? '#000', colors.body);
+            else {
+                polygon(outline, colors.outline);
+                polygon(body, colors.body);
+            }
+        }
     });
 
     ctx.font = `${Math.max(10, SIDE * k * 0.35)}px system-ui, sans-serif`;

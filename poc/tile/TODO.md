@@ -111,3 +111,10 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 - **Fixture Catalogue** : les cinq sorties combinées à des décalages de position, en droite, en virage
   large et en épingle, vers l'intérieur comme vers l'extérieur, plus un décrochement épingle droite
   puis épingle gauche. Tout se raccorde et se dessine à largeur constante.
+- **Obstacles** (`obstacle.ts`). Posés par rapport à la piste : fraction de l'axe le long, décalage en
+  unités depuis le centre de la piste en travers. Hazards rigides nommés par taille (small 1×1,
+  medium 2×1, large 2×2), orientés selon la tangente ; objets suivis entre deux fractions : barrière
+  (bord de la piste, emprise d'une unité, modèle de 0,3), rampe et dos d'âne (largeur de la piste),
+  plaque (décalage, largeur, revêtement). Validation : fractions dans la tuile, intervalle non vide,
+  emprise dans l'hexagone. Dessinés sur la carte ; le Petit Anneau porte ceux du croquis 6 et
+  quelques autres. Décision reportée dans la spec 2.4.

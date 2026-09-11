@@ -1,4 +1,5 @@
 import type { ExitFace } from './face';
+import type { Obstacle } from './obstacle';
 import type { Profile } from './profile';
 
 /**
@@ -10,6 +11,8 @@ export interface Tile {
     readonly exit: ExitFace;
     /** Profil sur la face de sortie. Tout ce qui diffère de l'entrée change au milieu de la tuile. */
     readonly profile: Profile;
+    /** Obstacles posés par rapport à la piste (spec 2.4). */
+    readonly obstacles?: readonly Obstacle[];
 }
 
 /** Une tuile avec ses deux profils résolus : ce dont la géométrie a besoin. */

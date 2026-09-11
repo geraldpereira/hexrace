@@ -65,7 +65,7 @@ Un **hexagone** (ou **tuile**) est l'unité de construction d'une piste. Il est 
 - **Traversée** : la piste entre par une face et sort par une autre. Selon la face de sortie par rapport à la face d'entrée, la tuile est une ligne droite (face opposée), un virage large (60°) ou un virage serré (120°). On ne sort jamais par la face d'entrée.
 - **Profil sur une face** : de gauche à droite, du paysage, éventuellement un bas-côté, la piste, éventuellement un bas-côté, du paysage.
   - la **piste** fait de **1 à 5 unités** ;
-  - chaque **bas-côté** fait **0 ou 1 unité** (absent par exemple quand une barrière borde la piste) ;
+  - chaque **bas-côté** fait **0 ou 1 unité** ;
   - piste plus bas-côtés font **6 unités au plus**, de sorte qu'il reste **au moins 1 unité de paysage de chaque côté**. Une piste de 5 unités n'a donc qu'un bas-côté au plus ;
   - la **position** du bloc piste plus bas-côtés sur la face se donne en unités depuis la gauche.
 - **Variation dans la tuile** : largeur, position et types peuvent différer entre l'entrée et la sortie. La piste se resserre, s'élargit ou se décale dans la tuile. Une piste étroite peut entrer à gauche d'une face et sortir à droite d'une autre.
@@ -114,7 +114,7 @@ Un obstacle est un **bloc** qui occupe **X unités de large** dans le modèle de
 
 | Élément   | Où                                                              | Effet                                               |
 |-----------|-----------------------------------------------------------------|-----------------------------------------------------|
-| Barrière  | Le long de la piste, remplace le bas-côté, optionnelle par côté | Bloque, collision avec dégâts                       |
+| Barrière  | Sur l'unité qui borde la piste, optionnelle par côté            | Bloque, collision avec dégâts                       |
 | Rampe     | Sur la piste                                                    | Fait décoller                                       |
 | Dos d'âne | Sur la piste                                                    | Fait sauter légèrement, déstabilise à haute vitesse |
 | Hazard    | Sur la piste ou le bas-côté                                     | Obstacle à éviter, collision avec dégâts            |
@@ -122,9 +122,19 @@ Un obstacle est un **bloc** qui occupe **X unités de large** dans le modèle de
 
 Exemples de hazards : balle de foin, véhicule en panne, rocher, tas de troncs. Exemples de plaques : flaque de boue sur une piste en gravier, plaque de glace sur une piste en neige, gravillons sur une piste en asphalte. La plaque prend son revêtement dans la palette de l'environnement (voir 2.2), c'est un piège de grip là où on ne l'attend pas. L'environnement décide de l'apparence de chaque élément : une barrière est une rambarde en Europe, un talus de neige dans le Nord.
 
-**Emprise d'un obstacle.** Un obstacle se place par sa **distance depuis l'entrée de la tuile**, le long de la piste, et occupe une **longueur** en unités entières dans cette direction. En largeur, une barrière, une rampe ou un dos d'âne prennent toute la zone où ils se posent ; un hazard ou une plaque ont une largeur et une position depuis la gauche, comme le bloc piste d'un profil (voir 2.1). Ordres de grandeur : 1 unité pour une balle de foin ou un rocher, 2 pour un véhicule en panne ou une plaque, 2 à 3 pour une rampe, jusqu'à la tuile entière pour une barrière.
+**Emprise d'un obstacle.** Un obstacle se pose **par rapport à la piste**, pas par rapport à la face :
 
-<CHOIX> Cette modélisation de l'emprise reste à confirmer, et les longueurs par élément à mesurer une fois qu'on roule dessus (POC 3).
+- **le long de la piste**, par une **fraction de l'axe de la tuile**, 0 à la face d'entrée, 1 à la face de sortie. La longueur de l'axe dépend de la sortie (13,9 unités en ligne droite, 12,6 en virage à 60°, 8,4 en virage à 120°) ; la fraction, elle, ne change pas : une barrière tout le long s'écrit toujours de 0 à 1, et une tuile dont on change la sortie garde ses obstacles en place ;
+- **en travers**, par un **décalage en unités depuis le centre de la piste**, négatif à gauche. Quand la piste se déplace dans la tuile, l'obstacle la suit.
+
+Deux familles :
+
+- les **hazards**, objets rigides posés à une fraction et un décalage, orientés le long de la piste. Ils n'ont pas de nom dans les données mais une **taille** : *small* (1 × 1 unité), *medium* (2 unités le long, 1 en travers), *large* (2 × 2). L'environnement décide de l'aspect : une balle de foin, un rocher ou une épave sont trois habillages d'un même hazard ;
+- les **objets suivis**, qui épousent la courbe de la piste entre deux fractions : la barrière (sur l'unité qui borde la piste du côté choisi, qu'il y ait un bas-côté ou non ; elle ne contraint pas le profil, ce qui garde les jonctions simples entre une tuile avec barrière et une sans), la rampe et le dos d'âne (toute la largeur de la piste), la plaque (un décalage, une largeur et un revêtement).
+
+Un obstacle doit tenir dans sa tuile. La longueur réelle d'un objet suivi se déduit de la fraction et de la longueur de l'axe : c'est l'éditeur ou le générateur qui fait la conversion, le fichier stocke la fraction.
+
+<TODO> Confirmer les tailles des hazards et les longueurs de rampe et de dos d'âne en roulant dessus (POC 3).
 
 Il n'y a **aucun décor** hors des tuiles : le monde se limite aux hexagones, éclairés par une lumière d'ambiance. Le paysage d'une tuile (voir 2.2) est ce qu'on voit au-delà du bas-côté.
 
@@ -423,9 +433,10 @@ Affiché :
 - rapport engagé,
 - état de la voiture (schéma des dégâts),
 - chrono courant,
-- en Collapse, l'indicateur du front de disparition.
+- en Collapse, l'indicateur du front de disparition,
+- **l'aperçu des tuiles suivantes** : les X prochaines tuiles vues du dessus, en petit, pour savoir vers quoi on va. Il montre la forme de la piste, ses changements de largeur et de position, et les obstacles ; pas la position des autres voitures ni la piste entière. C'est la carte 2D du POC 2, réutilisée telle quelle sur un canvas du HUD. X reste à fixer avec la vitesse des voitures ; l'aperçu peut se couper dans les options.
 
-Refusé : mini-carte, secteurs, indicateur d'adhérence. On lit la surface à l'image.
+Refusé : carte complète de la piste, secteurs, indicateur d'adhérence. On lit la surface à l'image.
 
 ### 7.3 Options
 
@@ -598,13 +609,16 @@ Par ordre d'envie :
 | 2026-09-11 | Plaques (boue, glace, gravillons) ajoutées aux obstacles                           | Un piège de grip, sans collision, dans la palette de l'environnement        |
 | 2026-09-11 | POC 2 = terrain seul ; POC 3 = voiture sur le terrain                              | Se concentrer sur la génération ; les surfaces sont réglées dans le POC 1   |
 | 2026-09-11 | Le gameplay passe avant la beauté graphique                                        | Aucun style ni post-traitement ne doit dégrader la lisibilité de la piste   |
+| 2026-09-11 | Obstacle posé par fraction de l'axe et décalage depuis le centre de la piste       | Indépendant de la longueur de la tuile, suit la piste quand elle se déplace |
+| 2026-09-11 | Hazards nommés par taille (small, medium, large), pas par aspect                   | L'aspect dépend de l'environnement, la taille du gameplay                   |
+| 2026-09-11 | La barrière se pose sur l'unité qui borde la piste, sans contrainte sur le bas-côté | Jonctions simples entre une tuile avec barrière et une sans                 |
+| 2026-09-11 | Aperçu des tuiles suivantes dans le HUD, carte complète toujours refusée           | Anticiper la piste ; réutilise la carte 2D du POC 2                         |
 
 ### 11.2 Questions ouvertes
 
 | Réf. | Question                                                                                                                                                                                                                                                                                                                                    |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.3  | Différence de hauteur maximale dans une tuile, à mesurer dans le POC 3                                                                                                                                                                                                                                                                      |
-| 2.4  | Emprise des obstacles : position et longueur le long de la piste, largeur et position en travers ; longueurs par élément                                                                                                                                                                                                                    |
 | 8.1  | Flat shading, textures pixelisées avec post-traitement ou rendu à la PlayStation, à tester dans le POC 1 ; la lisibilité de la piste tranche                                                                                                                                                                                                 |
 
 ---
@@ -622,7 +636,7 @@ Par ordre d'envie :
 - **Paysage** : le reste de la tuile, au moins 1 unité de chaque côté, avec son propre grip, éventuellement bloquant.
 - **Environnement** : un thème (Nord, Europe, Afrique) qui fixe la palette de surfaces et l'habillage des obstacles.
 - **Déclivité** : différence entre la hauteur de sortie et la hauteur d'entrée d'une tuile.
-- **Obstacle** : un bloc de X unités posé le long de la piste : barrière, rampe, dos d'âne, hazard.
+- **Obstacle** : ce qui se pose sur une tuile par rapport à la piste, par une fraction de l'axe et un décalage depuis le centre : hazard (small, medium, large), barrière, rampe, dos d'âne, plaque.
 - **Graine** : la chaîne qui définit entièrement une piste générée.
 - **Front de disparition** : en Collapse, la limite derrière la voiture au-delà de laquelle la piste n'existe plus.
 - **Reset** : remise de la voiture au centre de la dernière tuile parcourue.

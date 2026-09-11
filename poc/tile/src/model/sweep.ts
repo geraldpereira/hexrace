@@ -3,7 +3,9 @@ import type { Vec2 } from './layout';
 import { SIDE, add, scale } from './layout';
 import type { TransitionSpan } from './path';
 import { DEFAULT_TRANSITION, transition, worldPath } from './path';
-import type { Heading } from './placement';
+import type { Heading, PlacedTile } from './placement';
+import { cellToWorld } from './layout';
+import { exitHeading } from './placement';
 import type { Profile } from './profile';
 
 /**
@@ -16,9 +18,10 @@ import type { Profile } from './profile';
  */
 
 export interface Boundaries {
-    /** Centre de la piste et sa direction de marche. */
+    /** Centre de la piste, sa direction de marche et la droite du conducteur. */
     readonly center: Vec2;
     readonly travel: Vec2;
+    readonly right: Vec2;
     readonly blockLeft: Vec2;
     readonly roadLeft: Vec2;
     readonly roadRight: Vec2;
@@ -37,6 +40,23 @@ export interface TileSweep {
 
 const EPSILON = 1e-3;
 
+/** Le balayage d'une tuile posée. */
+export function tileSweep(placed: PlacedTile, transition?: TransitionSpan): TileSweep {
+    return {
+        center: cellToWorld(placed.cell),
+        heading: placed.heading,
+        exit: placed.tile.exit,
+        entry: placed.entry,
+        exitProfile: placed.tile.profile,
+        ...(transition ? { transition } : {}),
+    };
+}
+
+/** Direction absolue de la face de sortie d'une tuile posée. */
+export function placedExitHeading(placed: PlacedTile): Heading {
+    return exitHeading(placed.heading, placed.tile.exit);
+}
+
 export function boundariesAt(sweep: TileSweep, s: number): Boundaries {
     const center = roadCenter(sweep, s);
     // Différence centrée, en débordant de l'axe aux deux bouts : l'axe se prolonge naturellement et
@@ -52,6 +72,7 @@ export function boundariesAt(sweep: TileSweep, s: number): Boundaries {
     return {
         center,
         travel,
+        right,
         blockLeft: add(center, scale(right, -halfRoad - leftShoulder)),
         roadLeft: add(center, scale(right, -halfRoad)),
         roadRight: add(center, scale(right, halfRoad)),

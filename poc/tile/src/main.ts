@@ -9,6 +9,7 @@ import {
     overlapErrors,
     petitAnneau,
     placeTrack,
+    placedObstacleErrors,
     recoupe,
     trackErrors,
     transitionOfExtent,
@@ -49,6 +50,7 @@ if (app) {
         const errors = [
             ...trackErrors(track),
             ...overlapErrors(placement),
+            ...placedObstacleErrors(placement),
             ...(closureError(track, placement) ? [closureError(track, placement) ?? ''] : []),
         ];
         status.textContent =
