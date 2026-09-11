@@ -15,11 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Maillage plat d'une tuile.** Piste, bas-côtés et paysage en zones colorées, sans hauteur ni
-      variation, profil identique en entrée et en sortie. Rendu three.js d'une piste entière.
-- [ ] **Changements au milieu de la tuile.** Largeur, position et types différents entre l'entrée et
-      la sortie, transition dans la moitié centrale (2.1, 2.6). Piste étroite qui entre à gauche et
-      sort à droite.
 - [ ] **Hauteur et pente.** Hauteur d'entrée et de sortie, pente au milieu (2.3). Sommets partagés à
       la jonction, aucune couture ni trou visible en caméra libre. C'est ici qu'on regarde la
       question de la spec technique (1.4, `<GPE>`) : une forte déclivité suivie d'une tuile plate
@@ -121,3 +116,12 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   plaque (décalage, largeur, revêtement). Validation : fractions dans la tuile, intervalle non vide,
   emprise dans l'hexagone. Dessinés sur la carte ; le Petit Anneau porte ceux du croquis 6 et
   quelques autres. Décision reportée dans la spec 2.4.
+- **Polygones de zones** (`geometry.ts`) et **vue 3D** (`view3d.ts`). Une tuile se découpe en bandes
+  balayées (bas-côté gauche, piste, bas-côté droit, coupées au milieu pour porter les types d'entrée
+  puis de sortie) et deux polygones de paysage entre le bloc et le contour de l'hexagone ; test :
+  l'aire totale vaut celle de l'hexagone à 0,3 % près pour toute sortie et toute orientation, avec
+  transition. Vue three.js : un seul maillage plat coloré par rang de palette, obstacles en volumes
+  (hazards et barrières extrudés, rampe, dos d'âne et plaque à plat), caméra libre, contours des
+  tuiles en option, carte 2D en médaillon qui utilise les mêmes polygones. Aucune couture visible
+  entre tuiles sur le Petit Anneau ni le Catalogue. Les changements de largeur, de position et de
+  type au milieu de la tuile viennent du balayage, rien de plus à faire pour eux.

@@ -11,3 +11,4 @@ export * from './fixtures/courbes';
 export * from './sweep';
 export * from './fixtures/catalogue';
 export * from './obstacle';
+export * from './geometry';

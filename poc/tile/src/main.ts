@@ -15,27 +15,39 @@ import {
     transitionOfExtent,
     triangle,
 } from './model';
+import { createView3d } from './view3d';
 
 const tracks: Track[] = [petitAnneau, triangle, hexagone, ligne, recoupe, courbes, catalogue];
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (app) {
     app.innerHTML = `
-        <label>Piste <select id="track"></select></label>
-        <label style="margin-left:24px">Transition sur <output id="extentValue">40</output> % de la tuile
-            <input id="extent" type="range" min="0.2" max="1" step="0.1" value="0.4" style="vertical-align:middle" /></label>
-        <p id="status"></p>
-        <canvas id="map"></canvas>
+        <div id="bar">
+            <label>Piste <select id="track"></select></label>
+            <label>Transition sur <output id="extentValue">40</output> % de la tuile
+                <input id="extent" type="range" min="0.2" max="1" step="0.1" value="0.4" style="vertical-align:middle" /></label>
+            <label><input id="edges" type="checkbox" /> Contours des tuiles</label>
+            <label><input id="showMap" type="checkbox" checked /> Carte 2D</label>
+            <p id="status"></p>
+        </div>
+        <div id="stage">
+            <canvas id="gl"></canvas>
+            <canvas id="map" width="720" height="480"></canvas>
+        </div>
     `;
     const select = app.querySelector<HTMLSelectElement>('#track');
     const status = app.querySelector<HTMLParagraphElement>('#status');
-    const canvas = app.querySelector<HTMLCanvasElement>('#map');
+    const map = app.querySelector<HTMLCanvasElement>('#map');
+    const gl = app.querySelector<HTMLCanvasElement>('#gl');
     const extent = app.querySelector<HTMLInputElement>('#extent');
     const extentValue = app.querySelector<HTMLOutputElement>('#extentValue');
-    if (!select || !status || !canvas || !extent || !extentValue) {
+    const edges = app.querySelector<HTMLInputElement>('#edges');
+    const showMap = app.querySelector<HTMLInputElement>('#showMap');
+    if (!select || !status || !map || !gl || !extent || !extentValue || !edges || !showMap) {
         throw new Error('page incomplète');
     }
 
+    const view = createView3d(gl);
     tracks.forEach((track, i) => {
         select.add(new Option(track.name, String(i)));
     });
@@ -43,15 +55,14 @@ if (app) {
     const show = (): void => {
         const track = tracks[Number(select.value)];
         if (!track) return;
-        canvas.width = window.innerWidth - 32;
-        canvas.height = window.innerHeight - 90;
         window.location.hash = track.id;
         const placement = placeTrack(track);
+        const closure = closureError(track, placement);
         const errors = [
             ...trackErrors(track),
             ...overlapErrors(placement),
             ...placedObstacleErrors(placement),
-            ...(closureError(track, placement) ? [closureError(track, placement) ?? ''] : []),
+            ...(closure ? [closure] : []),
         ];
         status.textContent =
             errors.length === 0
@@ -59,12 +70,22 @@ if (app) {
                 : errors.join(' ; ');
         status.style.color = errors.length === 0 ? '#86efac' : '#fca5a5';
         extentValue.value = String(Math.round(Number(extent.value) * 100));
-        drawTrackMap(canvas, placement, transitionOfExtent(Number(extent.value)));
+        const transition = transitionOfExtent(Number(extent.value));
+        drawTrackMap(map, placement, transition);
+        view.setPlacement(placement, transition);
     };
     const fromHash = tracks.findIndex((track) => `#${track.id}` === window.location.hash);
     if (fromHash >= 0) select.value = String(fromHash);
     select.addEventListener('change', show);
     extent.addEventListener('input', show);
-    window.addEventListener('resize', show);
+    edges.addEventListener('change', () => {
+        view.setEdges(edges.checked);
+    });
+    showMap.addEventListener('change', () => {
+        map.hidden = !showMap.checked;
+    });
+    window.addEventListener('resize', () => {
+        view.resize();
+    });
     show();
 }
