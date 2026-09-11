@@ -16,6 +16,13 @@ export interface Surface {
     drag: number;
     /** Vertical force noise at each wheel, as a fraction of its static load at the reference speed. */
     roughness: number;
+    /**
+     * Sideways force noise at each wheel (perpendicular to its rolling
+     * direction), same unit as `roughness`. Ruts and stones tugging the car.
+     */
+    lateralRoughness: number;
+    /** Distance between two grain bumps, in metres. Short = vibration, long = ruts. */
+    wavelength: number;
 }
 
 export const SURFACE_ASPHALT = 0;
@@ -44,6 +51,8 @@ export const SURFACES: readonly Surface[] = [
         rollingDamping: 0.2,
         drag: 0,
         roughness: 0,
+        lateralRoughness: 0,
+        wavelength: 0.5,
     },
     {
         name: 'Gravel',
@@ -63,6 +72,8 @@ export const SURFACES: readonly Surface[] = [
         rollingDamping: 0.5,
         drag: 5,
         roughness: 0.35,
+        lateralRoughness: 0.2,
+        wavelength: 0.3,
     },
     {
         name: 'Dirt',
@@ -82,6 +93,8 @@ export const SURFACES: readonly Surface[] = [
         rollingDamping: 0.8,
         drag: 15,
         roughness: 0.6,
+        lateralRoughness: 0.35,
+        wavelength: 1.5,
     },
     {
         name: 'Mud',
@@ -102,6 +115,8 @@ export const SURFACES: readonly Surface[] = [
         rollingDamping: 6.0,
         drag: 250,
         roughness: 0.15,
+        lateralRoughness: 0.15,
+        wavelength: 3,
     },
 ];
 

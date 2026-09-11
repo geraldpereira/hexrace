@@ -2,16 +2,15 @@
 
 ## Grain procédural (revêtements)
 
-Le grain est aujourd'hui une force verticale bruitée appliquée au point de contact de chaque roue,
-échantillonnée sur la distance parcourue (`CarBehavior.applySurfaceForces`). Deux raffinements :
+Force bruitée appliquée au point de contact de chaque roue, échantillonnée sur la distance parcourue
+(`CarBehavior.applySurfaceForces`). Longueur d'onde et composantes verticale / latérale par
+revêtement, curseurs dans le dossier Surfaces.
 
-- [ ] **Longueur d'onde par revêtement.** La constante `ROUGHNESS_WAVELENGTH` (0,5 m) est globale.
-      La déplacer dans `Surface` : gravier court (~0,3 m, vibration), terre long (~1,5 m, ornières),
-      boue très long et mou. Exposer le curseur dans le dossier Surfaces.
-- [ ] **Composante latérale.** Ajouter une force horizontale bruitée, perpendiculaire à la direction
-      de la roue, avec son propre coefficient par revêtement. Simule les ornières et les cailloux qui
-      tirent la voiture de côté. Même échantillonnage sur la distance, bruit décalé pour ne pas être
-      corrélé au vertical.
+- [x] **Longueur d'onde par revêtement.** `Surface.wavelength` : gravier court (0,3 m, vibration),
+      terre long (1,5 m, ornières), boue très long (3 m).
+- [x] **Composante latérale.** `Surface.lateralRoughness`, force horizontale le long de l'axe
+      latéral de la roue, bruit décalé pour ne pas être corrélé au vertical.
+- [ ] **À doser en jeu.** Les valeurs par défaut sont un premier jet, à régler manette en main.
 
 ## Conduite plus arcade
 
