@@ -17,6 +17,13 @@ type JoltWheeledController = InstanceType<JoltAPI['WheeledVehicleController']>;
 type JoltLinearCurve = InstanceType<JoltAPI['LinearCurve']>;
 type JoltWheelWV = InstanceType<JoltAPI['WheelWV']>;
 type JoltVec3 = InstanceType<JoltAPI['Vec3']>;
+type JoltRVec3 = InstanceType<JoltAPI['RVec3']>;
+
+interface Axis {
+    x: number;
+    y: number;
+    z: number;
+}
 
 export const WHEEL_COUNT = 4;
 const WHEEL_NAMES = ['Front left', 'Front right', 'Back left', 'Back right'] as const;
@@ -55,6 +62,14 @@ const TRACTION_CONTROL: SlipLimiterSettings = {
     minSpeedKmh: 5,
     releaseTime: 0.1,
 };
+// Aerodynamic downforce: a force along the chassis' local down axis,
+// proportional to speed squared, applied at a point between the axles so
+// a rear wing loads the rear. 5 N/(m/s)² is ~30 % of the weight at 100 km/h.
+// Off by default: a spoiler bought at the garage, with a real effect.
+const AERO_ENABLED = false;
+const AERO_COEFFICIENT = 5;
+const AERO_BALANCE = -0.6;
+
 const ABS: SlipLimiterSettings = {
     enabled: false,
     slipThreshold: 0.3,
@@ -195,6 +210,13 @@ export class CarBehavior extends Component {
     yawRateDeg = 0;
     readonly tractionControl = new SlipLimiter(TRACTION_CONTROL);
     readonly abs = new SlipLimiter(ABS);
+    aeroEnabled = AERO_ENABLED;
+    /** Downforce per (m/s)², in N. */
+    aeroCoefficient = AERO_COEFFICIENT;
+    /** Where the downforce pushes: -1 rear axle, 0 midway, +1 front axle. */
+    aeroBalance = AERO_BALANCE;
+    /** Current downforce as a percentage of the weight, debug readout. */
+    aeroPercent = 0;
     readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
 
     private input!: GameInput;
@@ -210,6 +232,10 @@ export class CarBehavior extends Component {
     private readonly tmpForce: JoltVec3;
     /** Chassis inertia around its local up axis (kg·m²). */
     private readonly yawInertia: number;
+    /** Axle positions along the chassis' local Z, from the wheel settings. */
+    private readonly frontAxleZ: number;
+    private readonly rearAxleZ: number;
+    private readonly tmpPoint: JoltRVec3;
     private readonly noise = createNoise2D(mulberry32(7));
 
     constructor(
@@ -228,6 +254,7 @@ export class CarBehavior extends Component {
         this.wheelRight = new Jolt.Vec3(0, 1, 0);
         this.wheelUp = new Jolt.Vec3(1, 0, 0);
         this.tmpForce = new Jolt.Vec3(0, 0, 0);
+        this.tmpPoint = new Jolt.RVec3(0, 0, 0);
         const motion = body.GetMotionProperties();
         this.mass = 1 / motion.GetInverseMass();
         this.yawInertia = 1 / motion.GetInverseInertiaDiagonal().GetY();
@@ -235,6 +262,8 @@ export class CarBehavior extends Component {
             this.wheels.push(Jolt.castObject(this.constraint.GetWheel(i), Jolt.WheelWV));
         }
         this.steerAtRestDeg = (this.wheels[0]?.GetSettings().mMaxSteerAngle ?? 0) * RAD_TO_DEG;
+        this.frontAxleZ = this.wheels[FRONT_WHEELS[0]]?.GetSettings().mPosition.GetZ() ?? 0;
+        this.rearAxleZ = this.wheels[REAR_WHEELS[0]]?.GetSettings().mPosition.GetZ() ?? 0;
         // Start every wheel on the track surface so the first tick has valid curves.
         for (let i = 0; i < WHEEL_COUNT; i++)
             this.setWheelSurface(i, terrain.surfaceMap.options.track);
@@ -285,6 +314,7 @@ export class CarBehavior extends Component {
         this.applyRearLateralScale(handBrake > 0 ? this.handBrakeLateralGrip : 1);
         const surfaceForces = this.applySurfaceForces(Math.abs(forwardSpeed));
         this.applyYawDamping();
+        this.applyDownforce(forwardSpeed);
         this.controller.SetDriverInput(forward, right, brake, handBrake);
         if (surfaceForces || forward !== 0 || right !== 0 || brake !== 0 || handBrake !== 0) {
             this.physics.bodyInterface.ActivateBody(this.body.GetID());
@@ -431,8 +461,24 @@ export class CarBehavior extends Component {
         this.body.AddTorque(this.tmpForce);
     }
 
+    /** Downforce along the chassis' local down axis, growing with speed squared. */
+    private applyDownforce(forwardSpeed: number): void {
+        const force = this.aeroEnabled ? this.aeroCoefficient * forwardSpeed * forwardSpeed : 0;
+        this.aeroPercent = (100 * force) / (this.mass * GRAVITY);
+        if (force === 0) return;
+        const up = this.localUp();
+        const fwd = this.localForward();
+        // Application point between the axles, along the body origin's forward axis.
+        const t = (this.aeroBalance + 1) / 2;
+        const z = this.rearAxleZ + (this.frontAxleZ - this.rearAxleZ) * t;
+        const pos = this.body.GetPosition();
+        this.tmpPoint.Set(pos.GetX() + fwd.x * z, pos.GetY() + fwd.y * z, pos.GetZ() + fwd.z * z);
+        this.tmpForce.Set(-up.x * force, -up.y * force, -up.z * force);
+        this.body.AddForce(this.tmpForce, this.tmpPoint);
+    }
+
     /** Chassis' local +Y axis in world space. */
-    private localUp(): { x: number; y: number; z: number } {
+    private localUp(): Axis {
         const rot = this.body.GetRotation();
         const qx = rot.GetX();
         const qy = rot.GetY();
@@ -446,19 +492,26 @@ export class CarBehavior extends Component {
         };
     }
 
-    /** Signed speed along the chassis' local +Z (m/s). */
-    private localForwardSpeed(): number {
+    /** Chassis' local +Z axis in world space. */
+    private localForward(): Axis {
         const rot = this.body.GetRotation();
         const qx = rot.GetX();
         const qy = rot.GetY();
         const qz = rot.GetZ();
         const qw = rot.GetW();
         // Local +Z column of the rotation matrix.
-        const fx = 2 * (qx * qz + qw * qy);
-        const fy = 2 * (qy * qz - qw * qx);
-        const fz = 1 - 2 * (qx * qx + qy * qy);
+        return {
+            x: 2 * (qx * qz + qw * qy),
+            y: 2 * (qy * qz - qw * qx),
+            z: 1 - 2 * (qx * qx + qy * qy),
+        };
+    }
+
+    /** Signed speed along the chassis' local +Z (m/s). */
+    private localForwardSpeed(): number {
+        const f = this.localForward();
         const lv = this.body.GetLinearVelocity();
-        return fx * lv.GetX() + fy * lv.GetY() + fz * lv.GetZ();
+        return f.x * lv.GetX() + f.y * lv.GetY() + f.z * lv.GetZ();
     }
 
     override render(): void {
@@ -499,6 +552,7 @@ export class CarBehavior extends Component {
         this.registerYawDebug(folder);
         this.tractionControl.registerDebug(folder, 'Traction control');
         this.abs.registerDebug(folder, 'ABS');
+        this.registerAeroDebug(folder);
         this.registerChassisDebug(folder);
         this.registerEngineDebug(folder);
         this.registerTransmissionDebug(folder);
@@ -518,6 +572,14 @@ export class CarBehavior extends Component {
         f.add(this, 'steerResponse', 0, 1, 0.05).name('Steering (0 lin → 1 cubic)');
         f.add(this, 'throttleResponse', 0, 1, 0.05).name('Throttle (0 lin → 1 cubic)');
         f.add(this, 'brakeResponse', 0, 1, 0.05).name('Brake (0 lin → 1 cubic)');
+    }
+
+    private registerAeroDebug(parent: GUI): void {
+        const f = parent.addFolder('Downforce');
+        f.add(this, 'aeroEnabled').name('Enabled');
+        f.add(this, 'aeroCoefficient', 0, 20, 0.5).name('Coefficient (N/(m/s)²)');
+        f.add(this, 'aeroBalance', -1, 1, 0.1).name('Balance (-1 rear → 1 front)');
+        f.add(this, 'aeroPercent', 0, 200, 1).name('Downforce (% weight)').listen().disable();
     }
 
     private registerYawDebug(parent: GUI): void {

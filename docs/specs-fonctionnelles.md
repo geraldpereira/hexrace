@@ -166,7 +166,22 @@ Progression prévue :
 2. Puis une **petite voiture maniable**, genre R5 Turbo ou Golf GTI.
 3. Puis une **berlinette** genre Alpine, plus puissante et plus maniable encore.
 
-<TODO> Caractéristiques chiffrées (vitesse, accélération, maniabilité, robustesse) et améliorations achetables.
+**Caractéristiques d'une voiture.** Ce qui fait son caractère, fixé par le modèle et non modifiable au garage :
+
+- vitesse de pointe, accélération, robustesse ;
+- **braquage dégressif avec la vitesse** : l'angle de braquage maximal décroît linéairement d'une valeur à l'arrêt à une valeur à haute vitesse, atteinte à une vitesse donnée. Trois nombres par voiture (angle à l'arrêt, angle à vitesse, vitesse de plein effet) qui règlent la maniabilité : la petite voiture garde beaucoup de braquage à haute vitesse, vive mais instable ; la grosse berline le perd vite, stable mais paresseuse en entrée de virage. Validé dans le POC 1 avec 32° à l'arrêt et 12° à 100 km/h.
+
+**Options achetables au garage.** Des aides à la conduite que le joueur achète avec ses crédits, voiture par voiture, puis règle à son goût. Elles sont **coupées par défaut** : à la manette la conduite brute est plus plaisante, l'option compense une entrée moins précise ou un pilote moins sûr.
+
+- **ABS** : réduit le freinage quand les roues bloquent. Réglable : seuil de glissement à partir duquel il agit et force de la réduction. Ne touche jamais le frein à main, dont le blocage est le but.
+- **Contrôle de traction** : réduit l'accélérateur quand les roues patinent, surtout utile sur terre et boue en sortie de virage. Mêmes réglages que l'ABS.
+- **Aileron / spoiler** : un appui aérodynamique qui plaque la voiture au sol d'autant plus qu'elle va vite. Plus de grip et de stabilité à haute vitesse, rien à basse vitesse. Réglable : force de l'appui et répartition avant / arrière (un aileron arrière charge l'arrière). Il se voit sur la voiture, mais c'est d'abord un effet de conduite.
+
+Chaque option a un prix d'achat ; ses réglages sont libres une fois achetée. Les niveaux d'option (par exemple un ABS plus fin, plus cher) restent à définir avec le barème des crédits (voir 6.2).
+
+**Piste d'essai.** Le garage donne accès à une **piste d'essai** où le joueur roule avec la voiture telle qu'il vient de la configurer, sans chrono ni enjeu. Les options et leurs réglages s'y changent **en direct**, sans repasser par un menu, pour sentir immédiatement ce que change un aileron, un ABS ou un curseur. La piste enchaîne les situations utiles : une ligne droite pour la vitesse de pointe et l'appui, des virages rapides et une épingle, au moins deux revêtements dont un meuble, une bosse ou un saut pour les suspensions.
+
+<TODO> Caractéristiques chiffrées par voiture (vitesse, accélération, robustesse, les trois nombres du braquage) et prix des options.
 
 <GPE> prévoir propulsion, traction ou 4x4
 
@@ -370,6 +385,8 @@ Le meilleur chrono de chaque piste et le meilleur temps tenu en Collapse sont m�
 
 Un système de **crédits** gagnés en course et dépensés en voitures et améliorations. **Pas de médailles.**
 
+Les améliorations comprennent les **options de conduite** de 3.1 (ABS, contrôle de traction, aileron), achetées puis réglées au garage pour chaque voiture. Les caractéristiques propres à un modèle, dont le braquage dégressif, ne s'achètent pas : on change de voiture.
+
 Pour commencer, les crédits sont **illimités** : le barème gain par course / coût des voitures se calibrera en jouant.
 
 ### 6.3 Fantômes
@@ -392,7 +409,7 @@ Sur le modèle de hexact pour la structure et l'enchaînement.
 Home ─┬─ Track ─── choix environnement ─── choix piste ─── Course ─── Résultats ─┬─ Retry
       ├─ Rally ─── choix environnement ─── choix piste ─── Course ─── Résultats ─┤
       ├─ Collapse  choix environnement ────────────────── Course ─── Résultats ─┴─ Home
-      ├─ Garage (voitures, améliorations, crédits)
+      ├─ Garage (voitures, améliorations, crédits) ─── Piste d'essai (réglages en direct)
       ├─ Éditeur (PC uniquement)
       └─ Options
 ```
@@ -555,6 +572,10 @@ Par ordre d'envie :
 | 2026-09-10 | MVP = 1 environnement, 1 voiture, 1 piste Track                                    | Le plus court chemin vers une partie complète                               |
 | 2026-09-10 | Anglais uniquement, texte minimaliste                                              | Un seul jeu de textes à maintenir                                           |
 | 2026-09-10 | Pas de musique                                                                     | Le son sert la conduite                                                     |
+| 2026-09-11 | Braquage dégressif avec la vitesse = caractéristique de la voiture                 | Différencier petite maniable et grosse stable sans toucher à la physique    |
+| 2026-09-11 | ABS et contrôle de traction = options achetables et réglables au garage            | Dépenser ses crédits ; coupées par défaut, la conduite brute prime          |
+| 2026-09-11 | Aileron = option garage à effet réel (appui aéro), pas seulement visuelle          | Une option qui se sent en conduite, pas un skin                             |
+| 2026-09-11 | Piste d'essai accessible depuis le garage, réglages modifiables en direct          | Sentir une option avant de sortir du garage                                 |
 
 ### 11.2 Questions ouvertes
 

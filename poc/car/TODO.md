@@ -22,5 +22,7 @@ Les trois premières d'abord, elles règlent l'essentiel sans changer le caract�
       l'accélérateur (TC) ou le frein (ABS) est réduit, avec seuil, plage, force, vitesse mini et
       temps de relâchement. Le frein à main n'est pas touché. Dossiers Traction control et ABS du
       GUI, coupés par défaut : ce seront des options à acheter au garage pour chaque voiture.
-- [ ] **6. Appui aérodynamique.** Force vers le bas proportionnelle au carré de la vitesse : plus
-      d'adhérence et de stabilité à haute vitesse.
+- [x] **6. Appui aérodynamique.** Force le long de l'axe bas du châssis, proportionnelle au carré
+      de la vitesse, appliquée à un point réglable entre les essieux (un aileron arrière charge
+      l'arrière). Dossier Downforce du GUI, coupé par défaut : option garage aileron / spoiler,
+      avec un vrai effet et pas seulement visuel.
