@@ -23,7 +23,6 @@ const WHEEL_NAMES = ['Front left', 'Front right', 'Back left', 'Back right'] as 
 const REAR_WHEELS = [2, 3] as const;
 
 const GRAVITY = 9.81;
-const STEER_SPEED = 5;
 // Stick response: blend between linear and cubic. The centre gets softer
 // while full deflection still reaches 1. 0 = linear, 1 = pure cube.
 const STEER_RESPONSE = 0.6;
@@ -94,7 +93,6 @@ export class CarBehavior extends Component {
     readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
 
     private input!: GameInput;
-    private currentRight = 0;
     private rearLateralScale = 1;
     private travelled = 0;
     private readonly mass: number;
@@ -158,23 +156,12 @@ export class CarBehavior extends Component {
             forward === 0 && brake === 0 && handBrake === 0 && this.speedKmh < IDLE_BRAKE_SPEED_KMH;
         if (idle) brake = IDLE_BRAKE;
 
-        // Smooth the raw stick so keyboard steering isn't a step function.
-        const inputRight = shapeInput(
+        // No extra smoothing here: the keyboard source already filters its
+        // 0/1 keys (Input > Keyboard smoothing), the gamepad is analog.
+        const right = shapeInput(
             Math.max(-1, Math.min(1, merged.leftStickX + merged.rightStickX)),
             this.steerResponse,
         );
-        if (inputRight > this.currentRight) {
-            this.currentRight = Math.min(
-                this.currentRight + STEER_SPEED * PHYSICS_TIMESTEP,
-                inputRight,
-            );
-        } else if (inputRight < this.currentRight) {
-            this.currentRight = Math.max(
-                this.currentRight - STEER_SPEED * PHYSICS_TIMESTEP,
-                inputRight,
-            );
-        }
-        const right = this.currentRight;
 
         this.updateSurfaces();
         this.applyRearLateralScale(handBrake > 0 ? this.handBrakeLateralGrip : 1);
