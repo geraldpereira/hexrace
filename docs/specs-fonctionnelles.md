@@ -642,6 +642,7 @@ Par ordre d'envie :
 | 2026-09-12 | Pas de hauteur fixe de 20 cm, pente maximale par tuile 20 / 15 / 10 % selon la sortie, amplitude 200 m | Le relief se pense en mètres ; le bord intérieur d'un virage est plus raide que l'axe |
 | 2026-09-12 | Départ et arrivée à n'importe quelle altitude ; jupe visible sous chaque tuile même à 0        | Une piste peut descendre sous son départ ; le monde n'a pas de sol           |
 | 2026-09-12 | Tuiles de départ et d'arrivée jamais en épingle, ligne en damier au milieu                     | Une ligne lisible en travers de la piste                                    |
+| 2026-09-12 | Côté d'hexagone de 8 unités confirmé au POC 2                                                   | Le profil tient, les transitions restent lisibles, les virages ont des rayons jouables |
 
 ### 11.2 Questions ouvertes
 

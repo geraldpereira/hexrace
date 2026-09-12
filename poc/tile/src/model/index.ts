@@ -20,3 +20,4 @@ export * from './rng';
 export * from './generator';
 export * from './units';
 export * from './marks';
+export * from './window';

@@ -142,6 +142,32 @@ Pas fixe pour la physique, rendu à la fréquence de l'écran, interpolation ent
   *Grille hexagonale côté plat vers l'avant, faces en heures d'horloge, comment une liste de tuiles devient des positions et des orientations dans le monde.*
 - 3.3 Format de fichier de piste
   *Grammaire exacte du fichier texte [F 5.4], versionnage de l'en-tête, parser et sérialiseur, messages d'erreur.*
+
+  **Grammaire, validée au POC 2 (2026-09-12).** Un fichier texte UTF-8, une instruction par ligne, `#` ouvre un commentaire jusqu'à la fin de la ligne, les lignes vides sont ignorées.
+
+  ```
+  hexrace-track 1
+
+  id: europe-ring-01
+  name: Petit Anneau
+  environment: europe
+  mode: track
+  laps: 3
+
+  [tiles]
+  start  exit=12  pos=2  w=3  sh=1,1  h=40  t=1/1/1
+         exit=2   pos=3  w=2  sh=1,0  h=48  t=2/1/1  obs=barrier:left,hazard:small@0.5/1
+  ```
+
+  - **Première ligne** : le nom du format et sa version, `hexrace-track 1`. Une autre version est refusée.
+  - **En-tête** : des paires `clé: valeur`, dans n'importe quel ordre. `id`, `name`, `environment` (`north`, `europe`, `africa`) et `mode` (`track`, `rally`) sont obligatoires ; `laps` (entier) est propre au mode Track.
+  - **`[tiles]`** ouvre la liste des tuiles, une par ligne dans l'ordre de parcours. L'entrée est toujours la face 6, seule la sortie s'écrit ; le profil d'entrée d'une tuile est le profil de sortie de la précédente, ce qui rend [F 2.6] vraie par construction. Le mot `start` peut ouvrir la première ligne, et seulement elle.
+  - **Champs d'une tuile**, séparés par des blancs, sous la forme `clé=valeur` : `exit` face de sortie (12, 2, 4, 8, 10) ; `pos` et `w` position et largeur de la piste en sortie, en unités ; `sh` bas-côtés gauche,droite (0 ou 1 chacun, `0,0` si absent) ; `h` hauteur de sortie en pas de 20 cm ; `t` rangs piste/bas-côté/paysage dans la palette de l'environnement (1-3/1-3/1-2). Tous sont obligatoires sauf `sh` et `obs`.
+  - **`obs`**, obstacles de la tuile séparés par des virgules, posés par rapport à la piste [F 2.4] : `hazard:<small|medium|large>@<fraction>[/<décalage>]`, `barrier:<left|right>[@<de>-<à>]` (toute la tuile si absent), `ramp@<de>-<à>`, `bump@<de>-<à>`, `patch:<rang de piste>@<de>-<à>[/<décalage>[x<largeur>]]`. Les fractions sont l'avancement sur l'axe de la tuile, de 0 à 1 ; le décalage est en unités depuis le centre de la piste, négatif à gauche.
+  - **Erreurs** : le parser lit tout le fichier et remonte chaque problème avec son numéro de ligne (« ligne 8 : pos « deux » invalide, attendu un entier ») ; un fichier avec au moins une erreur ne donne aucune piste. La validité de la piste elle-même ([F 2.1], [F 2.6], [F 5.5]) est vérifiée ensuite, par la validation.
+  - **Sérialiseur** : écrit une piste dans cette forme, colonnes alignées, valeurs par défaut omises ; relire ce qu'il écrit redonne la piste à l'identique.
+
+  Référence : `poc/tile/src/model/trackFile.ts`.
 - 3.4 Validation
   *Implémentation des règles [F 2.6] et [F 5.5] : jonctions, départ et arrivée, auto-intersection, fermeture en Track. Où elle s'exécute (éditeur, générateur, chargement).*
 - 3.5 Géométrie d'une tuile
@@ -333,6 +359,7 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 | 2026-09-10 | Debug via le HUD Angular, pas lil-gui | Un seul outillage d'interface |
 | 2026-09-10 | Perte de focus : pas de pause, temps écoulé appliqué au retour | Cohérent avec [F 4.1] |
 | 2026-09-10 | Pas de migration de stockage avant le déploiement | Rien à préserver avant |
+| 2026-09-12 | Grammaire du fichier de piste : celle du POC 2 (3.3) | Lisible à la main, une ligne par tuile, obstacles en clair, relecture à l'identique |
 
 ### 13.2 Questions ouvertes
 

@@ -15,9 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Fenêtre de tuiles.** Un curseur « position du joueur » le long de la piste ; seules X tuiles
-      devant et Y derrière existent dans la scène (9.2). Chargement et déchargement au passage d'une
-      tuile à l'autre, sans allocation visible dans le profileur.
 
 ## Valider les critères de la spec (10.2) qui ne demandent pas de voiture
 
@@ -25,8 +22,10 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       générées, à plat comme en relief).
 - [x] Une piste fermée se referme sur elle-même (Petit Anneau, Triangle, Hexagone ; la fermeture
       est vérifiée par la validation).
-- [ ] La fenêtre d'affichage (X devant, Y derrière) ne se voit pas depuis une caméra placée comme
-      celle de la spec (3.9), simulée au-dessus du curseur de position.
+- [x] La fenêtre d'affichage (X devant, Y derrière) ne se voit pas depuis une caméra placée comme
+      celle de la spec (3.9), simulée au-dessus du curseur de position : vérifié avec 3 devant et
+      1 derrière à 80 km/h sur le Petit Anneau. À rejouer à 200 km/h et sur une piste générée pour
+      fixer X et Y ; la page a tout ce qu'il faut (fenêtre, position, vitesse, vue joueur, avance).
 - [x] Une piste générée depuis n'importe quelle graine passe la validation : 240 pistes de 40 tuiles
       (60 graines × 4 jeux de cadrans, dont tout à 0 et tout à 9) valides et à la longueur demandée.
 
@@ -46,10 +45,10 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       recoupent aussi, trois serrés dans le même sens forment une boucle valide) ; le test
       d'occupation de la grille fait foi, la borne devient un réglage de style du générateur.
       Spec 5.5 mise à jour.
-- [ ] **Grammaire du fichier de piste** (spec technique 3.3). Celle de `trackFile.ts` est la proposition
-      du POC ; à reporter dans la spec technique une fois validée.
-- [ ] **Taille de tuile** (8 unités par côté) : confirmer que le profil piste + bas-côtés + paysage
-      tient et que les transitions au milieu restent lisibles.
+- [x] **Grammaire du fichier de piste.** Validée le 12 septembre, reportée dans la spec technique 3.3.
+- [x] **Taille de tuile** (8 unités par côté) : confirmée le 12 septembre, décision au registre.
+- [ ] **Valeurs de X et Y** pour la fenêtre de tuiles (9.2). Remises à plus tard ; la page a les
+      commandes pour les régler (fenêtre, position, vitesse, vue joueur, avance).
 - [x] **Étendue de la transition.** Tranchée : paramètre d'environnement (spec 2.2), le POC ayant
       montré qu'à 40 % de la tuile un décalage de 3 unités en virage fait une chicane et qu'à 100 %
       les mêmes tuiles donnent des courbes régulières. Valeur par environnement à régler en roulant
@@ -194,3 +193,11 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   des épingles (spec 2.5) : la validation le vérifie, le générateur part tout droit, n'arrive jamais en
   épingle et ne pose pas d'obstacle sur ces deux tuiles. Le Triangle, trois épingles, est une fixture
   invalide qui montre le message ; l'Hexagone, six virages larges, reste valide.
+- **Fenêtre de tuiles** (`window.ts`). Position continue le long de la piste (partie entière = tuile,
+  décimale = avancement), fenêtre de X tuiles devant et Y derrière qui passe le départ en boucle,
+  pose du joueur (centre de la piste, sens de la marche, hauteur du sol). La 3D construit un groupe
+  par tuile une fois pour toutes et ne fait que montrer ou cacher au fil de la position : aucune
+  reconstruction. Vue joueur selon la spec 3.9 : du dessus, orientée dans le sens de la marche,
+  hauteur qui monte avec la vitesse (14 unités à l'arrêt, 40 à 200 km/h), marqueur orange du joueur.
+  Carte 2D qui grise les tuiles hors fenêtre et pointe le joueur. Case « Avance » qui fait défiler la
+  position à la vitesse choisie, en boucle sur une piste fermée.

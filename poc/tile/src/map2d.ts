@@ -1,4 +1,12 @@
-import type { Environment, LineMark, Placement, PlacedTile, TransitionSpan, Vec2 } from './model';
+import type {
+    Environment,
+    LineMark,
+    Placement,
+    PlacedTile,
+    PlayerPose,
+    TransitionSpan,
+    Vec2,
+} from './model';
 import {
     APOTHEM,
     SIDE,
@@ -28,6 +36,8 @@ export function drawTrackMap(
     transition?: TransitionSpan,
     faulty: ReadonlySet<number> = new Set(),
     marks: readonly LineMark[] = [],
+    window: ReadonlySet<number> | null = null,
+    player: PlayerPose | null = null,
 ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -89,9 +99,19 @@ export function drawTrackMap(
             }
         }
         polygon(hexCorners(center), null, '#0c0a09');
+        if (window && !window.has(placed.index))
+            polygon(hexCorners(center), 'rgba(12, 10, 9, 0.7)');
         if (faulty.has(placed.index))
             polygon(hexCorners(center), 'rgba(239, 68, 68, 0.35)', '#ef4444');
     });
+
+    if (player) {
+        const p = toCanvas(player.point);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.max(3, k * 0.6), 0, Math.PI * 2);
+        ctx.fillStyle = '#f97316';
+        ctx.fill();
+    }
 
     ctx.font = `${Math.max(9, SIDE * k * 0.35)}px system-ui, sans-serif`;
     ctx.textAlign = 'center';

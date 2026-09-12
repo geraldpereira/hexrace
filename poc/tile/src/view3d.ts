@@ -1,7 +1,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { Environment, LineMark, Obstacle, Placement, TransitionSpan } from './model';
+import type {
+    Environment,
+    LineMark,
+    Obstacle,
+    Placement,
+    PlayerPose,
+    TransitionSpan,
+} from './model';
 import {
     HEIGHT_UNIT,
     SIDE,
@@ -52,6 +59,13 @@ export interface View3d {
     lookFrom(where: 'above' | 'side'): void;
     /** Caméra rapprochée sur une tuile de la dernière piste affichée. */
     focusTile(index: number): void;
+    /** Ne laisse dans la scène que les tuiles de la fenêtre ; null = toutes. */
+    setWindow(indices: ReadonlySet<number> | null): void;
+    /**
+     * Caméra de la spec (3.9) : vue du dessus qui suit l'orientation du joueur, d'autant plus haute
+     * que la vitesse est grande. `speed` en km/h. Place aussi le marqueur du joueur.
+     */
+    followPlayer(pose: PlayerPose, speed: number): void;
     resize(): void;
 }
 
@@ -72,6 +86,15 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
     let edges = new THREE.Group();
     let marks = new THREE.Group();
     scene.add(group, edges, marks);
+    /** Un groupe par tuile (maillage, contour, cercle de faute), pour montrer ou cacher chaque tuile. */
+    let tileGroups: THREE.Group[] = [];
+    let edgeLines: THREE.Object3D[] = [];
+    const player = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 0.5, 2),
+        new THREE.MeshLambertMaterial({ color: '#f97316' }),
+    );
+    player.visible = false;
+    scene.add(player);
 
     const resize = (): void => {
         const { clientWidth, clientHeight } = canvas;
@@ -94,15 +117,18 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         edges.visible = edgesVisible;
         scene.add(group, edges, marks);
 
-        const positions: number[] = [];
-        const colors: number[] = [];
         const color = new THREE.Color();
         const box = new THREE.Box3();
         const lowest = Math.min(
             ...placement.tiles.map((t) => Math.min(t.entry.height, t.tile.profile.height)),
         );
         const skirtBase = lowest * HEIGHT_UNIT - SKIRT_DEPTH;
+        tileGroups = [];
+        edgeLines = [];
         for (const placed of placement.tiles) {
+            const positions: number[] = [];
+            const colors: number[] = [];
+            const tileGroup = new THREE.Group();
             const sweep = tileSweep(placed, transition);
             const heightAt = (p: SPoint): number => heightOf(sweep, p);
             for (const quad of tileQuads(sweep)) {
@@ -120,6 +146,23 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
             }
             color.set(SKIRT_COLOR);
             skirt(tileBoundary(sweep), heightAt, skirtBase, positions, colors, color);
+
+            let geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            if (smoothShading) geometry = mergeVertices(geometry, 1e-4);
+            geometry.computeVertexNormals();
+            tileGroup.add(
+                new THREE.Mesh(
+                    geometry,
+                    new THREE.MeshLambertMaterial({
+                        vertexColors: true,
+                        flatShading: !smoothShading,
+                        side: THREE.DoubleSide,
+                    }),
+                ),
+            );
+
             const corners = hexCorners(cellToWorld(placed.cell));
             const line = new THREE.LineLoop(
                 new THREE.BufferGeometry().setFromPoints(
@@ -129,36 +172,27 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
                 ),
                 new THREE.LineBasicMaterial({ color: '#0c0a09' }),
             );
-            edges.add(line);
+            line.visible = edgesVisible;
+            edgeLines.push(line);
+            tileGroup.add(line);
             if (faulty.has(placed.index)) {
-                const mark = new THREE.LineLoop(
-                    new THREE.BufferGeometry().setFromPoints(
-                        corners.map(
-                            (p) => new THREE.Vector3(p.x, tileHeightAt(sweep, p) + 0.3, -p.y),
+                tileGroup.add(
+                    new THREE.LineLoop(
+                        new THREE.BufferGeometry().setFromPoints(
+                            corners.map(
+                                (p) => new THREE.Vector3(p.x, tileHeightAt(sweep, p) + 0.3, -p.y),
+                            ),
                         ),
+                        new THREE.LineBasicMaterial({ color: '#ef4444' }),
                     ),
-                    new THREE.LineBasicMaterial({ color: '#ef4444' }),
                 );
-                marks.add(mark);
             }
             for (const c of corners)
                 box.expandByPoint(new THREE.Vector3(c.x, tileHeightAt(sweep, c), -c.y));
+            tileGroups.push(tileGroup);
+            group.add(tileGroup);
         }
-        let geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        if (smoothShading) geometry = mergeVertices(geometry, 1e-4);
-        geometry.computeVertexNormals();
-        group.add(
-            new THREE.Mesh(
-                geometry,
-                new THREE.MeshLambertMaterial({
-                    vertexColors: true,
-                    flatShading: !smoothShading,
-                    side: THREE.DoubleSide,
-                }),
-            ),
-        );
+        setWindow(windowShown);
         lastShown = { placement, environment, transition, faulty, lines };
 
         bounds.copy(box);
@@ -171,6 +205,7 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
     const focusTile = (index: number): void => {
         const placed = shown?.tiles[index];
         if (!placed) return;
+        camera.up.set(0, 1, 0);
         const sweep = tileSweep(placed);
         const c = cellToWorld(placed.cell);
         const target = new THREE.Vector3(c.x, tileHeightAt(sweep, c), -c.y);
@@ -179,6 +214,8 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         controls.update();
     };
     const lookFrom = (where: 'above' | 'side'): void => {
+        camera.up.set(0, 1, 0);
+        player.visible = false;
         const center = bounds.getCenter(new THREE.Vector3());
         const size = bounds.getSize(new THREE.Vector3());
         const distance = Math.max(size.x, size.z, SIDE * 4) * 0.9;
@@ -192,7 +229,32 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
     let edgesVisible = false;
     const setEdges = (visible: boolean): void => {
         edgesVisible = visible;
-        edges.visible = visible;
+        for (const line of edgeLines) line.visible = visible;
+    };
+
+    let windowShown: ReadonlySet<number> | null = null;
+    const setWindow = (indices: ReadonlySet<number> | null): void => {
+        windowShown = indices;
+        tileGroups.forEach((tileGroup, index) => {
+            tileGroup.visible = indices === null || indices.has(index);
+        });
+    };
+
+    const followPlayer = (pose: PlayerPose, speed: number): void => {
+        const at = new THREE.Vector3(pose.point.x, pose.height, -pose.point.y);
+        const forward = new THREE.Vector3(pose.travel.x, 0, -pose.travel.y);
+        player.visible = true;
+        player.position.copy(at).add(new THREE.Vector3(0, 0.25, 0));
+        player.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), forward);
+        // Hauteur qui suit la vitesse : 14 unités à l'arrêt, 40 à 200 km/h.
+        const height = SIDE * 1.75 + speed * 0.13;
+        camera.position
+            .copy(at)
+            .add(new THREE.Vector3(0, height, 0))
+            .addScaledVector(forward, -height * 0.35);
+        camera.up.copy(forward);
+        controls.target.copy(at).addScaledVector(forward, height * 0.25);
+        controls.update();
     };
 
     let smoothShading = false;
@@ -225,7 +287,16 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
     };
     resize();
     loop();
-    return { setPlacement, setEdges, setSmooth, lookFrom, focusTile, resize };
+    return {
+        setPlacement,
+        setEdges,
+        setSmooth,
+        lookFrom,
+        focusTile,
+        setWindow,
+        followPlayer,
+        resize,
+    };
 }
 
 type HeightAt = (p: SPoint) => number;

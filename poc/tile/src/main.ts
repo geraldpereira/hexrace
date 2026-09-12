@@ -1,5 +1,5 @@
 import { drawTrackMap } from './map2d';
-import type { Track } from './model';
+import type { Environment, LineMark, Placement, Track, TransitionSpan } from './model';
 import {
     DEFAULT_CONFIG,
     environmentOf,
@@ -8,11 +8,17 @@ import {
     generateTrack,
     lineMarks,
     parseConfig,
+    playerPose,
+    windowIndices,
+    cursorAt,
+    isClosed,
     parseTrack,
     serializeTrack,
     transitionOfExtent,
     validPrefix,
     validateTrack,
+    pathLength,
+    UNIT_METERS,
 } from './model';
 import { createView3d } from './view3d';
 
@@ -47,6 +53,15 @@ if (app) {
                 <label>Tuile <input id="focus" type="number" min="0" value="0" style="width: 4em" /></label></span>
             <label>Graine <input id="config" size="36" spellcheck="false" /></label>
             <button id="generate" type="button">Générer</button>
+            <span style="flex-basis: 100%; display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
+                <label><input id="windowOn" type="checkbox" /> Fenêtre</label>
+                <label>devant <input id="ahead" type="number" min="0" max="20" value="3" style="width: 3.5em" /></label>
+                <label>derrière <input id="behind" type="number" min="0" max="20" value="1" style="width: 3.5em" /></label>
+                <label>Position <input id="position" type="range" min="0" max="1" step="0.01" value="0" style="width: 240px; vertical-align: middle" /> <output id="positionValue">0.00</output></label>
+                <label>Vitesse <input id="speed" type="range" min="0" max="200" step="5" value="80" style="width: 120px; vertical-align: middle" /> <output id="speedValue">80</output> km/h</label>
+                <label><input id="drive" type="checkbox" /> Avance</label>
+                <button id="playerView" type="button">Vue joueur</button>
+            </span>
             <details id="filePanel" style="flex-basis: 100%">
                 <summary>Fichier de la piste affichée</summary>
                 <textarea id="file" readonly rows="14" style="width: 100%; font: 12px/1.3 monospace; background: #0c0a09; color: #e7e5e4; border: 1px solid #44403c"></textarea>
@@ -71,6 +86,15 @@ if (app) {
     const above = app.querySelector<HTMLButtonElement>('#above');
     const side = app.querySelector<HTMLButtonElement>('#side');
     const focus = app.querySelector<HTMLInputElement>('#focus');
+    const windowOn = app.querySelector<HTMLInputElement>('#windowOn');
+    const ahead = app.querySelector<HTMLInputElement>('#ahead');
+    const behind = app.querySelector<HTMLInputElement>('#behind');
+    const position = app.querySelector<HTMLInputElement>('#position');
+    const positionValue = app.querySelector<HTMLOutputElement>('#positionValue');
+    const speed = app.querySelector<HTMLInputElement>('#speed');
+    const speedValue = app.querySelector<HTMLOutputElement>('#speedValue');
+    const drive = app.querySelector<HTMLInputElement>('#drive');
+    const playerView = app.querySelector<HTMLButtonElement>('#playerView');
     const config = app.querySelector<HTMLInputElement>('#config');
     const generate = app.querySelector<HTMLButtonElement>('#generate');
     const file = app.querySelector<HTMLTextAreaElement>('#file');
@@ -90,7 +114,16 @@ if (app) {
         !config ||
         !generate ||
         !file ||
-        !focus
+        !focus ||
+        !windowOn ||
+        !ahead ||
+        !behind ||
+        !position ||
+        !positionValue ||
+        !speed ||
+        !speedValue ||
+        !drive ||
+        !playerView
     ) {
         throw new Error('page incomplète');
     }
@@ -119,6 +152,41 @@ if (app) {
     };
     regenerate();
 
+    let current: {
+        track: Track;
+        placement: Placement;
+        environment: Environment;
+        transition: TransitionSpan;
+        faulty: ReadonlySet<number>;
+        marks: LineMark[];
+    } | null = null;
+    let following = false;
+
+    /** Applique la fenêtre et la position du joueur aux deux vues, sans reconstruire les maillages. */
+    const updateWindow = (): void => {
+        if (!current) return;
+        const { track, placement, environment, transition, faulty, marks } = current;
+        const total = placement.tiles.length;
+        position.max = String(isClosed(track) ? total : Math.max(0, total - 0.01));
+        const pos = Number(position.value);
+        positionValue.value = pos.toFixed(2);
+        speedValue.value = speed.value;
+        const cursor = cursorAt(pos, total, isClosed(track));
+        const indices = windowOn.checked
+            ? windowIndices(
+                  total,
+                  cursor.tile,
+                  Number(ahead.value),
+                  Number(behind.value),
+                  isClosed(track),
+              )
+            : null;
+        view.setWindow(indices);
+        const pose = playerPose(track, placement, pos);
+        if (pose && following) view.followPlayer(pose, Number(speed.value));
+        drawTrackMap(map, placement, environment, transition, faulty, marks, indices, pose);
+    };
+
     const show = (): void => {
         const entry = entries[Number(select.value)];
         if (!entry) return;
@@ -145,9 +213,12 @@ if (app) {
             ? transitionOfExtent(Number(extent.value))
             : environment.transition;
         const marks = lineMarks(track);
-        drawTrackMap(map, placement, environment, transition, faulty, marks);
         // La 3D ne construit que ce qui est valide : jusqu'à la première tuile qui en recouvre une autre.
-        view.setPlacement(validPrefix(placement), environment, transition, faulty, marks);
+        const shown = validPrefix(placement);
+        view.setPlacement(shown, environment, transition, faulty, marks);
+        current = { track, placement: shown, environment, transition, faulty, marks };
+        following = false;
+        updateWindow();
     };
     const hash = decodeURIComponent(window.location.hash.slice(1));
     const fromHash = entries.findIndex(
@@ -160,8 +231,47 @@ if (app) {
         select.value = String(GENERATED);
     }
     focus.addEventListener('change', () => {
+        following = false;
         view.focusTile(Number(focus.value));
     });
+    for (const input of [windowOn, ahead, behind, position, speed]) {
+        input.addEventListener('input', updateWindow);
+    }
+    playerView.addEventListener('click', () => {
+        following = true;
+        updateWindow();
+    });
+    above.addEventListener('click', () => {
+        following = false;
+    });
+    side.addEventListener('click', () => {
+        following = false;
+    });
+    // Avance automatique : la vitesse en km/h convertie en unités par seconde (une unité = 1,7 m).
+    let lastTick = performance.now();
+    const tick = (now: number): void => {
+        const dt = (now - lastTick) / 1000;
+        lastTick = now;
+        if (drive.checked && current) {
+            const unitsPerSecond = (Number(speed.value) * 1000) / 3600 / UNIT_METERS;
+            const tile =
+                current.placement.tiles[
+                    cursorAt(
+                        Number(position.value),
+                        current.placement.tiles.length,
+                        isClosed(current.track),
+                    ).tile
+                ];
+            const length = tile ? pathLength(tile.tile.exit) : 1;
+            let next = Number(position.value) + (unitsPerSecond * dt) / length;
+            const max = Number(position.max);
+            if (next > max) next = isClosed(current.track) ? next - max : max;
+            position.value = String(next);
+            updateWindow();
+        }
+        requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
     generate.addEventListener('click', () => {
         if (regenerate()) {
             select.value = String(GENERATED);
