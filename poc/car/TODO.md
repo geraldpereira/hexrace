@@ -7,22 +7,17 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
 ## Valider les critères de la spec
 
 
-Bouton A pour le frein à frein. LB/RB pour les vitesses si mode manuel.
-
 - [ ] **Boîte et régime moteur.** Premier jet fait : moteur et boîte Jolt réglables dans le GUI
       (courbe de couple, inertie, rapports, temps de passage), compte-tours et rapport dans le HUD,
-      son moteur procédural. Reste à doser la courbe et les rapports en roulant, et à juger si le
-      son synthétique suffit au POC ou s'il faut un échantillon bouclé. Boîte auto seulement (décidé).
+      son moteur procédural par impulsions de cylindres (AudioWorklet). Reste à doser la courbe et
+      les rapports en roulant, et à juger si ce son suffit au POC ou s'il faut un échantillon bouclé. Boîte auto (décidé) ; un mode
+      manuel LB/RB existe en option debug pour sentir les rapports. Frein à main sur A.
+
 - [ ] Collisions. Dégats. 
 - [ ] Traces de pneus et particules.
 - [ ] **Chrono au tour.** Ligne de départ sur la boucle, temps au tour courant et meilleur tour dans
       le HUD. Seul moyen de juger « sur asphalte glisser fait perdre du temps, sur gravier ne pas
       glisser en fait perdre » autrement qu'au ressenti.
-- [ ] **Glace.** Ajouter le revêtement du Pays du Nord au tableau des surfaces : glisse la plus
-      longue, freinage très allongé, grain quasi nul. À définir aussi dans la spec (3.4, `<TODO>`
-      neige et glace).
-- [ ] **Barrières.** Quelques barrières le long de la piste et en bord de terrain. Collision et effet
-      sur la conduite seulement, pas de dégâts (hors POC 1).
 - [ ] **Caméra de la spec.** Vue du dessus qui suit l'orientation de la voiture, hauteur qui monte
       avec la vitesse (3.9). Remplace la caméra de poursuite : la glisse et le braquage se perçoivent
       autrement, régler le ressenti avec la bonne caméra avant le POC 3.

@@ -4,7 +4,8 @@ import type { InputSource } from './inputSource';
 
 /**
  * Keyboard's contribution to the merged input. W = right trigger, S = left
- * trigger, A/D = left stick X, arrows = right stick, Space = left bumper.
+ * trigger, A/D = left stick X, arrows = right stick, Space = button A,
+ * Q/E = left/right bumper.
  */
 export class KeyboardSource implements InputSource {
     private static readonly HANDLED_KEYS = new Set([
@@ -17,6 +18,8 @@ export class KeyboardSource implements InputSource {
         'ArrowLeft',
         'ArrowRight',
         'Space',
+        'KeyQ',
+        'KeyE',
         'Escape',
     ]);
 
@@ -33,6 +36,8 @@ export class KeyboardSource implements InputSource {
         leftTrigger: 0,
         rightTrigger: 0,
         leftBumper: 0,
+        rightBumper: 0,
+        buttonA: 0,
     };
 
     constructor() {
@@ -57,6 +62,8 @@ export class KeyboardSource implements InputSource {
             alpha,
         );
         this.snapshot.leftBumper = this.target.leftBumper;
+        this.snapshot.rightBumper = this.target.rightBumper;
+        this.snapshot.buttonA = this.target.buttonA;
     }
 
     clearRequested(): void {
@@ -80,10 +87,12 @@ export class KeyboardSource implements InputSource {
         this.target.rightStickY = (down ? 1 : 0) - (up ? 1 : 0);
 
         // Keyboard is on/off, so 0 or 1 — the snapshot smoothing in tick()
-        // gives the triggers a soft ramp. The bumper stays binary.
+        // gives the triggers a soft ramp. The buttons stay binary.
         this.target.rightTrigger = this.heldKeys.has('KeyW') ? 1 : 0;
         this.target.leftTrigger = this.heldKeys.has('KeyS') ? 1 : 0;
-        this.target.leftBumper = this.heldKeys.has('Space') ? 1 : 0;
+        this.target.buttonA = this.heldKeys.has('Space') ? 1 : 0;
+        this.target.leftBumper = this.heldKeys.has('KeyQ') ? 1 : 0;
+        this.target.rightBumper = this.heldKeys.has('KeyE') ? 1 : 0;
     }
 
     private onKeyDown = (e: KeyboardEvent): void => {
@@ -116,6 +125,8 @@ export class KeyboardSource implements InputSource {
         this.target.leftTrigger = 0;
         this.target.rightTrigger = 0;
         this.target.leftBumper = 0;
+        this.target.rightBumper = 0;
+        this.target.buttonA = 0;
         this.snapshot.reset();
     };
 }

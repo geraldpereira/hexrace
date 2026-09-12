@@ -140,6 +140,11 @@ const RAD_TO_DEG = 180 / Math.PI;
 // Pressing "back" while rolling forward brakes; once (nearly) stopped it
 // engages reverse. Mirrors the Jolt vehicle example.
 const REVERSE_SPEED_THRESHOLD = 0.5;
+// Manual gearbox (debug option, the game stays automatic): LB / RB step the
+// gear down / up, from R through N to the last gear. Jolt does nothing on
+// its own in manual mode, so the clutch is driven here: open for the
+// switch time, then released linearly over the clutch release time.
+const MANUAL_GEARBOX = false;
 // Auto-brake when the player isn't touching anything and the car is nearly
 // stopped — keeps it from rolling down slopes on its own.
 const IDLE_BRAKE = 0.2;
@@ -200,6 +205,7 @@ export class CarBehavior extends Component {
     clutch = 0;
     /** True while the gearbox is between two gears. */
     shifting = false;
+    manualGearbox = MANUAL_GEARBOX;
     /** Engine limits, mirrored from Jolt each tick so the HUD and sound follow debug edits. */
     maxRpm = DRIVETRAIN.maxRPM;
     minRpm = DRIVETRAIN.minRPM;
@@ -233,6 +239,12 @@ export class CarBehavior extends Component {
 
     private input!: GameInput;
     private rearLateralScale = 1;
+    private prevShiftUp = false;
+    private prevShiftDown = false;
+    /** Gear selected in manual mode; Jolt's current gear lags during a switch. */
+    private manualGear = 0;
+    /** Time (s) since the last manual shift, drives the clutch ramp. */
+    private manualShiftAge = Number.POSITIVE_INFINITY;
     private travelled = 0;
     private readonly mass: number;
     private readonly wheelSurface: number[] = WHEEL_NAMES.map(() => -1);
@@ -294,15 +306,17 @@ export class CarBehavior extends Component {
         // axes go through their response curve first.
         const throttle = shapeInput(merged.rightTrigger, this.throttleResponse);
         const back = shapeInput(merged.leftTrigger, this.brakeResponse);
-        const handBrake = merged.leftBumper;
+        const handBrake = merged.buttonA;
 
         const forwardSpeed = this.localForwardSpeed();
         let forward = throttle;
         let brake = 0;
         if (back > 0) {
-            if (forwardSpeed > REVERSE_SPEED_THRESHOLD) brake = back;
+            // Manual: the brake only brakes, reverse is a gear (LB down to R).
+            if (this.manualGearbox || forwardSpeed > REVERSE_SPEED_THRESHOLD) brake = back;
             else forward = -back;
         }
+        this.updateManualGearbox(merged.rightBumper > 0, merged.leftBumper > 0);
         const idle =
             forward === 0 && brake === 0 && handBrake === 0 && this.speedKmh < IDLE_BRAKE_SPEED_KMH;
         if (idle) brake = IDLE_BRAKE;
@@ -342,7 +356,9 @@ export class CarBehavior extends Component {
         this.shiftUpRpm = transmission.get_mShiftUpRPM();
         this.gear = transmission.GetCurrentGear();
         this.clutch = transmission.GetClutchFriction();
-        this.shifting = transmission.IsSwitchingGear();
+        this.shifting = this.manualGearbox
+            ? this.manualShiftAge < transmission.get_mSwitchTime()
+            : transmission.IsSwitchingGear();
         // Slips are stale by one tick (Physics.step() runs after fixedUpdate)
         // but that's invisible at 60 Hz for a debug readout.
         for (const [i, wheel] of this.wheels.entries()) {
@@ -554,6 +570,51 @@ export class CarBehavior extends Component {
         mesh.quaternion.set(rotation.GetX(), rotation.GetY(), rotation.GetZ(), rotation.GetW());
     }
 
+    private updateManualGearbox(shiftUp: boolean, shiftDown: boolean): void {
+        const tr = this.controller.GetTransmission();
+        const upEdge = shiftUp && !this.prevShiftUp;
+        const downEdge = shiftDown && !this.prevShiftDown;
+        this.prevShiftUp = shiftUp;
+        this.prevShiftDown = shiftDown;
+        if (!this.manualGearbox) return;
+
+        const topGear = tr.get_mGearRatios().size();
+        const wanted = Math.max(
+            -1,
+            Math.min(topGear, this.manualGear + (upEdge ? 1 : 0) - (downEdge ? 1 : 0)),
+        );
+        if (wanted !== this.manualGear) {
+            this.manualGear = wanted;
+            this.manualShiftAge = 0;
+        } else {
+            this.manualShiftAge += PHYSICS_TIMESTEP;
+        }
+
+        const switchTime = tr.get_mSwitchTime();
+        const releaseTime = tr.get_mClutchReleaseTime();
+        let clutch = 1;
+        if (this.manualShiftAge < switchTime) clutch = 0;
+        else if (releaseTime > 0)
+            clutch = Math.min((this.manualShiftAge - switchTime) / releaseTime, 1);
+        // Neutral: clutch open, so the engine revs free.
+        if (this.manualGear === 0) clutch = 0;
+        tr.Set(this.manualGear, clutch);
+    }
+
+    private setGearboxMode(manual: boolean): void {
+        const Jolt = this.physics.Jolt;
+        const tr = this.controller.GetTransmission();
+        this.manualGearbox = manual;
+        if (manual) {
+            // Pick up whatever gear the automatic was in so nothing jolts.
+            this.manualGear = tr.GetCurrentGear();
+            this.manualShiftAge = Number.POSITIVE_INFINITY;
+            tr.set_mMode(Jolt.ETransmissionMode_Manual);
+        } else {
+            tr.set_mMode(Jolt.ETransmissionMode_Auto);
+        }
+    }
+
     override registerDebug(gui: GUI): void {
         const folder = gui.addFolder('Car');
         folder.add(this, 'speedKmh').name('Speed (km/h)').listen().disable();
@@ -710,6 +771,11 @@ export class CarBehavior extends Component {
         const f = parent.addFolder('Transmission');
         const Jolt = this.physics.Jolt;
         const tr = this.controller.GetTransmission();
+        f.add(this, 'manualGearbox')
+            .name('Manual (LB/RB)')
+            .onChange((v: boolean) => {
+                this.setGearboxMode(v);
+            });
         f.add(this, 'clutch', 0, 1, 0.01).name('Clutch friction').listen().disable();
         f.add(this, 'shifting').name('Shifting').listen().disable();
         const cfg = {

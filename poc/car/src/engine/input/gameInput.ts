@@ -15,6 +15,8 @@ export class GameInput {
     leftTrigger = 0;
     rightTrigger = 0;
     leftBumper = 0;
+    rightBumper = 0;
+    buttonA = 0;
     pauseRequested = false;
 
     reset(): void {
@@ -25,6 +27,8 @@ export class GameInput {
         this.leftTrigger = 0;
         this.rightTrigger = 0;
         this.leftBumper = 0;
+        this.rightBumper = 0;
+        this.buttonA = 0;
         this.pauseRequested = false;
     }
 }

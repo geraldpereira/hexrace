@@ -20,17 +20,25 @@ Manette (mapping standard Xbox) :
 
 - Gâchette droite (RT) : accélérateur.
 - Gâchette gauche (LT) : frein. Maintenue à l'arrêt, passe en marche arrière.
-- LB : frein à main (roues arrière).
+- A : frein à main (roues arrière).
+- LB / RB : rapport inférieur / supérieur, seulement si « Manual » est coché dans le dossier
+  Transmission du panneau debug (le jeu reste en boîte auto). En manuel, la gâchette gauche ne fait
+  que freiner : la marche arrière est le rapport R, sous la première et le point mort.
 - Sticks gauche et droit : direction uniquement.
 - Start : pause.
 
-Clavier : `W` accélérer, `S` freiner / marche arrière, `A` / `D` ou flèches direction, `Espace` frein à main.
+Clavier : `W` accélérer, `S` freiner / marche arrière, `A` / `D` ou flèches direction, `Espace` frein à main,
+`Q` / `E` rapport inférieur / supérieur en manuel.
 
 ## Son
 
-Le son moteur (Web Audio, procédural) ne démarre qu'après un clic ou une touche dans la page :
-le navigateur l'exige, et la manette seule ne compte pas. Volume et timbre dans le dossier
-« Engine sound » du panneau debug.
+Le son moteur est procédural, sans échantillon : un AudioWorklet (`src/rally/car/engineProcessor.ts`)
+tire une impulsion de pression par cylindre sur le cycle du vilebrequin, avec un décalage et un gain
+propres à chaque cylindre, puis fait sonner trois résonances fixes d'échappement et un filtre en
+peigne pour la longueur de pipe, ajoute un souffle d'admission sous charge et sature doucement.
+Il ne démarre qu'après un clic ou une touche dans la page : le navigateur l'exige, et la manette
+seule ne compte pas. Cylindres, pipe, résonances, souffle et saturation dans le dossier « Engine
+sound » du panneau debug.
 
 ## À tester
 

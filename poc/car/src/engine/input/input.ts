@@ -32,6 +32,8 @@ export class InputBehavior extends Component {
         this.merged.leftTrigger = Math.max(kb.leftTrigger, gp.leftTrigger);
         this.merged.rightTrigger = Math.max(kb.rightTrigger, gp.rightTrigger);
         this.merged.leftBumper = Math.max(kb.leftBumper, gp.leftBumper);
+        this.merged.rightBumper = Math.max(kb.rightBumper, gp.rightBumper);
+        this.merged.buttonA = Math.max(kb.buttonA, gp.buttonA);
 
         this.merged.pauseRequested = kb.pauseRequested || gp.pauseRequested;
 
@@ -49,6 +51,8 @@ export class InputBehavior extends Component {
         folder.add(this.merged, 'leftTrigger', 0, 1).listen().disable();
         folder.add(this.merged, 'rightTrigger', 0, 1).listen().disable();
         folder.add(this.merged, 'leftBumper', 0, 1).listen().disable();
+        folder.add(this.merged, 'rightBumper', 0, 1).listen().disable();
+        folder.add(this.merged, 'buttonA', 0, 1).listen().disable();
     }
 }
 

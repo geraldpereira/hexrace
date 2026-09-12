@@ -3,7 +3,9 @@ import type { InputSource } from './inputSource';
 
 // Standard mapping (Xbox-style): https://w3c.github.io/gamepad/#remapping
 enum Button {
+    A = 0,
     LB = 4,
+    RB = 5,
     BACK = 8,
     START = 9,
     DPAD_UP = 12,
@@ -51,6 +53,8 @@ export class GamepadSource implements InputSource {
         this.snapshot.rightTrigger = rt > GamepadSource.TRIGGER_DEADZONE ? rt : 0;
         this.snapshot.leftTrigger = lt > GamepadSource.TRIGGER_DEADZONE ? lt : 0;
         this.snapshot.leftBumper = GamepadSource.btnPressed(pad.buttons[Button.LB]) ? 1 : 0;
+        this.snapshot.rightBumper = GamepadSource.btnPressed(pad.buttons[Button.RB]) ? 1 : 0;
+        this.snapshot.buttonA = GamepadSource.btnPressed(pad.buttons[Button.A]) ? 1 : 0;
 
         // Left stick: fall back to D-pad for the X axis when the stick is idle.
         const lx = GamepadSource.applyDeadzone(
