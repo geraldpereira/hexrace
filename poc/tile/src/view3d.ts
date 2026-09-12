@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type { Obstacle, Placement, TransitionSpan } from './model';
+import type { Environment, Obstacle, Placement, TransitionSpan } from './model';
 import {
     HEIGHT_UNIT,
     SIDE,
@@ -12,9 +12,10 @@ import {
     tileHeightAt,
     tileQuads,
     tileSweep,
+    zoneColor,
 } from './model';
 import type { SPoint, TileSweep } from './model';
-import { OBSTACLE, ROAD, zoneColor } from './palette';
+import { OBSTACLE } from './palette';
 
 /**
  * Vue three.js d'une piste posée : un maillage plat par zone, coloré par rang de palette, les
@@ -30,7 +31,7 @@ const SKIRT_DEPTH = 2 * HEIGHT_UNIT;
 const SKIRT_COLOR = '#292524';
 
 export interface View3d {
-    setPlacement(placement: Placement, transition?: TransitionSpan): void;
+    setPlacement(placement: Placement, environment: Environment, transition?: TransitionSpan): void;
     setEdges(visible: boolean): void;
     /** Caméra en hauteur au sud de la piste, ou au ras du sol à l'est pour lire le relief de profil. */
     lookFrom(where: 'above' | 'side'): void;
@@ -61,7 +62,11 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         camera.updateProjectionMatrix();
     };
 
-    const setPlacement = (placement: Placement, transition?: TransitionSpan): void => {
+    const setPlacement = (
+        placement: Placement,
+        environment: Environment,
+        transition?: TransitionSpan,
+    ): void => {
         scene.remove(group, edges);
         group = new THREE.Group();
         edges = new THREE.Group();
@@ -80,11 +85,11 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
             const sweep = tileSweep(placed, transition);
             const heightAt = (p: SPoint): number => heightOf(sweep, p);
             for (const quad of tileQuads(sweep)) {
-                color.set(zoneColor(quad.zone, quad.type));
+                color.set(zoneColor(environment, quad.zone, quad.type));
                 fan(quad.points, heightAt, positions, colors, color);
             }
             for (const obstacle of placed.tile.obstacles ?? []) {
-                obstacleMesh(sweep, obstacle, heightAt, positions, colors);
+                obstacleMesh(sweep, obstacle, environment, heightAt, positions, colors);
             }
             color.set(SKIRT_COLOR);
             skirt(tileBoundary(sweep), heightAt, skirtBase, positions, colors, color);
@@ -239,6 +244,7 @@ function skirt(
 function obstacleMesh(
     sweep: TileSweep,
     obstacle: Obstacle,
+    environment: Environment,
     heightAt: HeightAt,
     positions: number[],
     colors: number[],
@@ -252,7 +258,7 @@ function obstacleMesh(
               : 0;
     const fill =
         obstacle.kind === 'patch'
-            ? (ROAD[obstacle.road - 1] ?? '#000')
+            ? zoneColor(environment, 'road', obstacle.road)
             : OBSTACLE[obstacle.kind].body;
     const color = new THREE.Color(fill);
     const pieces = obstacle.kind === 'hazard' ? [body] : bandQuads(body);

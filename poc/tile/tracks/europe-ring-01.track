@@ -1,0 +1,25 @@
+hexrace-track 1
+
+id: europe-ring-01
+name: Petit Anneau
+environment: europe  # Europe
+mode: track
+laps: 3
+
+# Une ligne par tuile, dans l'ordre de parcours. L'entrée est toujours la face 6.
+# exit face de sortie · pos/w position et largeur de la piste en sortie · sh bas-côtés gauche,droite
+# h hauteur · t rangs piste/bas-côté/paysage · obs obstacles (voir trackFile.ts)
+
+[tiles]
+start  exit=12  pos=2  w=3  sh=1,1  h=5   t=1/1/1
+       exit=2   pos=2  w=3  sh=1,1  h=5   t=1/1/1
+       exit=12  pos=2  w=3  sh=1,1  h=6   t=1/1/1  obs=bump@0.45-0.55
+       exit=2   pos=2  w=3  sh=1,1  h=6   t=2/1/1  obs=patch:3@0.3-0.7/-0.5x1.5
+       exit=12  pos=3  w=2  sh=1,1  h=6   t=2/1/1
+       exit=2   pos=3  w=2  sh=1,1  h=6   t=2/1/1  obs=barrier:left,barrier:right
+       exit=12  pos=3  w=2  sh=1,1  h=7   t=2/1/1  obs=ramp@0.4-0.55
+       exit=2   pos=3  w=2  sh=1,1  h=7   t=2/1/1  obs=hazard:medium@0.5/-1.5
+       exit=12  pos=2  w=3  sh=1,1  h=6   t=1/1/1
+       exit=2   pos=2  w=3  sh=1,1  h=6   t=1/1/1  obs=hazard:small@0.5/1
+       exit=12  pos=2  w=3  sh=1,1  h=5   t=1/1/1  obs=barrier:right@0.5-1
+       exit=2   pos=2  w=3  sh=1,1  h=5   t=1/1/1  obs=barrier:right@0-0.5,hazard:large@0.6/-2.5

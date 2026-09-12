@@ -1,3 +1,5 @@
+import type { EnvironmentId } from './environment';
+import { ENVIRONMENT_IDS } from './environment';
 import type { Profile } from './profile';
 import { profileErrors } from './profile';
 import type { Tile, TileProfiles } from './tile';
@@ -5,10 +7,6 @@ import type { Tile, TileProfiles } from './tile';
 /** Boucle (Track) ou point à point (Rally), spec 4.2 et 4.3. */
 export type TrackMode = 'track' | 'rally';
 
-/** Les environnements de la spec 2.2. */
-export type Environment = 'north' | 'europe' | 'africa';
-
-export const ENVIRONMENTS: readonly Environment[] = ['north', 'europe', 'africa'];
 export const TRACK_MODES: readonly TrackMode[] = ['track', 'rally'];
 
 /**
@@ -18,7 +16,7 @@ export const TRACK_MODES: readonly TrackMode[] = ['track', 'rally'];
 export interface Track {
     readonly id: string;
     readonly name: string;
-    readonly environment: Environment;
+    readonly environment: EnvironmentId;
     readonly mode: TrackMode;
     /** Nombre de tours, mode Track seulement. */
     readonly laps?: number;
@@ -60,7 +58,7 @@ function tileAt(track: Track, index: number): Tile {
 export function trackErrors(track: Track): string[] {
     const errors: string[] = [];
     if (track.id.trim() === '') errors.push('identifiant vide');
-    if (!ENVIRONMENTS.includes(track.environment)) {
+    if (!ENVIRONMENT_IDS.includes(track.environment)) {
         errors.push(`environnement inconnu : ${track.environment}`);
     }
     if (!TRACK_MODES.includes(track.mode)) errors.push(`mode inconnu : ${track.mode}`);

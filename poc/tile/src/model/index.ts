@@ -13,3 +13,5 @@ export * from './fixtures/catalogue';
 export * from './obstacle';
 export * from './geometry';
 export * from './slope';
+export * from './environment';
+export * from './trackFile';

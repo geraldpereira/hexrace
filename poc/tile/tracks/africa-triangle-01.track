@@ -1,0 +1,15 @@
+hexrace-track 1
+
+id: africa-triangle-01
+name: Triangle
+environment: africa  # Afrique
+mode: track
+
+# Une ligne par tuile, dans l'ordre de parcours. L'entrée est toujours la face 6.
+# exit face de sortie · pos/w position et largeur de la piste en sortie · sh bas-côtés gauche,droite
+# h hauteur · t rangs piste/bas-côté/paysage · obs obstacles (voir trackFile.ts)
+
+[tiles]
+start  exit=4   pos=3  w=2  sh=1,1  h=3   t=2/2/2
+       exit=4   pos=3  w=2  sh=1,1  h=4   t=2/2/2
+       exit=4   pos=3  w=2  sh=1,1  h=3   t=2/2/2

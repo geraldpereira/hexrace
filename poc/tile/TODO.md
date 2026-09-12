@@ -15,13 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Environnement.** Un objet par environnement : palette de huit types nommés par rang (piste 1 à
-      3, bas-côté 1 à 3, paysage 1 à 2, ordonnés par adhérence décroissante), couleurs pour la carte,
-      étendue de la transition. Le balayage lit l'étendue dans l'environnement de la piste au lieu du
-      curseur ; les fixtures cessent de nommer leurs surfaces autrement que par rang (spec 2.2).
-- [ ] **Format de fichier.** Fichier texte lisible à la main : en-tête avec format et version, paires
-      clé / valeur, liste des tuiles (5.4, croquis 6). Parser avec messages d'erreur, sérialiseur,
-      rechargement à chaud. Deux ou trois pistes d'exemple dans `tracks/`, dont la boucle du croquis.
 - [ ] **Validation.** Règles 2.6 et 5.5 : jonctions, départ et arrivée, pas d'auto-intersection,
       nombre maximal de virages serrés consécutifs, fermeture en Track. Une piste invalide est
       refusée avec la raison, et la tuile fautive est surlignée dans la vue.
@@ -58,8 +51,8 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 - [ ] **Virages serrés consécutifs** (5.5). Trouver le nombre au-delà duquel la piste se recoupe, et
       si une simple borne suffit ou s'il faut un vrai test d'occupation de la grille.
-- [ ] **Grammaire du fichier de piste** (spec technique 3.3). Celle qui sort du POC devient la
-      référence.
+- [ ] **Grammaire du fichier de piste** (spec technique 3.3). Celle de `trackFile.ts` est la proposition
+      du POC ; à reporter dans la spec technique une fois validée.
 - [ ] **Taille de tuile** (8 unités par côté) : confirmer que le profil piste + bas-côtés + paysage
       tient et que les transitions au milieu restent lisibles.
 - [x] **Étendue de la transition.** Tranchée : paramètre d'environnement (spec 2.2), le POC ayant
@@ -162,3 +155,14 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   vue de profil, une seule courbe lisse sans palier. Boutons de vue « Dessus » et « Profil » dans la
   page. La hauteur ne dépend plus de l'étendue de transition, réservée à la largeur, la position et
   les types.
+- **Environnement** (`environment.ts`). Un objet par environnement : palette de huit rangs avec une
+  couleur chacun (Europe, Pays du Nord, Afrique ont des palettes distinctes), étendue de la
+  transition (toute la tuile pour les trois, la recommandation du POC). La carte et la 3D prennent
+  leurs couleurs et l'étendue dans l'environnement de la piste ; le curseur ne sert plus qu'à
+  forcer une autre étendue pour comparer.
+- **Format de fichier** (`trackFile.ts`). Le fichier du croquis 6 : en-tête `hexrace-track 1`, paires
+  clé/valeur, section `[tiles]` avec une ligne par tuile (`exit pos w sh h t obs`), obstacles
+  `hazard:small@0.5/1`, `barrier:left@0.3-1`, `ramp@0.4-0.6`, `patch:3@0.3-0.7/-0.5x1.5`. Parser
+  avec messages par ligne, sérialiseur qui redonne la piste à l'identique (testé sur les huit
+  fixtures). Les pistes de la page sont les fichiers `tracks/*.track`, rechargés à chaud par Vite ;
+  `npm run tracks` les régénère depuis les fixtures et un test garantit qu'ils leur restent égaux.

@@ -1,0 +1,29 @@
+hexrace-track 1
+
+id: north-catalog-01
+name: Catalogue
+environment: north  # Pays du Nord
+mode: rally
+
+# Une ligne par tuile, dans l'ordre de parcours. L'entrée est toujours la face 6.
+# exit face de sortie · pos/w position et largeur de la piste en sortie · sh bas-côtés gauche,droite
+# h hauteur · t rangs piste/bas-côté/paysage · obs obstacles (voir trackFile.ts)
+
+[tiles]
+start  exit=12  pos=3  w=1  sh=1,1  h=4   t=1/1/1
+       exit=12  pos=5  w=1  sh=1,1  h=5   t=1/1/1
+       exit=12  pos=2  w=1  sh=1,1  h=6   t=1/1/1
+       exit=2   pos=5  w=1  sh=1,1  h=7   t=1/1/1
+       exit=4   pos=2  w=1  sh=1,1  h=7   t=1/1/1
+       exit=12  pos=2  w=1  sh=1,1  h=7   t=1/1/1
+       exit=10  pos=2  w=1  sh=1,1  h=7   t=1/1/1
+       exit=8   pos=5  w=1  sh=1,1  h=7   t=1/1/1
+       exit=12  pos=5  w=1  sh=1,1  h=7   t=1/1/1
+       exit=4   pos=5  w=1  sh=1,1  h=7   t=1/1/1
+       exit=2   pos=3  w=1  sh=1,1  h=7   t=1/1/1
+       exit=8   pos=3  w=1  sh=1,1  h=7   t=1/1/1
+       exit=10  pos=5  w=1  sh=1,1  h=6   t=1/1/1
+       exit=12  pos=3  w=1  sh=1,1  h=5   t=1/1/1
+       exit=4   pos=3  w=1  sh=1,1  h=4   t=1/1/1
+       exit=8   pos=3  w=1  sh=1,1  h=4   t=1/1/1
+       exit=12  pos=3  w=1  sh=1,1  h=4   t=1/1/1

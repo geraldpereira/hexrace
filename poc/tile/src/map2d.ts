@@ -1,4 +1,4 @@
-import type { Placement, PlacedTile, TransitionSpan, Vec2 } from './model';
+import type { Environment, Placement, PlacedTile, TransitionSpan, Vec2 } from './model';
 import {
     APOTHEM,
     SIDE,
@@ -10,8 +10,9 @@ import {
     scale,
     tilePolygons,
     tileSweep,
+    zoneColor,
 } from './model';
-import { OBSTACLE, ROAD, zoneColor } from './palette';
+import { OBSTACLE } from './palette';
 
 /**
  * Carte 2D vue du dessus d'une piste placée : les mêmes polygones de zones que le maillage 3D,
@@ -22,6 +23,7 @@ import { OBSTACLE, ROAD, zoneColor } from './palette';
 export function drawTrackMap(
     canvas: HTMLCanvasElement,
     placement: Placement,
+    environment: Environment,
     transition?: TransitionSpan,
 ): void {
     const ctx = canvas.getContext('2d');
@@ -67,12 +69,12 @@ export function drawTrackMap(
         if (!center) return;
         const sweep = tileSweep(placed, transition);
         for (const zone of tilePolygons(sweep))
-            polygon(zone.points, zoneColor(zone.zone, zone.type));
+            polygon(zone.points, zoneColor(environment, zone.zone, zone.type));
         for (const obstacle of placed.tile.obstacles ?? []) {
             const { outline, body } = obstacleFootprint(sweep, obstacle);
             const colors = OBSTACLE[obstacle.kind];
             if (obstacle.kind === 'patch')
-                polygon(body, ROAD[obstacle.road - 1] ?? '#000', colors.body);
+                polygon(body, zoneColor(environment, 'road', obstacle.road), colors.body);
             else {
                 polygon(outline, colors.outline);
                 polygon(body, colors.body);
