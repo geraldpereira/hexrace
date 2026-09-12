@@ -38,6 +38,10 @@ class Voice {
         this.bp1 = new Biquad(); this.bp2 = new Biquad();
         this.lp = new Biquad(); this.rumble = new Biquad();
         this.grains = [];
+        // Grain noise source: one-pole low-passed white, so a grain is a
+        // pebble and not a spark. Level falls with density so a dense
+        // shower doesn't pile up into the limiter.
+        this.grainNoise = 0;
         // Slow random walks: pitch, level, flutter rate.
         this.wander = 0; this.levelWander = 0; this.flutterHz = 35;
         this.lfo = Math.random() * 6.28; this.flutterPhase = 0;
@@ -96,6 +100,7 @@ class TyreProcessor extends AudioWorkletProcessor {
             const level = p.level * (1 + 0.2 * v.levelWander);
             // Grains: denser with slide and speed.
             const grainRate = p.grainRate * (0.2 + 0.8 * it0) * (0.4 + 0.8 * speedFactor);
+            const grainNorm = 1 / Math.sqrt(1 + grainRate / 250);
             const flutterStep = (2 * Math.PI * v.flutterHz) / sr;
 
             for (let i = 0; i < out.length; i++) {
@@ -120,15 +125,18 @@ class TyreProcessor extends AudioWorkletProcessor {
                             amp: (0.3 + Math.random() * 1.2) * (stone ? 2.5 : 1),
                         });
                     }
+                    v.grainNoise += (white - v.grainNoise) * 0.3;
                     let g = 0;
                     for (let k = v.grains.length - 1; k >= 0; k--) {
                         const gr = v.grains[k];
                         const u = gr.t / gr.dur;
                         if (u >= 1) { v.grains.splice(k, 1); continue; }
-                        g += gr.amp * (Math.random() * 2 - 1) * Math.exp(-u * 4);
+                        // Short ramp in, exponential out: a knock, not a click.
+                        const env = u < 0.2 ? u * 5 : Math.exp(-(u - 0.2) * 4);
+                        g += gr.amp * v.grainNoise * env;
                         gr.t += 1 / sr;
                     }
-                    y += (1 - p.tone) * (v.lp.run(g * 1.6 + white * 0.12) + v.rumble.run(white) * 1.2);
+                    y += (1 - p.tone) * (v.lp.run(g * 1.3 * grainNorm + white * 0.08) + v.rumble.run(white) * 1.2);
                 }
                 out[i] += y * level * Math.pow(it, 1.3);
             }

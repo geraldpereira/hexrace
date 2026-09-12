@@ -127,7 +127,7 @@ export const SURFACES: readonly Surface[] = [
         wavelength: 0.3,
         markColor: 0x2f2924,
         markOpacity: 0.45,
-        slideSound: { tone: 0.05, freq: 2400, q: 1, grainRate: 900, grainDur: 0.004, level: 0.9 },
+        slideSound: { tone: 0.05, freq: 1600, q: 1, grainRate: 700, grainDur: 0.005, level: 1 },
         rollSound: {
             hiss: 0.15,
             hissFreq: 2500,

@@ -39,7 +39,11 @@ class RollVoice {
         this.intensity = 0; this.target = 0;
         this.hissLp = new Biquad(); this.grainLp = new Biquad(); this.rumbleLp = new Biquad();
         this.grains = [];
+        this.grainNoise = 0;
         this.wander = 0;
+        // Patchiness: the ground isn't uniform, the grain density drifts
+        // over a second or two like driving through looser and firmer bits.
+        this.patch = 0;
     }
 }
 
@@ -91,10 +95,13 @@ class ChassisProcessor extends AudioWorkletProcessor {
             const p = v.params;
             if (v.target <= 0.001 && v.intensity <= 0.001) { v.intensity = 0; continue; }
             v.wander += (Math.random() - 0.5) * 0.1 - v.wander * 0.02;
+            v.patch += (Math.random() - 0.5) * 0.05 - v.patch * 0.004;
+            const patch = Math.max(-1, Math.min(1, v.patch));
             v.hissLp.lowpass(p.hissFreq * (0.5 + 0.6 * speedFactor) * (1 + 0.1 * v.wander), 0.7);
-            v.grainLp.lowpass(3000 + 3000 * speedFactor, 0.8);
+            v.grainLp.lowpass(1400 + 1400 * speedFactor, 0.7);
             v.rumbleLp.lowpass(90 + 90 * speedFactor, 0.9);
-            const grainRate = p.grainRate * (0.15 + 0.85 * speedFactor);
+            const grainRate = p.grainRate * (0.15 + 0.85 * speedFactor) * (1 + 0.6 * patch);
+            const grainNorm = 1 / Math.sqrt(1 + grainRate / 250);
             for (let i = 0; i < out.length; i++) {
                 v.intensity += (v.target - v.intensity) * 0.001;
                 const it = v.intensity;
@@ -104,17 +111,21 @@ class ChassisProcessor extends AudioWorkletProcessor {
                 if (p.grainRate > 0) {
                     if (Math.random() < (grainRate * it) / sr) {
                         const stone = Math.random() < 0.05;
-                        v.grains.push({ t: 0, dur: p.grainDur * (0.5 + Math.random() * 1.2) * (stone ? 2.5 : 1), amp: (0.3 + Math.random() * 1.2) * (stone ? 2.5 : 1) });
+                        v.grains.push({ t: 0, dur: p.grainDur * (0.5 + Math.random() * 1.2) * (stone ? 2.5 : 1), amp: (0.3 + Math.random() * 1.2) * (stone ? 2.2 : 1) });
+                        // Now and then a stone flies up into the wheel arch.
+                        if (stone && Math.random() < 0.3) this.addThump({ amp: 0.12 + 0.15 * speedFactor, hard: false });
                     }
+                    v.grainNoise += (white - v.grainNoise) * 0.3;
                     let g = 0;
                     for (let k = v.grains.length - 1; k >= 0; k--) {
                         const gr = v.grains[k];
                         const u = gr.t / gr.dur;
                         if (u >= 1) { v.grains.splice(k, 1); continue; }
-                        g += gr.amp * (Math.random() * 2 - 1) * Math.exp(-u * 4);
+                        const env = u < 0.2 ? u * 5 : Math.exp(-(u - 0.2) * 4);
+                        g += gr.amp * v.grainNoise * env;
                         gr.t += 1 / sr;
                     }
-                    y += v.grainLp.run(g) * p.grainLevel * 1.5;
+                    y += v.grainLp.run(g) * p.grainLevel * 1.2 * grainNorm;
                 }
                 out[i] += y * it;
             }
