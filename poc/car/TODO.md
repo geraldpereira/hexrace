@@ -22,10 +22,10 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
       « Mass & balance », à chaud, valeurs par défaut dans `chassisSpec.ts`. Reste à trouver deux
       ou trois jeux de valeurs qui donnent des caractères distincts (spec 3.1).
 - [ ] Collisions. Dégats. 
-- [ ] **Traces de pneus et particules.** Traces au blocage de roue faites : ruban par roue, couleur
-      et opacité par revêtement (`surfaces.ts`), glisse latérale en option debug. Crissement de
-      pneus par revêtement fait (AudioWorklet, paramètres dans `surfaces.ts`). Reste les particules
-      (poussière, gravillons, fumée) et à doser seuils et timbres en roulant.
+- [x] **Traces de pneus et particules.** Traces au blocage de roue : ruban par roue, couleur et
+      opacité par revêtement, glisse latérale en option debug. Particules : bouffées et débris par
+      revêtement, émission sur glisse et roulement. Crissement par revêtement. Tout est réglable dans
+      le GUI, cadences et tailles à doser en roulant.
 - [ ] **Chrono au tour.** Ligne de départ sur la boucle, temps au tour courant et meilleur tour dans
       le HUD. Seul moyen de juger « sur asphalte glisser fait perdre du temps, sur gravier ne pas
       glisser en fait perdre » autrement qu'au ressenti.

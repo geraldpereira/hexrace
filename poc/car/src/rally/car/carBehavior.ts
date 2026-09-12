@@ -196,10 +196,11 @@ export interface WheelReadout {
     /** Surface id under the wheel (index into SURFACES). */
     surfaceId: number;
     contact: boolean;
-    /** Contact point, normal and lateral direction, world space, one tick stale. */
+    /** Contact point, normal, lateral and rolling directions, world space, one tick stale. */
     readonly point: THREE.Vector3;
     readonly normal: THREE.Vector3;
     readonly lateral: THREE.Vector3;
+    readonly longitudinal: THREE.Vector3;
     /** Tyre width (m). */
     width: number;
     /**
@@ -225,6 +226,8 @@ export class CarBehavior extends Component {
     clutch = 0;
     /** True while the gearbox is between two gears. */
     shifting = false;
+    /** Chassis linear velocity, world space (m/s). */
+    readonly velocity = new THREE.Vector3();
     manualGearbox = MANUAL_GEARBOX;
     /** Engine limits, mirrored from Jolt each tick so the HUD and sound follow debug edits. */
     maxRpm = DRIVETRAIN.maxRPM;
@@ -264,6 +267,7 @@ export class CarBehavior extends Component {
         point: new THREE.Vector3(),
         normal: new THREE.Vector3(0, 1, 0),
         lateral: new THREE.Vector3(1, 0, 0),
+        longitudinal: new THREE.Vector3(0, 0, 1),
         width: 0,
         slipSpeed: 0,
         suspensionVelocity: 0,
@@ -381,6 +385,8 @@ export class CarBehavior extends Component {
         }
 
         this.speedKmh = Math.abs(forwardSpeed) * 3.6;
+        const lv = this.body.GetLinearVelocity();
+        this.velocity.set(lv.GetX(), lv.GetY(), lv.GetZ());
         this.throttle = Math.abs(forward);
         const engine = this.controller.GetEngine();
         this.rpm = engine.GetCurrentRPM();
@@ -423,6 +429,7 @@ export class CarBehavior extends Component {
                 // contact (zero on static terrain), so the car's own velocity
                 // at that point has to come from the body.
                 const along = wheel.GetContactLongitudinal();
+                readout.longitudinal.set(along.GetX(), along.GetY(), along.GetZ());
                 const carVel = this.physics.bodyInterface.GetPointVelocity(this.body.GetID(), p);
                 const groundVel = wheel.GetContactPointVelocity();
                 const relative =

@@ -49,6 +49,15 @@ ruban au sol, posé sur le point de contact Jolt. Couleur et opacité viennent d
 noire sur l'asphalte, ornière plus discrète ailleurs. La glisse latérale peut aussi marquer (« Sideways
 too » dans le dossier Skid marks du panneau debug, avec les seuils et un bouton Clear).
 
+## Particules
+
+Les roues projettent deux sortes de particules selon le revêtement (`particles` dans `surfaces.ts`,
+rendu dans `src/rally/rendering/particles.ts`) : des bouffées qui grossissent, s'estompent et dérivent
+(fumée blanche sur l'asphalte en glisse, poussière beige ou brune ailleurs) et des débris soumis à la
+gravité qui s'arrêtent où ils tombent (cailloux sur le gravier, mottes sur la terre et la boue).
+L'émission suit l'intensité de glisse des traces et, sur les revêtements meubles, la simple vitesse.
+Couleurs, tailles, durées et cadences par revêtement dans le dossier « Particles » du panneau debug.
+
 ## Crissement de pneus
 
 Le bruit de glisse dépend du revêtement sous chaque roue. Un second AudioWorklet

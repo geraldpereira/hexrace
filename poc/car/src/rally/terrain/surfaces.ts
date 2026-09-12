@@ -37,6 +37,26 @@ export interface Surface {
     slideSound: SlideSound;
     /** What rolling over it sounds like (see `chassisProcessor.ts`). */
     rollSound: RollSound;
+    /** What the wheels throw up (see `particles.ts`). */
+    particles: SurfaceParticles;
+}
+
+export interface SurfaceParticles {
+    /** Dust / smoke: soft, growing, drifting puffs. */
+    dustColor: number;
+    dustAlpha: number;
+    /** Initial size (m); a puff grows to about twice that. */
+    dustSize: number;
+    dustLife: number;
+    /** Puffs per second per wheel at full slide, and at full speed just rolling. */
+    slideDust: number;
+    rollDust: number;
+    /** Debris: stones or clods, solid bits under gravity. */
+    debrisColor: number;
+    debrisSize: number;
+    debrisLife: number;
+    slideDebris: number;
+    rollDebris: number;
 }
 
 export interface RollSound {
@@ -104,6 +124,19 @@ export const SURFACES: readonly Surface[] = [
             grainLevel: 0,
             rumble: 0.15,
         },
+        particles: {
+            dustColor: 0xdcdcdc,
+            dustAlpha: 0.3,
+            dustSize: 0.8,
+            dustLife: 1.4,
+            slideDust: 50,
+            rollDust: 0,
+            debrisColor: 0x000000,
+            debrisSize: 0,
+            debrisLife: 0,
+            slideDebris: 0,
+            rollDebris: 0,
+        },
     },
     {
         name: 'Gravel',
@@ -135,6 +168,19 @@ export const SURFACES: readonly Surface[] = [
             grainDur: 0.003,
             grainLevel: 0.9,
             rumble: 0.5,
+        },
+        particles: {
+            dustColor: 0xcdbc9c,
+            dustAlpha: 0.35,
+            dustSize: 0.6,
+            dustLife: 1.6,
+            slideDust: 70,
+            rollDust: 20,
+            debrisColor: 0x8d8070,
+            debrisSize: 0.07,
+            debrisLife: 1.3,
+            slideDebris: 50,
+            rollDebris: 8,
         },
     },
     {
@@ -168,6 +214,19 @@ export const SURFACES: readonly Surface[] = [
             grainLevel: 0.5,
             rumble: 0.6,
         },
+        particles: {
+            dustColor: 0xa88a62,
+            dustAlpha: 0.4,
+            dustSize: 0.7,
+            dustLife: 1.8,
+            slideDust: 80,
+            rollDust: 15,
+            debrisColor: 0x6b4f2e,
+            debrisSize: 0.1,
+            debrisLife: 1.2,
+            slideDebris: 25,
+            rollDebris: 3,
+        },
     },
     {
         name: 'Mud',
@@ -200,6 +259,19 @@ export const SURFACES: readonly Surface[] = [
             grainDur: 0.02,
             grainLevel: 0.6,
             rumble: 0.7,
+        },
+        particles: {
+            dustColor: 0x5a4530,
+            dustAlpha: 0.25,
+            dustSize: 0.5,
+            dustLife: 1.0,
+            slideDust: 20,
+            rollDust: 3,
+            debrisColor: 0x3d2c1c,
+            debrisSize: 0.14,
+            debrisLife: 1.2,
+            slideDebris: 45,
+            rollDebris: 10,
         },
     },
 ];

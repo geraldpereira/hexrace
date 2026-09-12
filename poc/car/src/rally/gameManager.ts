@@ -15,6 +15,7 @@ import { createObstacles } from './terrain/obstacles';
 import { createCar } from './car/car';
 import { createEngineSound } from './car/engineSound';
 import { createSkidMarks } from './rendering/skidMarks';
+import { createParticles } from './rendering/particles';
 import { createTyreSound } from './car/tyreSound';
 import { createChassisSound } from './car/chassisSound';
 import { ScoreComponent } from './score';
@@ -62,6 +63,7 @@ export class GameManager {
         this.root.addChild(createHud());
         this.root.addChild(createEngineSound());
         this.root.addChild(createSkidMarks(scene));
+        this.root.addChild(createParticles(scene));
         this.root.addChild(createTyreSound());
         this.root.addChild(createChassisSound());
 
