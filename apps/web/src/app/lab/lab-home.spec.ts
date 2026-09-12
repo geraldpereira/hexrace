@@ -4,11 +4,11 @@ import { provideRouter } from '@angular/router';
 import { LabHome } from '@ui/lab/lab-home';
 import { SHOWCASES, type Showcase } from '@ui/lab/showcases';
 
-const READY: Showcase = { module: 'inputs', path: 'lab/inputs', summary: 'Prête.', ready: true };
+const READY: Showcase = { module: 'inputs', path: 'lab/inputs', summary: 'Ready.', ready: true };
 const PENDING: Showcase = {
   module: 'tile',
   path: 'lab/tile',
-  summary: 'Pas encore.',
+  summary: 'Not yet.',
   ready: false,
 };
 

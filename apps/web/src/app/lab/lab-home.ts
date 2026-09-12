@@ -10,7 +10,7 @@ import { SHOWCASES } from '@ui/lab/showcases';
   template: `
     <main>
       <h1>HexRace — lab</h1>
-      <p>Chaque module du jeu, jouable seul. L'ordre est celui du plan de construction.</p>
+      <p>Every module of the game, playable on its own, in the order of the build plan.</p>
       <ol>
         @for (showcase of showcases; track showcase.path) {
           <li [class.pending]="!showcase.ready">

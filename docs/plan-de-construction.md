@@ -78,7 +78,7 @@ squelette.
 |-------|------------------------|-----------------------------------------------------------------------|----------------------------------------------------------------------------------|
 | 0     | squelette              | workspace, app, Makefile, qualité, route `lab/`                       | page d'accueil du lab qui liste les vitrines                                     |
 | 1     | `inputs`               | actions, sources manette / clavier / tactile, fusion, palonniers      | état des entrées en direct, palonniers sur mobile                                |
-| 2     | `hud/debug`            | le panneau de réglage Angular qui remplace lil-gui                    | un panneau de démonstration : dossiers, curseurs, relevés, courbes               |
+| 2     | `hud/debug`            | lil-gui enveloppé, avec courbes, persistance, export et tracé du POC  | un panneau de démonstration : dossiers, curseurs, relevés, courbes               |
 | 3     | `commons` + `engine`   | EventBus, boucle à pas fixe, scènes, GameObject, rendu three, Jolt    | une scène vide avec un sol, une boîte qui tombe, le compteur d'images            |
 | 4     | `camera`               | la caméra de la spec 3.9, hauteur selon la vitesse, visée             | la caméra suit un mobile factice qu'on pilote au stick                           |
 | 5     | `tile`                 | `entity` du POC 2, `render` d'une tuile, `physics` de son collider    | une tuile dont on change chaque paramètre en direct, zones colorées              |
@@ -98,7 +98,8 @@ racine. L'application démarre sur une page `lab/` qui liste les vitrines dispon
 n'existe pas encore. Les gates tournent à vide et sont verts. La spec technique 2.6 (structure des
 dossiers) s'écrit ici.
 
-**Tranché au squelette (2026-09-12).** ESLint : `recommended` et `stylistic` typés de
+**Tranché au squelette (2026-09-12).** Textes de l'interface en anglais (spec fonctionnelle 9.4),
+comme le code. ESLint : `recommended` et `stylistic` typés de
 typescript-eslint, sonarjs avec complexité cognitive à 20, 300 lignes par fichier et 50 par fonction
 hors specs, imports de type inline, pas de chemin relatif, angular-eslint avec `prefer-on-push` et le
 préfixe `hr`, et une règle propre à HexRace qui refuse tout paramètre de constructeur. Couverture :
@@ -136,12 +137,23 @@ commentaires et tests en anglais, et la règle `comment-ration` de hexact repris
 
 ### 2.2 `hud/debug`
 
-**Ce qu'il possède.** Le panneau de réglage Angular qui remplace lil-gui, décidé dans la spec
-technique (registre 2026-09-10). Des dossiers repliables, des curseurs, des cases, des listes, des
-relevés en lecture seule, un éditeur de courbes comme celui du POC, persistance dans le stockage local
-et export des valeurs. Il est construit tôt parce que toutes les vitrines suivantes en ont besoin.
+**Ce qu'il possède.** Le panneau de debug de la spec fonctionnelle 7.5 : **lil-gui repris tel quel**
+(décision du 2026-09-13, qui annule le panneau Angular du 2026-09-10), enveloppé dans un service
+injectable qui le crée, le montre et le cache d'une touche, et complété des ajouts du POC voiture
+(`poc/car/src/engine/debug`) : l'éditeur de courbes, la persistance des valeurs dans le stockage
+local, l'export des valeurs pour les reporter dans le code. S'y ajoutent un tracé en temps réel d'une
+grandeur et le compteur de performance. Chaque module suivant expose ses réglages en s'enregistrant
+auprès de ce service, comme les composants du POC le faisaient avec `registerDebug`. Angular
+Material n'entre pas ici : il arrivera avec les premiers écrans du jeu, ou plus tôt si une vitrine en
+a besoin.
 
-**Sa vitrine.** Un panneau qui pilote un objet de démonstration et montre chaque type de contrôle.
+**Sa vitrine.** Un panneau qui pilote un objet de démonstration et montre chaque type de contrôle, y
+compris une courbe et un tracé en temps réel. La vitrine `inputs` migre ses trois curseurs dessus.
+
+**Le reste du `hud`** (compte-tours, rapport, vitesse, dégâts, chrono, cartes, conteneur de canvas…)
+arrive module par module quand le module qui produit la donnée existe : le compte-tours avec `car`, le
+chrono avec `game-commons`, les cartes avec `game/track`. L'inventaire complet est en spec
+fonctionnelle 7.5.
 
 ### 2.3 `commons` et `engine`
 

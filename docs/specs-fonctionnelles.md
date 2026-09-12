@@ -471,6 +471,91 @@ Volume, qualité graphique. Pas de remapping des commandes pour le moment.
 
 Rien de spécifique pour l'instant.
 
+### 7.5 Inventaire des composants d'interface
+
+Ce dont les écrans ont besoin, en trois familles. La règle : **tout ce qui est générique vient
+d'Angular Material tel quel**, on ne le refait pas ; **les icônes sont les Material Symbols**, qui
+suffisent ; seul ce qui est propre au jeu s'écrit.
+
+**Repris de Material, sans retouche.**
+
+| Composant | Où il sert |
+|---|---|
+| Boutons | partout ; un bouton primaire par écran, jamais plus |
+| Menu | choix de mode et d'environnement, actions secondaires |
+| Boîte de dialogue | résultats (4.5), confirmations (quitter une course, écraser une piste éditée) |
+| Snackbar | ce qui se dit en une ligne et disparaît seul : record battu, piste sauvegardée, manette branchée ou débranchée, source d'entrées qui change |
+| Onglets | garage (voiture, améliorations, réglages), options |
+| Cartes et listes | choix de piste, choix de voiture, pistes éditées |
+| Curseur | volume, réglages d'une option de garage (ABS, contrôle de traction, aileron) |
+| Interrupteur, liste déroulante | options ; activer une aide ; qualité graphique |
+| Barre de progression | chargement de la physique au premier lancement, chargement d'une piste |
+| Info-bulle | PC seulement, sur les caractéristiques et les prix du garage |
+
+**Icônes (Material Symbols).** Étoile (record, favori), clé à molette (garage, réglages), manette,
+clavier, main (tactile), chrono, drapeau (départ, arrivée), avertissement (dégât, faux sens),
+cadenas (voiture ou piste verrouillée), pièce (crédits), haut-parleur et muet, plein écran, retour,
+rejouer, maison, engrenage (options), voiture, crayon (éditeur), dé (piste aléatoire), partage,
+téléchargement, téléversement. Une icône a toujours un libellé à côté ou une info-bulle : jamais
+seule quand elle porte un sens que le joueur découvre.
+
+**Propres au jeu.** Ce que Material ne fournit pas et qui s'écrit dans le module `hud` :
+
+- **Conteneur de canvas.** Héberge le rendu 3D, un seul pour toute l'application, déplacé d'un écran
+  à l'autre : plein écran derrière le HUD en course, dans un cadre à côté des réglages au garage où la
+  voiture tourne lentement, dans l'éditeur, sur la piste d'essai, et dans chaque vitrine du lab. Il
+  gère la taille et le ratio, et rien d'autre.
+- **Compte-tours.** Un arc ou une barre, zone rouge à partir du régime de passage, qui clignote au
+  rupteur ; cohérent avec ce que le son fait entendre.
+- **Indicateur de rapport.** R, N, 1 à 9, en gros ; un flash au changement ; en boîte manuelle, un
+  signe discret quand le régime est au bon moment pour monter.
+- **Indicateur de vitesse.** En km/h uniquement, chiffres tabulaires pour qu'ils ne sautent pas.
+- **Indicateur de dégâts.** La voiture schématisée vue du dessus, avec ses éléments distincts : moteur,
+  boîte de vitesses, direction, châssis, les quatre roues et les quatre suspensions. Chaque élément
+  porte un état en pourcentage, 100 % intact, 0 % cassé, rendu par une couleur continue ; l'élément
+  qui vient d'encaisser pulse une fois. Les effets de chaque dégât sont ceux de 3.7, proportionnels à
+  l'état.
+- **Chrono.** Temps courant ; en Track le tour n sur N, le meilleur tour et l'écart au meilleur tour,
+  vert ou rouge ; en Rally le temps total et les temps de passage ; en Collapse le temps tenu.
+- **Compte à rebours de départ.** Trois, deux, un, go, plein écran, avec le son.
+- **Aperçu des tuiles suivantes** (7.2) et **indicateur du front de disparition** en Collapse.
+- **Jauge de reset.** Un anneau qui se remplit pendant les trois secondes de maintien (3.8), pour que
+  le joueur sache qu'il est en train de réinitialiser et combien il reste.
+- **Faux sens.** Un avertissement quand la voiture roule à l'envers de la piste.
+- **Témoins d'assistance.** Une petite lampe par aide achetée (ABS, contrôle de traction) qui
+  s'allume quand l'aide agit, comme au tableau de bord d'une vraie voiture : le joueur voit ce qu'il a
+  payé travailler.
+- **Palonniers tactiles.** Les deux palonniers et le bouton frein à main de 3.3, dessinés par-dessus
+  la course sur écran tactile ; déjà écrits dans la vitrine des entrées, à reprendre ici.
+- **Cartes de piste et de voiture.** Une piste : nom, environnement, longueur, meilleur temps, et sa
+  miniature (la carte 2D du POC 2). Une voiture : silhouette, prix ou possédée, verrouillée ou non,
+  et ses **barres de caractéristiques** (vitesse de pointe, accélération, robustesse, transmission).
+- **Solde de crédits.** Toujours au même endroit dans les écrans hors course.
+- **Écran de résultats.** Une boîte de dialogue Material dont le contenu est propre au jeu : le score
+  de 4.5, le record s'il tombe, Retry et Home.
+- **Panneau de debug.** Pour le développement et le lab, jamais dans le jeu livré, donc **lil-gui
+  repris tel quel** : pas la peine de développer ce que le joueur ne verra jamais. Ses dossiers
+  repliables, curseurs, cases, listes et relevés en lecture seule, complétés des ajouts du POC voiture
+  : l'éditeur de courbes, la persistance des valeurs entre deux chargements et l'export des valeurs
+  pour les reporter dans le code, plus un tracé en temps réel d'une grandeur (régime, glissement
+  d'une roue, images par seconde). Il se cache et se montre d'une touche.
+- **Compteur de performance.** Images par seconde et temps d'un pas physique, dans le panneau de debug
+  et, en option, en coin d'écran pour la mesure sur mobile (9.2).
+
+**Règles transverses.**
+
+- Le HUD ne prend jamais le focus et ne reçoit aucun toucher, sauf les palonniers : tout passe
+  au-dessus du canvas sans le gêner.
+- Ce qui bouge à chaque image en course (vitesse, régime, chrono, aperçu) se rafraîchit à la fréquence
+  d'affichage, sans le coût d'une détection de changement globale.
+- Cibles tactiles d'au moins 44 px ; tailles en fraction de la hauteur d'écran pour que le HUD
+  garde ses proportions du téléphone au moniteur.
+- Thème sombre unique ; les couleurs d'état (échelle de dégâts, écart positif ou négatif) sont les
+  mêmes partout et ne sont jamais le seul porteur d'information, une forme ou un texte les
+  accompagne.
+- Un seul endroit pour toutes les chaînes de texte, en anglais (9.4).
+- Texte minimaliste, jamais de phrases complexes.
+
 ---
 
 ## 8. Direction artistique

@@ -33,9 +33,9 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 - **Le mot est « tile », jamais « hex ».** En anglais, *hex* est aussi une malédiction.
 - **On se lit par son nom.** `@hexrace/<package>` pour un voisin, `@<package>/*` chez soi, `@ui/*` dans
   l'app. Jamais de chemin relatif : le lint refuse `./` et `../`.
-- **Anglais dans le code, les commentaires et les tests ; français dans les docs, les commits et
-  ce que le joueur lit.** Identifiants, noms de fichiers, commentaires et titres de specs en
-  anglais ; les textes d'interface en français, comme la spec fonctionnelle 9.4 le veut.
+- **Anglais dans le code, les commentaires, les tests et ce que le joueur lit ; français dans les
+  docs et les commits.** La spec fonctionnelle 9.4 veut un jeu en anglais, texte minimaliste ;
+  identifiants, noms de fichiers, commentaires et titres de specs suivent.
 - **Les commentaires sont rationnés** (`hexrace/comment-ration`, reprise de hexact, arguée dans
   `quality/README.md`). Une classe ou une interface : 5 lignes ; une entité : 4 ; une méthode
   publique : 2 ; un champ public ou un alias de type : 1 ; un membre privé : rien ; un barrel : 5.

@@ -6,6 +6,6 @@ import { appConfig } from '@ui/app.config';
 bootstrapApplication(App, appConfig).catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
   const pre = document.createElement('pre');
-  pre.textContent = `HexRace n'a pas pu démarrer.\n\n${message}`;
+  pre.textContent = `HexRace could not start.\n\n${message}`;
   document.body.replaceChildren(pre);
 });

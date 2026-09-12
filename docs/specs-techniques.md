@@ -26,7 +26,7 @@ Deux projets voisins servent de référence : **rally-game** (three.js, Jolt, Vi
 Ce qu'on ne reprend pas :
 
 - **L'audio** : il n'y a rien à reprendre. Howler et Tone sont dans les dépendances de rally-game mais le dossier `src/audio` est vide, aucun son n'a été écrit.
-- **L'outillage de debug** : rally-game passait par lil-gui et stats.js. HexRace passera par le HUD Angular, avec un sous-module de debug (voir 2.1).
+- ~~**L'outillage de debug**~~ : finalement repris (décision du 2026-09-13) : lil-gui et les ajouts du POC voiture (éditeur de courbes, persistance, export) font le panneau de debug, enveloppés dans le sous-module `hud/debug`. Le joueur ne le voit jamais, on ne le redéveloppe pas.
 
 ### 1.2 Ce qu'on reprend de hexact
 
@@ -327,10 +327,18 @@ Rien n'existe dans rally-game : Howler et Tone y sont installés, aucun son n'a 
 
 ## 8. Écrans et interface
 
+**Bibliothèque de composants : Angular Material, et les icônes Material Symbols** (décidé le
+2026-09-13). Tout ce qui est générique dans l'inventaire de [F 7.5] est pris tel quel ; le package
+`hud` n'écrit que les composants propres au jeu, répartis dans ses sous-modules : `commons` (conteneur
+de canvas, barres, cartes, solde), `game` (compte-tours, rapport, vitesse, dégâts, chrono, compte à
+rebours, aperçu, jauge de reset, faux sens, témoins, palonniers), `menus`, `dialog` (résultats),
+`editor`, `debug` (l'enveloppe Angular de lil-gui avec les ajouts du POC, et le compteur de
+performance ; voir la décision du 2026-09-13).
+
 - 8.1 Structure applicative
   *Routage des écrans [F 7.1], cohabitation d'un canvas three.js persistant avec les vues, cycle de vie des scènes (2.2).*
 - 8.2 HUD
-  *En DOM par-dessus le canvas ou dans la scène ; fréquence de rafraîchissement ; l'indicateur du front de disparition [F 7.2].*
+  *En DOM par-dessus le canvas ou dans la scène ; fréquence de rafraîchissement ; l'indicateur du front de disparition [F 7.2]. Ce qui bouge à chaque image se met à jour hors de la détection de changement, par signaux ou écriture directe du DOM depuis la boucle.*
 - 8.3 Éditeur
   *Architecture de l'éditeur [F 5.2], réutilisation du rendu de piste, interactions clavier et souris, sauvegarde.*
 - 8.4 Garage
@@ -420,7 +428,7 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 | 2026-09-10 | Injection de dépendances Angular partout, jetons pour les interfaces, injecteur enfant par scène | Le code de rally-game sans DI ne plaisait pas ; testabilité |
 | 2026-09-10 | Scènes à la Unity / Godot sur le GameObject / Component de rally-game | Assembler les composants d'un écran |
 | 2026-09-10 | EventBus pour le transverse | Éviter les dépendances croisées |
-| 2026-09-10 | Debug via le HUD Angular, pas lil-gui | Un seul outillage d'interface |
+| 2026-09-10 | ~~Debug via le HUD Angular, pas lil-gui~~ (annulée le 2026-09-13) | Un seul outillage d'interface |
 | 2026-09-10 | Perte de focus : pas de pause, temps écoulé appliqué au retour | Cohérent avec [F 4.1] |
 | 2026-09-10 | Pas de migration de stockage avant le déploiement | Rien à préserver avant |
 | 2026-09-12 | Grammaire du fichier de piste : celle du POC 2 (3.3) | Lisible à la main, une ligne par tuile, obstacles en clair, relecture à l'identique |
@@ -428,6 +436,10 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 | 2026-09-12 | Pas de constructeur à paramètres : `inject()` partout, tests par `TestBed` avec des jetons remplacés | Ne pas se casser la tête à monter des graphes d'objets à la main dans les tests |
 | 2026-09-12 | Règles ESLint maison de hexact non reprises telles quelles ; couverture à 100 % pour `entity` seulement, seuil par package pour `physics` et `render` | La DI partout et la 3D changent ce qui se teste honnêtement sans navigateur |
 | 2026-09-12 | Deux packages de plus que 2.1 : `commons` (vocabulaire, EventBus, RNG) et `engine` (boucle, scènes, GameObject, services three et Jolt) | La spec les sous-entendait sans les nommer |
+| 2026-09-12 | Code, commentaires et tests en anglais ; docs et commits en français ; règle `comment-ration` de hexact reprise | Demande de Gérald ; un commentaire rationné par ce qu'il documente |
+| 2026-09-13 | Angular Material pour les composants génériques, Material Symbols pour les icônes ; `hud` n'écrit que le propre au jeu ([F 7.5]) | On ne refait pas un menu ni une boîte de dialogue |
+| 2026-09-13 | Panneau de debug : lil-gui repris avec les ajouts du POC voiture, dans `hud/debug` ; annule la décision du 2026-09-10 | Jamais visible du joueur, pas la peine de le redévelopper en Angular |
+| 2026-09-13 | Dégâts : un pourcentage par élément (100 intact, 0 cassé), effets proportionnels ([F 3.7, F 7.5]) | Plus fin que trois états, et directement lisible |
 
 ### 13.2 Questions ouvertes
 
