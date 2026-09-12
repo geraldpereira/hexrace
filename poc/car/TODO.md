@@ -13,8 +13,11 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
       cylindres (AudioWorklet) avec rupteur, détonations et irrégularités : validé, pas
       d'échantillon. Le dosage fin de la courbe et des rapports se fera avec le chrono au tour.
 - [x] Son de roulement par revêtement, bruit du vent, coups de suspension : un worklet châssis,
-      paramètres de roulement dans `surfaces.ts`. À doser en roulant, surtout les seuils de
-      suspension (compression 1 à 3,5 m/s) et le niveau du vent.
+      paramètres de roulement dans `surfaces.ts`.
+- [ ] **Passe de réglage du son.** Tout est en place (moteur, crissement, roulement, vent,
+      suspensions) et sonne correctement ; refaire une passe d'ensemble plus tard pour doser
+      niveaux, seuils et timbres en roulant, notamment les seuils de suspension (compression 1 à
+      3,5 m/s), le niveau du vent et l'équilibre entre les couches.
 - [ ] Configuration du poids et de la position du centre de gravité de la voiture.
 - [ ] Collisions. Dégats. 
 - [ ] **Traces de pneus et particules.** Traces au blocage de roue faites : ruban par roue, couleur
@@ -53,9 +56,8 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
       sens de la marche, à l'arrêt (3.8). Manque déjà pour tester une voiture retournée.
 - [ ] **Voiture retournée.** Trancher le `<CHOIX>` de 3.6 : remise automatique sur ses roues après un
       court délai, ou attente du reset manuel.
-- [ ] **Sauts.** Le terrain est quasi plat depuis le raffermissement des suspensions. Ajouter une ou
-      deux rampes pour juger la réception, cœur du ressenti selon 3.2, et le « pas de contrôle en
-      vol » de 3.6.
+- [ ] **Sauts.** Rampe et dos d'âne posés sur la piste (dossier Obstacles). Reste à juger la
+      réception, cœur du ressenti selon 3.2, et le « pas de contrôle en vol » de 3.6.
 
 ## Fait
 

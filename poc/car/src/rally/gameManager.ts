@@ -11,6 +11,7 @@ import { CameraFollowBehavior, createCamera } from './rendering/camera';
 import { createSun } from './rendering/sun';
 import { createHud } from './rendering/hud';
 import { TerrainData, createTerrain } from './terrain/terrain';
+import { createObstacles } from './terrain/obstacles';
 import { createCar } from './car/car';
 import { createEngineSound } from './car/engineSound';
 import { createSkidMarks } from './rendering/skidMarks';
@@ -51,6 +52,8 @@ export class GameManager {
 
         const terrainGO = this.root.addChild(createTerrain(this.physics, scene, { amplitude: 0.8 }));
         const terrain = terrainGO.getOrThrow(TerrainData);
+
+        this.root.addChild(createObstacles(this.physics, scene));
 
         const carGO = this.root.addChild(createCar(this.physics, scene, terrain));
 

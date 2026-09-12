@@ -72,6 +72,13 @@ chaque compression ou détente rapide, plus dur et métallique quand la suspensi
 Tous les sons partagent un seul AudioContext (`src/engine/audio/audioHub.ts`), créé au premier clic
 ou à la première touche.
 
+## Obstacles
+
+Deux obstacles de test pour les suspensions, posés sur les deux portions les plus droites de la piste
+(`src/rally/terrain/obstacles.ts`) : une rampe orange de 7 m montant à 1,1 m pour sauter, et un dos
+d'âne jaune de 20 cm pour taper. Longueur, hauteur, rayon et présence se règlent dans le dossier
+« Obstacles » du panneau debug, avec reconstruction immédiate.
+
 ## À tester
 
 - Tenue de route sur la piste, sous-virage / survirage au frein à main.
