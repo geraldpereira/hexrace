@@ -1,0 +1,16 @@
+// Le fond du jeu : sombre, sans marge, pas de défilement de page. Les écrans Angular vivent
+// par-dessus le canvas et prennent tout l'écran.
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0f14;
+  color: #e8edf2;
+  font-family: system-ui, sans-serif;
+  touch-action: none;
+}
+
+a {
+  color: #ffaa00;
+}

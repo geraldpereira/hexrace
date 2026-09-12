@@ -1,0 +1,27 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreDependencies": [
+    "dependency-cruiser"
+  ],
+  "workspaces": {
+    "packages/inputs": {
+      "entry": [
+        "src/**/*.spec.ts"
+      ],
+      "project": [
+        "src/**/*.ts"
+      ]
+    },
+    "apps/web": {
+      "entry": [
+        "src/main.ts",
+        "src/test-setup.ts",
+        "src/**/*.spec.ts"
+      ],
+      "project": "src/**/*.ts"
+    }
+  },
+  "ignore": [
+    "poc/**"
+  ]
+}

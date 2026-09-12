@@ -130,7 +130,24 @@ Pas fixe pour la physique, rendu à la fréquence de l'écran, interpolation ent
 
 ### 2.6 Structure des dossiers
 
-*L'arborescence cible, avec une phrase par dossier.*
+Posée au squelette (2026-09-12), sur le modèle de hexact :
+
+```
+docs/                 les deux specs, le plan de construction, les croquis
+poc/                  les POC, matière première, importés par rien
+packages/<nom>/       un package = un module de 2.1 ; src/index.ts est sa seule surface
+  src/entity/         modèle de données, sans three.js ni Jolt (tenu par dependency-cruiser)
+  src/physics/        modèle physique, lit entity
+  src/render/         modèle 3D, lit entity
+apps/web/             l'application Angular : src/app/lab/ les vitrines, puis les zones du jeu
+make/                 une cible par ligne, un fichier par domaine, inclus par le Makefile
+angular.json          à la racine, parce que @angular/build veut le workspace comme racine
+eslint.config.js, .dependency-cruiser.js, .jscpd.json, knip.json : les portes de qualité
+```
+
+Un package se consomme en source par alias `paths` (`@hexrace/<nom>` vers son barrel, `@<nom>/*` chez
+lui), sans build de bibliothèque. Les tests d'un package tournent sous Vitest avec jsdom et le
+compilateur JIT d'Angular chargé dans `test-setup.ts`, pour que les `@Injectable` s'exécutent.
 
 ---
 
@@ -338,6 +355,11 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
   *Idem pour [F 10.3] : surface par roue depuis les coordonnées locales de la tuile, collider de tuile, fenêtre de tuiles en mouvement.*
 - 12.4 Du POC au MVP
   *Ce qui passe tel quel, ce qui est réécrit, ce qui est jeté.*
+  **Décidé le 2026-09-12 : on ne fait pas le POC 3 à part, on commence le jeu.** La construction se
+  fait module par module, du plus bas niveau au jeu fini, chaque module jouable seul dans une
+  « vitrine » sous la route `lab/<module>` de l'application ; le POC 3 devient la vitrine du tronc
+  commun de jeu. Le détail, l'ordre et les fiches par module sont dans le
+  [plan de construction](plan-de-construction.md).
 
 ---
 
@@ -360,6 +382,10 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 | 2026-09-10 | Perte de focus : pas de pause, temps écoulé appliqué au retour | Cohérent avec [F 4.1] |
 | 2026-09-10 | Pas de migration de stockage avant le déploiement | Rien à préserver avant |
 | 2026-09-12 | Grammaire du fichier de piste : celle du POC 2 (3.3) | Lisible à la main, une ligne par tuile, obstacles en clair, relecture à l'identique |
+| 2026-09-12 | Pas de POC 3 séparé : le jeu se construit module par module, chaque module jouable seul dans une vitrine `lab/<module>` (12.4, [plan](plan-de-construction.md)) | Un banc de réglage durable par module ; l'assemblage des vitrines est le jeu |
+| 2026-09-12 | Pas de constructeur à paramètres : `inject()` partout, tests par `TestBed` avec des jetons remplacés | Ne pas se casser la tête à monter des graphes d'objets à la main dans les tests |
+| 2026-09-12 | Règles ESLint maison de hexact non reprises telles quelles ; couverture à 100 % pour `entity` seulement, seuil par package pour `physics` et `render` | La DI partout et la 3D changent ce qui se teste honnêtement sans navigateur |
+| 2026-09-12 | Deux packages de plus que 2.1 : `commons` (vocabulaire, EventBus, RNG) et `engine` (boucle, scènes, GameObject, services three et Jolt) | La spec les sous-entendait sans les nommer |
 
 ### 13.2 Questions ouvertes
 

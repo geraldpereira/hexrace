@@ -1,0 +1,52 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+import { SHOWCASES } from '@ui/lab/showcases';
+
+/** La page d'accueil du lab : la liste des vitrines, une par module, dans l'ordre du plan. */
+@Component({
+  selector: 'hr-lab-home',
+  imports: [RouterLink],
+  template: `
+    <main>
+      <h1>HexRace — lab</h1>
+      <p>Chaque module du jeu, jouable seul. L'ordre est celui du plan de construction.</p>
+      <ol>
+        @for (showcase of showcases; track showcase.path) {
+          <li [class.pending]="!showcase.ready">
+            @if (showcase.ready) {
+              <a [routerLink]="'/' + showcase.path">{{ showcase.module }}</a>
+            } @else {
+              <span>{{ showcase.module }}</span>
+            }
+            <small>{{ showcase.summary }}</small>
+          </li>
+        }
+      </ol>
+    </main>
+  `,
+  styles: `
+    main {
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    ol {
+      padding-left: 1.5rem;
+    }
+    li {
+      margin: 0.6rem 0;
+    }
+    li.pending {
+      opacity: 0.45;
+    }
+    small {
+      display: block;
+      opacity: 0.8;
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LabHome {
+  readonly showcases = inject(SHOWCASES);
+}

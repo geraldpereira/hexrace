@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": ["vitest/globals", "node"],
+    "noEmit": true,
+    "paths": { "@inputs/*": ["./src/*"] }
+  },
+  "include": ["src", "test-setup.ts", "vitest.config.ts"]
+}

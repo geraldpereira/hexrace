@@ -1,1 +1,9 @@
 .idea
+# Jeu : dépendances, sorties de build, couverture
+node_modules/
+dist/
+.angular/
+*.tsbuildinfo
+coverage/
+.claude/worktrees/
+*.log

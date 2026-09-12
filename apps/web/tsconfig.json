@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compileOnSave": false,
+  "compilerOptions": {
+    "module": "preserve",
+    "importHelpers": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "declaration": false,
+    "paths": {
+      "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
+      "@inputs/*": ["../../packages/inputs/src/*"],
+      "@ui/*": ["./src/app/*"]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.spec.json" }]
+}
