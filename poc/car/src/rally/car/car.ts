@@ -4,6 +4,7 @@ import { BodyComponent, MeshComponent } from '../../engine/components';
 import { LAYER_MOVING, type Physics } from '../../engine/physics';
 import type { TerrainData } from '../terrain/terrain';
 import { CarBehavior, WHEEL_COUNT } from './carBehavior';
+import { DRIVETRAIN } from './drivetrain';
 
 // Compact rally car, half-extents. The wheels hang outside the box on X so
 // the chassis collider never clips into the tyres.
@@ -33,12 +34,6 @@ const FRONT_BRAKE_TORQUE = 3000;
 const BACK_BRAKE_TORQUE = 2000;
 const BACK_HANDBRAKE_TORQUE = 6000;
 
-const ENGINE_MAX_TORQUE = 600;
-const ENGINE_MIN_RPM = 1000;
-const ENGINE_MAX_RPM = 7000;
-const SHIFT_DOWN_RPM = 2500;
-const SHIFT_UP_RPM = 6000;
-const CLUTCH_STRENGTH = 10;
 // Four-wheel drive with an even split. Set to 0 for rear-wheel drive: an
 // axle with a zero share gets no differential at all so the engine never
 // sees its wheels. Each driven axle has a limited-slip differential so one
@@ -131,12 +126,30 @@ export function createCar(physics: Physics, scene: THREE.Scene, terrain: Terrain
     }
 
     const controllerSettings = new Jolt.WheeledVehicleControllerSettings();
-    controllerSettings.mEngine.mMaxTorque = ENGINE_MAX_TORQUE;
-    controllerSettings.mEngine.mMinRPM = ENGINE_MIN_RPM;
-    controllerSettings.mEngine.mMaxRPM = ENGINE_MAX_RPM;
-    controllerSettings.mTransmission.mShiftDownRPM = SHIFT_DOWN_RPM;
-    controllerSettings.mTransmission.mShiftUpRPM = SHIFT_UP_RPM;
-    controllerSettings.mTransmission.mClutchStrength = CLUTCH_STRENGTH;
+    const engine = controllerSettings.mEngine;
+    engine.mMaxTorque = DRIVETRAIN.maxTorque;
+    engine.mMinRPM = DRIVETRAIN.minRPM;
+    engine.mMaxRPM = DRIVETRAIN.maxRPM;
+    engine.mInertia = DRIVETRAIN.inertia;
+    engine.mAngularDamping = DRIVETRAIN.angularDamping;
+    const torque = engine.mNormalizedTorque;
+    torque.Clear();
+    for (const p of DRIVETRAIN.torqueCurve) torque.AddPoint(p.x, p.y);
+    torque.Sort();
+    const transmission = controllerSettings.mTransmission;
+    transmission.mMode = Jolt.ETransmissionMode_Auto;
+    const gears = new Jolt.ArrayFloat();
+    for (const ratio of DRIVETRAIN.gearRatios) gears.push_back(ratio);
+    transmission.mGearRatios = gears;
+    const reverse = new Jolt.ArrayFloat();
+    reverse.push_back(DRIVETRAIN.reverseRatio);
+    transmission.mReverseGearRatios = reverse;
+    transmission.mShiftDownRPM = DRIVETRAIN.shiftDownRPM;
+    transmission.mShiftUpRPM = DRIVETRAIN.shiftUpRPM;
+    transmission.mSwitchTime = DRIVETRAIN.switchTime;
+    transmission.mClutchReleaseTime = DRIVETRAIN.clutchReleaseTime;
+    transmission.mSwitchLatency = DRIVETRAIN.switchLatency;
+    transmission.mClutchStrength = DRIVETRAIN.clutchStrength;
     controllerSettings.mDifferentialLimitedSlipRatio = LIMITED_SLIP_RATIO;
     controllerSettings.mDifferentials.clear();
     for (const [left, right, ratio] of [

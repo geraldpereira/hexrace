@@ -7,7 +7,12 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
 ## Valider les critères de la spec
 
 
-- [ ] Gestion boite de vitesse et régime moteur. Ajout du son.
+Bouton A pour le frein à frein. LB/RB pour les vitesses si mode manuel.
+
+- [ ] **Boîte et régime moteur.** Premier jet fait : moteur et boîte Jolt réglables dans le GUI
+      (courbe de couple, inertie, rapports, temps de passage), compte-tours et rapport dans le HUD,
+      son moteur procédural. Reste à doser la courbe et les rapports en roulant, et à juger si le
+      son synthétique suffit au POC ou s'il faut un échantillon bouclé. Boîte auto seulement (décidé).
 - [ ] Collisions. Dégats. 
 - [ ] Traces de pneus et particules.
 - [ ] **Chrono au tour.** Ligne de départ sur la boucle, temps au tour courant et meilleur tour dans

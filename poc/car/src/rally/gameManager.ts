@@ -12,6 +12,7 @@ import { createSun } from './rendering/sun';
 import { createHud } from './rendering/hud';
 import { TerrainData, createTerrain } from './terrain/terrain';
 import { createCar } from './car/car';
+import { createEngineSound } from './car/engineSound';
 import { ScoreComponent } from './score';
 import { BonusSpawnerBehavior } from './bonus';
 
@@ -53,6 +54,7 @@ export class GameManager {
         this.root.addChild(createSun(scene, carGO));
         this.root.addChild(createCamera(carGO));
         this.root.addChild(createHud());
+        this.root.addChild(createEngineSound());
 
         this.root.addChild(new GameObject('score', [new ScoreComponent()]));
         this.root.addChild(

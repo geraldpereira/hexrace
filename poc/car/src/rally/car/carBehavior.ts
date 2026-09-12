@@ -9,6 +9,7 @@ import { addCurveEditor, type CurvePoint } from '../../engine/debug/curveEditor'
 import { mulberry32 } from '../../engine/tools/math';
 import type { TerrainData } from '../terrain/terrain';
 import { SURFACES, type Surface } from '../terrain/surfaces';
+import { DRIVETRAIN } from './drivetrain';
 
 type JoltAPI = Awaited<ReturnType<typeof initJolt>>;
 type JoltBody = InstanceType<JoltAPI['Body']>;
@@ -191,7 +192,18 @@ interface WheelReadout {
 export class CarBehavior extends Component {
     speedKmh = 0;
     rpm = 0;
+    /** Current gear: negative reverse, 0 neutral, 1+ forward. */
     gear = 0;
+    /** Throttle sent to Jolt this tick (0..1), after response curve and traction control. */
+    throttle = 0;
+    /** Clutch friction (0 open, 1 locked), debug readout. */
+    clutch = 0;
+    /** True while the gearbox is between two gears. */
+    shifting = false;
+    /** Engine limits, mirrored from Jolt each tick so the HUD and sound follow debug edits. */
+    maxRpm = DRIVETRAIN.maxRPM;
+    minRpm = DRIVETRAIN.minRPM;
+    shiftUpRpm = DRIVETRAIN.shiftUpRPM;
     handBrakeLateralGrip = HAND_BRAKE_LATERAL_GRIP;
     roughnessEnabled = true;
     steerResponse = STEER_RESPONSE;
@@ -321,8 +333,16 @@ export class CarBehavior extends Component {
         }
 
         this.speedKmh = Math.abs(forwardSpeed) * 3.6;
-        this.rpm = this.controller.GetEngine().GetCurrentRPM();
-        this.gear = this.controller.GetTransmission().GetCurrentGear();
+        this.throttle = Math.abs(forward);
+        const engine = this.controller.GetEngine();
+        this.rpm = engine.GetCurrentRPM();
+        this.maxRpm = engine.get_mMaxRPM();
+        this.minRpm = engine.get_mMinRPM();
+        const transmission = this.controller.GetTransmission();
+        this.shiftUpRpm = transmission.get_mShiftUpRPM();
+        this.gear = transmission.GetCurrentGear();
+        this.clutch = transmission.GetClutchFriction();
+        this.shifting = transmission.IsSwitchingGear();
         // Slips are stale by one tick (Physics.step() runs after fixedUpdate)
         // but that's invisible at 60 Hz for a debug readout.
         for (const [i, wheel] of this.wheels.entries()) {
@@ -642,6 +662,8 @@ export class CarBehavior extends Component {
             maxTorque: engine.get_mMaxTorque(),
             minRPM: engine.get_mMinRPM(),
             maxRPM: engine.get_mMaxRPM(),
+            inertia: engine.get_mInertia(),
+            angularDamping: engine.get_mAngularDamping(),
         };
         f.add(cfg, 'maxTorque', 50, 2000, 10)
             .name('Max torque (Nm)')
@@ -658,14 +680,44 @@ export class CarBehavior extends Component {
             .onChange((v: number) => {
                 engine.set_mMaxRPM(v);
             });
+        f.add(cfg, 'inertia', 0.05, 5, 0.05)
+            .name('Inertia (kg·m²)')
+            .onChange((v: number) => {
+                engine.set_mInertia(v);
+            });
+        f.add(cfg, 'angularDamping', 0, 2, 0.05)
+            .name('Angular damping')
+            .onChange((v: number) => {
+                engine.set_mAngularDamping(v);
+            });
+        // Jolt reads the curve at RPM / maxRPM and multiplies by maxTorque.
+        addCurveEditor(f, {
+            xRange: [0, 1],
+            yRange: [0, 1.2],
+            xLabel: 'RPM / max',
+            yLabel: 'torque',
+            initialPoints: DRIVETRAIN.torqueCurve,
+            onChange: (pts) => {
+                const curve = engine.get_mNormalizedTorque();
+                curve.Clear();
+                for (const p of pts) curve.AddPoint(p.x, p.y);
+                curve.Sort();
+            },
+        });
     }
 
     private registerTransmissionDebug(parent: GUI): void {
         const f = parent.addFolder('Transmission');
+        const Jolt = this.physics.Jolt;
         const tr = this.controller.GetTransmission();
+        f.add(this, 'clutch', 0, 1, 0.01).name('Clutch friction').listen().disable();
+        f.add(this, 'shifting').name('Shifting').listen().disable();
         const cfg = {
             shiftUpRPM: tr.get_mShiftUpRPM(),
             shiftDownRPM: tr.get_mShiftDownRPM(),
+            switchTime: tr.get_mSwitchTime(),
+            clutchReleaseTime: tr.get_mClutchReleaseTime(),
+            switchLatency: tr.get_mSwitchLatency(),
             clutchStrength: tr.get_mClutchStrength(),
         };
         f.add(cfg, 'shiftUpRPM', 2000, 12000, 100)
@@ -678,10 +730,58 @@ export class CarBehavior extends Component {
             .onChange((v: number) => {
                 tr.set_mShiftDownRPM(v);
             });
+        f.add(cfg, 'switchTime', 0, 1.5, 0.05)
+            .name('Switch time (s)')
+            .onChange((v: number) => {
+                tr.set_mSwitchTime(v);
+            });
+        f.add(cfg, 'clutchReleaseTime', 0, 1.5, 0.05)
+            .name('Clutch release (s)')
+            .onChange((v: number) => {
+                tr.set_mClutchReleaseTime(v);
+            });
+        f.add(cfg, 'switchLatency', 0, 2, 0.05)
+            .name('Switch latency (s)')
+            .onChange((v: number) => {
+                tr.set_mSwitchLatency(v);
+            });
         f.add(cfg, 'clutchStrength', 0.5, 20, 0.5)
             .name('Clutch strength')
             .onChange((v: number) => {
                 tr.set_mClutchStrength(v);
+            });
+
+        // Gear ratios: one slider per gear, the whole array is rewritten on
+        // each change (Jolt copies it, so the temporary is freed right away).
+        const gears = f.addFolder('Gear ratios');
+        const ratios = [...DRIVETRAIN.gearRatios];
+        const gearCfg: Record<string, number> = { reverse: DRIVETRAIN.reverseRatio };
+        ratios.forEach((r, i) => {
+            gearCfg[`gear${String(i + 1)}`] = r;
+        });
+        const applyForward = (): void => {
+            const arr = new Jolt.ArrayFloat();
+            for (const r of ratios) arr.push_back(r);
+            tr.set_mGearRatios(arr);
+            Jolt.destroy(arr);
+        };
+        ratios.forEach((_, i) => {
+            gears
+                .add(gearCfg, `gear${String(i + 1)}`, 0.3, 5, 0.05)
+                .name(`Gear ${String(i + 1)}`)
+                .onChange((v: number) => {
+                    ratios[i] = v;
+                    applyForward();
+                });
+        });
+        gears
+            .add(gearCfg, 'reverse', -5, -0.3, 0.05)
+            .name('Reverse')
+            .onChange((v: number) => {
+                const arr = new Jolt.ArrayFloat();
+                arr.push_back(v);
+                tr.set_mReverseGearRatios(arr);
+                Jolt.destroy(arr);
             });
     }
 
