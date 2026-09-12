@@ -37,8 +37,10 @@ tire une impulsion de pression par cylindre sur le cycle du vilebrequin, avec un
 propres à chaque cylindre, puis fait sonner trois résonances fixes d'échappement et un filtre en
 peigne pour la longueur de pipe, ajoute un souffle d'admission sous charge et sature doucement.
 Il ne démarre qu'après un clic ou une touche dans la page : le navigateur l'exige, et la manette
-seule ne compte pas. Cylindres, pipe, résonances, souffle et saturation dans le dossier « Engine
-sound » du panneau debug.
+seule ne compte pas. Un rupteur hache l'allumage quand on tape le régime max ou qu'on monte un
+rapport plein gaz, et le pot détone au rétrogradage pied levé. Cylindres, pipe, résonances,
+souffle, saturation, rupteur et détonations dans le dossier « Engine sound » du panneau debug,
+avec un bouton « Test pops ».
 
 ## À tester
 

@@ -38,6 +38,12 @@ class EngineProcessor extends AudioWorkletProcessor {
         this.intakeNoise = 0.15;
         this.drive = 1.5;
         this.wobble = 0.02;
+        this.limiter = false;
+        this.limiterHz = 14;
+        this.limiterPhase = 0;
+        this.limiterGate = true;
+        this.popLevel = 1;
+        this.pops = [];
         this.phase = 0;
         this.nextFire = 0;
         this.pulses = [];
@@ -60,6 +66,10 @@ class EngineProcessor extends AudioWorkletProcessor {
             if (d.intakeNoise !== undefined) this.intakeNoise = d.intakeNoise;
             if (d.drive !== undefined) this.drive = d.drive;
             if (d.wobble !== undefined) this.wobble = d.wobble;
+            if (d.limiter !== undefined) this.limiter = d.limiter;
+            if (d.limiterHz !== undefined) this.limiterHz = d.limiterHz;
+            if (d.popLevel !== undefined) this.popLevel = d.popLevel;
+            if (d.pops !== undefined) this.schedulePops(d.pops);
         };
     }
 
@@ -74,6 +84,15 @@ class EngineProcessor extends AudioWorkletProcessor {
             this.cylGain.push(0.85 + rnd() * 0.3);
         }
         this.nextFire = 0; this.phase = 0;
+    }
+
+    schedulePops(count) {
+        // A few bangs spread over half a second, the first one soon.
+        let delay = 0.03 + Math.random() * 0.08;
+        for (let i = 0; i < count; i++) {
+            this.pops.push({ delay, amp: (0.7 + Math.random() * 0.6) * this.popLevel });
+            delay += 0.08 + Math.random() * 0.18;
+        }
     }
 
     setResonance() {
@@ -98,6 +117,30 @@ class EngineProcessor extends AudioWorkletProcessor {
             const wobbleAmt = this.wobble * Math.max(0, 1 - this.rpm / 3000);
             const rpm = this.rpm * (1 + this.wobbleValue * wobbleAmt * 50);
 
+            // Rev limiter: a square gate on the ignition. Each cut lets a
+            // little unburnt fuel through, so it sometimes pops in the pipe.
+            let cut = 1;
+            if (this.limiter) {
+                this.limiterPhase += this.limiterHz / sr;
+                if (this.limiterPhase >= 1) this.limiterPhase -= 1;
+                const gate = this.limiterPhase < 0.5;
+                if (!gate && this.limiterGate && Math.random() < 0.5) {
+                    this.pops.push({ delay: 0.005, amp: (0.3 + Math.random() * 0.3) * this.popLevel });
+                }
+                this.limiterGate = gate;
+                if (!gate) cut = 0.08;
+            }
+
+            // Scheduled pops: long, noisy, loud pulses.
+            for (let p = this.pops.length - 1; p >= 0; p--) {
+                const pop = this.pops[p];
+                pop.delay -= 1 / sr;
+                if (pop.delay <= 0) {
+                    this.pops.splice(p, 1);
+                    this.pulses.push({ t: 0, dur: 0.012 + Math.random() * 0.012, amp: pop.amp * 2.5, noise: 1.6 });
+                }
+            }
+
             // Four-stroke: one crank cycle here is two revolutions; each
             // cylinder fires once per cycle in its own slot.
             const cyclesPerSec = rpm / 120;
@@ -106,10 +149,10 @@ class EngineProcessor extends AudioWorkletProcessor {
                 const slot = (this.nextFire + this.cylOff[this.nextFire]) / n;
                 if (this.phase < slot) break;
                 const slotDur = 1 / (n * cyclesPerSec);
-                const amp = (0.45 + 0.55 * this.load) * this.cylGain[this.nextFire] * (0.9 + Math.random() * 0.2);
+                const amp = (0.45 + 0.55 * this.load) * cut * this.cylGain[this.nextFire] * (0.9 + Math.random() * 0.2);
                 // Pulse shorter than the slot, a little longer at low load (lazy burn).
                 const dur = Math.min(0.004 * (1.2 - 0.4 * this.load), slotDur * 0.6);
-                this.pulses.push({ t: 0, dur, amp });
+                this.pulses.push({ t: 0, dur, amp, noise: 0.6 });
                 this.nextFire++;
                 if (this.nextFire === n) { this.nextFire = 0; this.phase -= 1; }
             }
@@ -121,7 +164,7 @@ class EngineProcessor extends AudioWorkletProcessor {
                 const u = pu.t / pu.dur;
                 if (u >= 1) { this.pulses.splice(p, 1); continue; }
                 const env = 0.5 * (1 - Math.cos(2 * Math.PI * u));
-                const burst = (Math.random() * 2 - 1) * Math.exp(-u * 6) * 0.6;
+                const burst = (Math.random() * 2 - 1) * Math.exp(-u * 6) * pu.noise;
                 x += pu.amp * (env + burst);
                 pu.t += 1 / sr;
             }

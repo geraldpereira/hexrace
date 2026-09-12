@@ -9,8 +9,9 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
 
 - [ ] **Boîte et régime moteur.** Premier jet fait : moteur et boîte Jolt réglables dans le GUI
       (courbe de couple, inertie, rapports, temps de passage), compte-tours et rapport dans le HUD,
-      son moteur procédural par impulsions de cylindres (AudioWorklet). Reste à doser la courbe et
-      les rapports en roulant, et à juger si ce son suffit au POC ou s'il faut un échantillon bouclé. Boîte auto (décidé) ; un mode
+      son moteur procédural par impulsions de cylindres (AudioWorklet), validé : pas d'échantillon.
+      Rupteur à la montée plein gaz et détonations au rétrogradage pied levé ajoutés, à doser.
+      Reste à doser la courbe et les rapports en roulant. Boîte auto (décidé) ; un mode
       manuel LB/RB existe en option debug pour sentir les rapports. Frein à main sur A.
 
 - [ ] Collisions. Dégats. 
