@@ -82,6 +82,10 @@ d'âne jaune de 20 cm pour taper. Longueur, hauteur, rayon et présence se règl
 ## À tester
 
 - Tenue de route sur la piste, sous-virage / survirage au frein à main.
+- Masse et centre de gravité : dossier « Mass & balance » (masse, position du centre de gravité
+  gauche/droite, hauteur, avant/arrière, repère rouge affichable). Valeurs par défaut dans
+  `src/rally/car/chassisSpec.ts`. Comparer une voiture légère au centre haut et une lourde au centre
+  bas, c'est le cœur du caractère par voiture.
 - Boîte auto et régime : courbe de couple, rapports et régimes de passage dans les dossiers Engine et
   Transmission (`src/rally/car/drivetrain.ts` pour les valeurs par défaut). Compte-tours et rapport
   en bas à droite du HUD.

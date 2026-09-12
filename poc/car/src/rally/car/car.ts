@@ -5,13 +5,13 @@ import { LAYER_MOVING, type Physics } from '../../engine/physics';
 import type { TerrainData } from '../terrain/terrain';
 import { CarBehavior, WHEEL_COUNT } from './carBehavior';
 import { DRIVETRAIN } from './drivetrain';
+import { CHASSIS } from './chassisSpec';
 
-// Compact rally car, half-extents. The wheels hang outside the box on X so
-// the chassis collider never clips into the tyres.
-const HALF_W = 0.8;
-const HALF_H = 0.3;
-const HALF_L = 1.9;
-const VEHICLE_MASS = 1300;
+// The wheels hang outside the box on X so the chassis collider never clips
+// into the tyres.
+const HALF_W = CHASSIS.halfW;
+const HALF_H = CHASSIS.halfH;
+const HALF_L = CHASSIS.halfL;
 
 const WHEEL_RADIUS = 0.34;
 const WHEEL_WIDTH = 0.22;
@@ -73,11 +73,9 @@ export function createCar(physics: Physics, scene: THREE.Scene, terrain: Terrain
     const spawnRot = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), tangent);
     const spawnY = groundY + SPAWN_CLEARANCE;
 
-    // Centre of mass dropped to the bottom of the box: engine + drivetrain
-    // sit low, which keeps the car from rolling over in fast corners.
     const innerBox = new Jolt.BoxShapeSettings(new Jolt.Vec3(HALF_W, HALF_H, HALF_L));
     const shapeSettings = new Jolt.OffsetCenterOfMassShapeSettings(
-        new Jolt.Vec3(0, -HALF_H, 0),
+        new Jolt.Vec3(CHASSIS.comX, CHASSIS.comY, CHASSIS.comZ),
         innerBox,
     );
     const shape = shapeSettings.Create().Get();
@@ -90,7 +88,7 @@ export function createCar(physics: Physics, scene: THREE.Scene, terrain: Terrain
         LAYER_MOVING,
     );
     bodySettings.mOverrideMassProperties = Jolt.EOverrideMassProperties_CalculateInertia;
-    bodySettings.mMassPropertiesOverride.mMass = VEHICLE_MASS;
+    bodySettings.mMassPropertiesOverride.mMass = CHASSIS.mass;
 
     const body = bodyInterface.CreateBody(bodySettings);
     bodyInterface.AddBody(body.GetID(), Jolt.EActivation_Activate);
@@ -189,6 +187,16 @@ export function createCar(physics: Physics, scene: THREE.Scene, terrain: Terrain
     cabin.position.set(0, HALF_H * 1.8, -HALF_L * 0.2);
     cabin.castShadow = true;
     chassisGroup.add(cabin);
+    // Centre of mass marker, hidden by default; the debug panel moves it.
+    const comMarker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 12, 8),
+        new THREE.MeshBasicMaterial({ color: 0xff2020, depthTest: false }),
+    );
+    comMarker.name = 'comMarker';
+    comMarker.renderOrder = 10;
+    comMarker.visible = false;
+    comMarker.position.set(CHASSIS.comX, CHASSIS.comY, CHASSIS.comZ);
+    chassisGroup.add(comMarker);
 
     const wheelMeshes: THREE.Object3D[] = [];
     for (let i = 0; i < WHEEL_COUNT; i++) {

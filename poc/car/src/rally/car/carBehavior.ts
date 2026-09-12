@@ -10,6 +10,7 @@ import { mulberry32 } from '../../engine/tools/math';
 import type { TerrainData } from '../terrain/terrain';
 import { SURFACES, type Surface } from '../terrain/surfaces';
 import { DRIVETRAIN } from './drivetrain';
+import { CHASSIS } from './chassisSpec';
 
 type JoltAPI = Awaited<ReturnType<typeof initJolt>>;
 type JoltBody = InstanceType<JoltAPI['Body']>;
@@ -279,7 +280,7 @@ export class CarBehavior extends Component {
     /** Time (s) since the last manual shift, drives the clutch ramp. */
     private manualShiftAge = Number.POSITIVE_INFINITY;
     private travelled = 0;
-    private readonly mass: number;
+    private mass: number;
     private readonly wheelSurface: number[] = WHEEL_NAMES.map(() => -1);
     /** Current virtual bump height under each wheel (m), applied to the wheel mesh. */
     private readonly bump: number[] = WHEEL_NAMES.map(() => 0);
@@ -288,7 +289,7 @@ export class CarBehavior extends Component {
     private readonly wheelUp: JoltVec3;
     private readonly tmpForce: JoltVec3;
     /** Chassis inertia around its local up axis (kg·m²). */
-    private readonly yawInertia: number;
+    private yawInertia: number;
     /** Axle positions along the chassis' local Z, from the wheel settings. */
     private readonly frontAxleZ: number;
     private readonly rearAxleZ: number;
@@ -702,6 +703,7 @@ export class CarBehavior extends Component {
         this.abs.registerDebug(folder, 'ABS');
         this.registerAeroDebug(folder);
         this.registerChassisDebug(folder);
+        this.registerMassDebug(folder);
         this.registerEngineDebug(folder);
         this.registerTransmissionDebug(folder);
         this.registerDifferentialDebug(folder);
@@ -780,6 +782,51 @@ export class CarBehavior extends Component {
             .name('Angular damping')
             .onChange((v: number) => {
                 motion.SetAngularDamping(v);
+            });
+    }
+
+    /**
+     * Mass and centre of mass, live: the body gets a fresh box + offset shape
+     * and its mass properties are rescaled to the chosen mass. The wheel
+     * attach points are in body space, so they don't move with the balance.
+     */
+    private registerMassDebug(parent: GUI): void {
+        const f = parent.addFolder('Mass & balance');
+        const Jolt = this.physics.Jolt;
+        const cfg = {
+            mass: CHASSIS.mass,
+            comX: CHASSIS.comX,
+            comY: CHASSIS.comY,
+            comZ: CHASSIS.comZ,
+            showCom: false,
+        };
+        const marker = this.chassisGroup.getObjectByName('comMarker');
+        const apply = (): void => {
+            const box = new Jolt.BoxShape(
+                new Jolt.Vec3(CHASSIS.halfW, CHASSIS.halfH, CHASSIS.halfL),
+            );
+            const shape = new Jolt.OffsetCenterOfMassShape(
+                box,
+                new Jolt.Vec3(cfg.comX, cfg.comY, cfg.comZ),
+            );
+            const bi = this.physics.bodyInterface;
+            bi.SetShape(this.body.GetID(), shape, true, Jolt.EActivation_Activate);
+            const props = shape.GetMassProperties();
+            props.ScaleToMass(cfg.mass);
+            const motion = this.body.GetMotionProperties();
+            motion.SetMassProperties(Jolt.EAllowedDOFs_All, props);
+            this.mass = 1 / motion.GetInverseMass();
+            this.yawInertia = 1 / motion.GetInverseInertiaDiagonal().GetY();
+            marker?.position.set(cfg.comX, cfg.comY, cfg.comZ);
+        };
+        f.add(cfg, 'mass', 500, 3000, 10).name('Mass (kg)').onChange(apply);
+        f.add(cfg, 'comX', -0.5, 0.5, 0.01).name('CoM left/right (m)').onChange(apply);
+        f.add(cfg, 'comY', -0.8, 0.5, 0.01).name('CoM height (m)').onChange(apply);
+        f.add(cfg, 'comZ', -1.5, 1.5, 0.05).name('CoM front(+)/rear(-) (m)').onChange(apply);
+        f.add(cfg, 'showCom')
+            .name('Show CoM marker')
+            .onChange((v: boolean) => {
+                if (marker) marker.visible = v;
             });
     }
 

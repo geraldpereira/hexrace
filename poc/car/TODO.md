@@ -18,7 +18,9 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
       suspensions) et sonne correctement ; refaire une passe d'ensemble plus tard pour doser
       niveaux, seuils et timbres en roulant, notamment les seuils de suspension (compression 1 à
       3,5 m/s), le niveau du vent et l'équilibre entre les couches.
-- [ ] Configuration du poids et de la position du centre de gravité de la voiture.
+- [x] Configuration du poids et de la position du centre de gravité de la voiture : dossier
+      « Mass & balance », à chaud, valeurs par défaut dans `chassisSpec.ts`. Reste à trouver deux
+      ou trois jeux de valeurs qui donnent des caractères distincts (spec 3.1).
 - [ ] Collisions. Dégats. 
 - [ ] **Traces de pneus et particules.** Traces au blocage de roue faites : ruban par roue, couleur
       et opacité par revêtement (`surfaces.ts`), glisse latérale en option debug. Crissement de
