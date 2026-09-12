@@ -282,7 +282,7 @@ défilement et zoom. La source ne dessine rien : elle expose `paddles` (zone, or
 un composant les dessine. Pas de changement de rapport au tactile : la boîte y est automatique. Les
 menus se pilotent au toucher direct des boutons, rien à mapper.
 
-<TODO> Essayer sur un vrai téléphone (`make serve-lan`) : taille des zones, course des palonniers.
+Essayé sur téléphone le 2026-09-13 : zones et palonniers validés, course par défaut 50 px.
 
 ### 5.5 Navigation dans les menus
 

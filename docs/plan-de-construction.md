@@ -132,7 +132,7 @@ multi-provider et `provideInputSources()` branche les trois. La fusion `Inputs` 
 analogiques, additionne et borne direction et navigation, et retient la dernière source engagée. Le
 tactile expose ses palonniers sans rien dessiner ; c'est la vitrine qui les dessine (composant dans
 l'app, à reprendre dans `hud/game` quand il existera). Vérifié dans Chrome au clavier et au toucher
-simulé ; reste à essayer sur un vrai téléphone via `make serve-lan`. Décision prise en route :
+simulé, puis sur téléphone le 2026-09-13 : les palonniers sont validés. Décision prise en route :
 commentaires et tests en anglais, et la règle `comment-ration` de hexact reprise.
 
 ### 2.2 `hud/debug`
