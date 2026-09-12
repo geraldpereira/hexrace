@@ -29,6 +29,10 @@ export interface Surface {
     lateralRoughness: number;
     /** Distance between two grain bumps, in metres. Short = vibration, long = ruts. */
     wavelength: number;
+    /** Skid mark colour: rubber on asphalt, a rut in the loose stuff. */
+    markColor: number;
+    /** Skid mark opacity at full slip. */
+    markOpacity: number;
 }
 
 export const SURFACE_ASPHALT = 0;
@@ -59,6 +63,8 @@ export const SURFACES: readonly Surface[] = [
         bumpHeight: 0,
         lateralRoughness: 0,
         wavelength: 0.5,
+        markColor: 0x111111,
+        markOpacity: 0.75,
     },
     {
         name: 'Gravel',
@@ -80,6 +86,8 @@ export const SURFACES: readonly Surface[] = [
         bumpHeight: 0.02,
         lateralRoughness: 0.2,
         wavelength: 0.3,
+        markColor: 0x2f2924,
+        markOpacity: 0.45,
     },
     {
         name: 'Dirt',
@@ -101,6 +109,8 @@ export const SURFACES: readonly Surface[] = [
         bumpHeight: 0.05,
         lateralRoughness: 0.35,
         wavelength: 1.5,
+        markColor: 0x231a10,
+        markOpacity: 0.5,
     },
     {
         name: 'Mud',
@@ -123,6 +133,8 @@ export const SURFACES: readonly Surface[] = [
         bumpHeight: 0.03,
         lateralRoughness: 0.15,
         wavelength: 3,
+        markColor: 0x120d08,
+        markOpacity: 0.55,
     },
 ];
 

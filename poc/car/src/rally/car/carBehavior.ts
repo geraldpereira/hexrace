@@ -1,4 +1,4 @@
-import type * as THREE from 'three';
+import * as THREE from 'three';
 import type initJolt from 'jolt-physics';
 import type GUI from 'lil-gui';
 import { createNoise2D } from 'simplex-noise';
@@ -188,10 +188,19 @@ function shapeInput(x: number, cubic: number): number {
     return Math.sign(x) * ((1 - cubic) * a + cubic * a * a * a);
 }
 
-interface WheelReadout {
+export interface WheelReadout {
     long: number;
     lat: number;
     surface: string;
+    /** Surface id under the wheel (index into SURFACES). */
+    surfaceId: number;
+    contact: boolean;
+    /** Contact point, normal and lateral direction, world space, one tick stale. */
+    readonly point: THREE.Vector3;
+    readonly normal: THREE.Vector3;
+    readonly lateral: THREE.Vector3;
+    /** Tyre width (m). */
+    width: number;
 }
 
 export class CarBehavior extends Component {
@@ -235,7 +244,17 @@ export class CarBehavior extends Component {
     aeroBalance = AERO_BALANCE;
     /** Current downforce as a percentage of the weight, debug readout. */
     aeroPercent = 0;
-    readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({ long: 0, lat: 0, surface: '' }));
+    readonly readouts: WheelReadout[] = WHEEL_NAMES.map(() => ({
+        long: 0,
+        lat: 0,
+        surface: '',
+        surfaceId: 0,
+        contact: false,
+        point: new THREE.Vector3(),
+        normal: new THREE.Vector3(0, 1, 0),
+        lateral: new THREE.Vector3(1, 0, 0),
+        width: 0,
+    }));
 
     private input!: GameInput;
     private rearLateralScale = 1;
@@ -366,6 +385,17 @@ export class CarBehavior extends Component {
             if (!readout) continue;
             readout.long = wheel.get_mLongitudinalSlip();
             readout.lat = wheel.get_mLateralSlip() * RAD_TO_DEG;
+            readout.surfaceId = this.wheelSurface[i] ?? 0;
+            readout.width = wheel.GetSettings().mWidth;
+            readout.contact = wheel.HasContact();
+            if (readout.contact) {
+                const p = wheel.GetContactPosition();
+                readout.point.set(p.GetX(), p.GetY(), p.GetZ());
+                const n = wheel.GetContactNormal();
+                readout.normal.set(n.GetX(), n.GetY(), n.GetZ());
+                const l = wheel.GetContactLateral();
+                readout.lateral.set(l.GetX(), l.GetY(), l.GetZ());
+            }
         }
     }
 

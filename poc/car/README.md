@@ -42,6 +42,13 @@ rapport plein gaz, et le pot détone au rétrogradage pied levé. Cylindres, pip
 souffle, saturation, rupteur et détonations dans le dossier « Engine sound » du panneau debug,
 avec un bouton « Test pops ».
 
+## Traces de pneus
+
+Une roue qui glisse en longitudinal (bloquée au frein ou au frein à main, ou qui patine) laisse un
+ruban au sol, posé sur le point de contact Jolt. Couleur et opacité viennent du revêtement : gomme
+noire sur l'asphalte, ornière plus discrète ailleurs. La glisse latérale peut aussi marquer (« Sideways
+too » dans le dossier Skid marks du panneau debug, avec les seuils et un bouton Clear).
+
 ## À tester
 
 - Tenue de route sur la piste, sous-virage / survirage au frein à main.
