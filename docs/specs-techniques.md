@@ -236,16 +236,54 @@ Grâce au contact par roue fourni par le contrôleur (4.1), **chaque roue conna�
 
 ## 5. Entrées
 
-- 5.1 Abstraction des actions
-  *Une couche d'actions (accélérer, freiner, tourner, frein à main, reset, valider, retour) indépendante du périphérique. L'interface `InputSource` de rally-game comme point de départ.*
-- 5.2 Manette
-  *Gamepad API, mapping [F 3.3], zones mortes, détection de connexion, différences entre navigateurs.*
-- 5.3 Clavier
-  *Mapping, gestion du numérique vers l'analogique (montée progressive de la direction).*
-- 5.4 Tactile
-  *Palonniers [F 3.3], multi-touch, zones, retour visuel, empêcher le défilement et le zoom de la page.*
-- 5.5 Navigation dans les menus
-  *Comment une même action pilote les écrans depuis les trois périphériques.*
+Écrit avec le module `inputs` (2026-09-12). Référence : `packages/inputs/src`.
+
+### 5.1 Abstraction des actions
+
+`InputActions` est l'instantané que le jeu lit au début de chaque pas : `throttle`, `brake`
+(0 à 1), `steer` (-1 à 1), `handBrake`, `reset` (0 à 1, le reset est maintenu et c'est la voiture
+qui compte les trois secondes [F 3.8]), et pour les menus `navigateX`, `navigateY` (-1 à 1, Y
+positif vers le bas), `confirm`, `back`. Aucune notion de stick, de gâchette ni de touche n'y
+figure : chaque source produit directement des actions selon le mapping de [F 3.3].
+
+Une source implémente `InputSource` (`id`, `actions`, `connected`, `poll(dt)`) et se branche sur le
+multi-provider `INPUT_SOURCES` ; `provideInputSources()` branche les trois du jeu, un test fournit
+les siennes. Le service `Inputs` fusionne : maximum des grandeurs analogiques, somme bornée pour la
+direction et la navigation (un clavier et une manette tenus ensemble ne se battent pas), et retient
+`activeSource`, la dernière source engagée, pour le HUD et pour décider d'afficher les palonniers.
+
+### 5.2 Manette
+
+Gamepad API, disposition standard (Xbox). Gâchette droite `throttle`, gauche `brake` (zone morte
+0,05), stick droit `steer` (zone morte 0,15, le stick gauche est accepté aussi, additionné et borné),
+LB ou RB `handBrake`, Y `reset`, A `confirm`, B `back`, stick droit ou croix pour naviguer. La première
+manette branchée est écoutée ; si elle est débranchée, la suivante prend le relais. Pas de bouton de
+pause : il n'y a pas de pause [F 4.1].
+
+### 5.3 Clavier
+
+WASD ou flèches pour `throttle`, `brake`, `steer` (et la navigation des menus), Espace `handBrake`, R
+`reset`, Entrée `confirm`, Échap `back`. Une touche vaut 0 ou 1 ; les trois actions de conduite
+montent et descendent en rampe exponentielle (constante de temps 0,1 s, réglable) pour rendre au
+numérique un peu de l'analogique. La perte de focus de la fenêtre relâche toutes les touches, faute
+de voir leur relâchement. Les touches du jeu sont `preventDefault` pour que la page ne défile pas.
+
+### 5.4 Tactile
+
+Trois zones de l'écran : les 40 % de gauche sont le palonnier vertical (haut `throttle`, bas
+`brake`), les 40 % de droite le palonnier horizontal (`steer`), et le bas de la bande centrale, sous
+55 % de la hauteur, le bouton `handBrake`. Un palonnier est relatif : le point où le doigt se pose
+est son zéro, la pleine action est à 80 px de là (réglable). Multi-touch par `pointerId`, un doigt
+par zone. Les événements pris sont `preventDefault` et le `touch-action: none` de la page empêche
+défilement et zoom. La source ne dessine rien : elle expose `paddles` (zone, origine, déflexion) et
+un composant les dessine. Les menus se pilotent au toucher direct des boutons, rien à mapper.
+
+<TODO> Essayer sur un vrai téléphone (`make serve-lan`) : taille des zones, course des palonniers.
+
+### 5.5 Navigation dans les menus
+
+Les mêmes actions pour les trois périphériques : `navigateX/Y`, `confirm`, `back`. Les sources
+livrent des valeurs continues ; c'est le module des menus qui détectera les fronts.
 
 ---
 

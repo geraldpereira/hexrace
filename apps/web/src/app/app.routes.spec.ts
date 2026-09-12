@@ -8,13 +8,13 @@ describe('ROUTES', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(ROUTES)] });
   });
 
-  it('mène la racine au lab tant que le jeu n’existe pas', async () => {
+  it('leads the root to the lab while there is no game', async () => {
     const router = TestBed.inject(Router);
     await router.navigateByUrl('/');
     expect(router.url).toBe('/lab');
   });
 
-  it('renvoie une adresse inconnue au lab', async () => {
+  it('sends an unknown address back to the lab', async () => {
     const router = TestBed.inject(Router);
     await router.navigateByUrl('/nulle-part');
     expect(router.url).toBe('/lab');

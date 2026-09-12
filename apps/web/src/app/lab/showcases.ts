@@ -1,15 +1,15 @@
 import { InjectionToken } from '@angular/core';
 
-/** Une vitrine : un module jouable seul, à une route du lab. */
+/** A showcase: one module playable on its own, at a route of the lab. */
 export interface Showcase {
   readonly module: string;
   readonly path: string;
   readonly summary: string;
-  /** Faux tant que le module n'est pas commencé : la ligne est grisée. */
+  /** False until the module exists: the row is greyed out. */
   readonly ready: boolean;
 }
 
-/** Les vitrines dans l'ordre du plan de construction, section 2. */
+/** The showcases in the order of the plan de construction, section 2. */
 export const SHOWCASES = new InjectionToken<readonly Showcase[]>('SHOWCASES', {
   providedIn: 'root',
   factory: () => [
@@ -17,7 +17,7 @@ export const SHOWCASES = new InjectionToken<readonly Showcase[]>('SHOWCASES', {
       module: 'inputs',
       path: 'lab/inputs',
       summary: 'Manette, clavier, tactile : les actions en direct.',
-      ready: false,
+      ready: true,
     },
     {
       module: 'hud/debug',

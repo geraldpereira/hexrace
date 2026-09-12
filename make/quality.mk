@@ -17,11 +17,12 @@ check: quality test ## Toutes les portes puis toutes les suites
 # Dans l'ordre où elles sont les moins chères, arrêt à la première rouge.
 quality: $(GATES) ## Toutes les portes, sans les tests
 
-quality-typecheck: ## Vérifie les types de chaque projet de ONLY
+quality-typecheck: ## Vérifie les types de chaque projet de ONLY, et des règles de lint maison
 	@for project in $(ONLY); do \
 		$(MAKE) _run-via-use-nvm CMD="$(NPM) run typecheck -w @hexrace/$$(basename $$project)" \
 			|| exit 1; \
 	done
+	$(MAKE) _run-via-use-nvm CMD="$(NPM) run typecheck:root"
 
 quality-lint: ## ESLint typé sur FILES (tout le dépôt par défaut)
 	$(MAKE) _run-via-use-nvm CMD="LINT_FILES='$(FILES)' $(NPM) run lint"

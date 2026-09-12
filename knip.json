@@ -4,6 +4,14 @@
     "dependency-cruiser"
   ],
   "workspaces": {
+    ".": {
+      "entry": [
+        "eslint.config.js"
+      ],
+      "project": [
+        "quality/**/*.js"
+      ]
+    },
     "packages/inputs": {
       "entry": [
         "src/**/*.spec.ts"

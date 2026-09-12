@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import { SHOWCASES } from '@ui/lab/showcases';
 
-/** La page d'accueil du lab : la liste des vitrines, une par module, dans l'ordre du plan. */
+/** The lab's front page: the showcases, one per module, in the order of the plan. */
 @Component({
   selector: 'hr-lab-home',
   imports: [RouterLink],

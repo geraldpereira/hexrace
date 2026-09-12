@@ -1,0 +1,54 @@
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 6rem;
+}
+
+header a {
+  font-size: 0.9rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+th,
+td {
+  padding: 0.3rem 0.5rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+thead th.off {
+  opacity: 0.4;
+}
+
+tbody th {
+  font-weight: 500;
+  width: 7rem;
+}
+
+.settings {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+
+.settings label {
+  display: grid;
+  grid-template-columns: 12rem 1fr 3rem;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.settings label:last-child {
+  grid-template-columns: auto 1fr;
+}
+
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}

@@ -1,9 +1,15 @@
 import { provideBrowserGlobalErrorListeners, type ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
+import { provideInputSources } from '@hexrace/inputs';
+
 import { ROUTES } from '@ui/app.routes';
 
-/** Les providers de l'application. Chaque jeton remplacé pour une plateforme se nomme ici. */
+/** The application's providers: every token given a platform implementation is named here. */
 export const appConfig: ApplicationConfig = {
-  providers: [provideBrowserGlobalErrorListeners(), provideRouter(ROUTES)],
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideRouter(ROUTES),
+    ...provideInputSources(),
+  ],
 };

@@ -4,7 +4,7 @@ import { provideRouter } from '@angular/router';
 import { App } from '@ui/app';
 
 describe('App', () => {
-  it('démarre avec une sortie de routeur', async () => {
+  it('boots with a router outlet', async () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter([])],

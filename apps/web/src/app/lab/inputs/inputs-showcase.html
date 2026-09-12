@@ -1,0 +1,86 @@
+<main>
+  <header>
+    <a routerLink="/lab">← lab</a>
+    <h1>inputs</h1>
+    <p>
+      Actions live, merged and per source. Active source: <strong>{{ activeSource() }}</strong
+      >.
+    </p>
+  </header>
+
+  <table>
+    <thead>
+      <tr>
+        <th>action</th>
+        <th>merged</th>
+        @for (source of sources; track source.id; let i = $index) {
+          <th [class.off]="!connected()[i]">{{ source.id }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.name) {
+        <tr>
+          <th>{{ row.name }}</th>
+          <td><hr-bar [value]="row.merged" /></td>
+          @for (value of row.perSource; track $index) {
+            <td><hr-bar [value]="value" /></td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <section class="settings">
+    <label>
+      Keyboard smoothing (s)
+      <input
+        type="range"
+        min="0"
+        max="0.5"
+        step="0.01"
+        [value]="keyboard.smoothingTime"
+        (input)="setKeyboardSmoothing($any($event.target).value)"
+      />
+      <output>{{ keyboard.smoothingTime }}</output>
+    </label>
+    <label>
+      Stick deadzone
+      <input
+        type="range"
+        min="0"
+        max="0.5"
+        step="0.01"
+        [value]="gamepad.stickDeadzone"
+        (input)="setStickDeadzone($any($event.target).value)"
+      />
+      <output>{{ gamepad.stickDeadzone }}</output>
+    </label>
+    <label>
+      Paddle travel (px)
+      <input
+        type="range"
+        min="20"
+        max="200"
+        step="5"
+        [value]="touch.travelPx"
+        (input)="setTravel($any($event.target).value)"
+      />
+      <output>{{ touch.travelPx }}</output>
+    </label>
+    <label>
+      <input type="checkbox" [checked]="showPaddles()" (change)="togglePaddles()" />
+      Show touch paddles (mouse counts as a finger)
+    </label>
+  </section>
+
+  <p class="hint">
+    Gamepad: RT throttle, LT brake, right stick steer, LB / RB hand brake, Y reset, A confirm, B
+    back. Keyboard: WASD or arrows, Space, R, Enter, Escape. Touch: left paddle drive, right paddle
+    steer, bottom middle hand brake.
+  </p>
+</main>
+
+@if (showPaddles()) {
+  <hr-touch-paddles [source]="touch" />
+}

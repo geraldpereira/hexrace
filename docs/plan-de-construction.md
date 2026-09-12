@@ -47,7 +47,9 @@ On change ce qui découle de la DI partout et de la 3D :
 - **Les règles ESLint maison de hexact ne sont pas reprises telles quelles.** « Un export par
   fichier » et « pas de fonction libre » ont un sens dans un moteur de règles pur ; ici on garde ce
   qui protège vraiment (types stricts, imports de type, taille des fichiers et des fonctions,
-  complexité, `prefer-on-push`) et on décide règle par règle au moment du squelette.
+  complexité, `prefer-on-push`) et on décide règle par règle au moment du squelette. La règle sur
+  les commentaires (`comment-ration`) est reprise telle quelle : un commentaire est rationné par ce
+  qu'il documente.
 - **La couverture n'est pas 100 % partout.** Les sous-modules `entity` visent 100 %. Les sous-modules
   `physics` et `render` s'écrivent pour être testés à travers leurs jetons (physique factice, rendu
   factice), et leur seuil est fixé par package à ce qui se teste honnêtement sans navigateur.
@@ -121,6 +123,16 @@ relevés. C'est aussi là qu'on règle les zones mortes et le lissage du clavier
 
 **Fini quand** un même geste sur les trois périphériques donne la même action, et que les palonniers
 se testent sur un téléphone.
+
+**Fait le 2026-09-12.** `InputActions` porte les actions et rien du matériel : throttle, brake,
+steer, handBrake, reset, navigateX/Y, confirm, back. Chaque source est un service injectable qui lit
+le DOM par le jeton `DOCUMENT` et produit directement des actions ; `INPUT_SOURCES` est un
+multi-provider et `provideInputSources()` branche les trois. La fusion `Inputs` prend le maximum des
+analogiques, additionne et borne direction et navigation, et retient la dernière source engagée. Le
+tactile expose ses palonniers sans rien dessiner ; c'est la vitrine qui les dessine (composant dans
+l'app, à reprendre dans `hud/game` quand il existera). Vérifié dans Chrome au clavier et au toucher
+simulé ; reste à essayer sur un vrai téléphone via `make serve-lan`. Décision prise en route :
+commentaires et tests en anglais, et la règle `comment-ration` de hexact reprise.
 
 ### 2.2 `hud/debug`
 

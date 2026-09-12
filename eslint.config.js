@@ -4,6 +4,8 @@ import angular from 'angular-eslint';
 import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
 
+import { commentRation } from './quality/eslint-rules/comment-ration.js';
+
 /**
  * Ce que le lint tient, et pourquoi. Les règles maison de hexact (un export par fichier, pas de
  * fonction libre) ne sont pas reprises : ici la DI Angular est partout et la 3D impose des fichiers
@@ -17,6 +19,7 @@ export default tseslint.config(
 
   {
     files: ['**/*.ts'],
+    plugins: { hexrace: { rules: { 'comment-ration': commentRation } } },
     extends: [
       eslint.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
@@ -33,6 +36,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      'hexrace/comment-ration': 'error',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-module-boundary-types': 'error',
@@ -106,7 +110,8 @@ export default tseslint.config(
   },
 
   {
-    files: ['eslint.config.js', '**/vitest.config.ts', '.dependency-cruiser.js'],
+    files: ['eslint.config.js', '**/vitest.config.ts', '.dependency-cruiser.js', 'quality/**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],
+    rules: { 'hexrace/comment-ration': 'off' },
   },
 );

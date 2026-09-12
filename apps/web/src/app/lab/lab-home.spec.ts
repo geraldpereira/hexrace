@@ -5,7 +5,12 @@ import { LabHome } from '@ui/lab/lab-home';
 import { SHOWCASES, type Showcase } from '@ui/lab/showcases';
 
 const READY: Showcase = { module: 'inputs', path: 'lab/inputs', summary: 'Prête.', ready: true };
-const PENDING: Showcase = { module: 'tile', path: 'lab/tile', summary: 'Pas encore.', ready: false };
+const PENDING: Showcase = {
+  module: 'tile',
+  path: 'lab/tile',
+  summary: 'Pas encore.',
+  ready: false,
+};
 
 describe('LabHome', () => {
   async function render(showcases: readonly Showcase[]): Promise<HTMLElement> {
@@ -18,12 +23,12 @@ describe('LabHome', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('liste une ligne par vitrine', async () => {
+  it('lists one row per showcase', async () => {
     const host = await render([READY, PENDING]);
     expect(host.querySelectorAll('li').length).toBe(2);
   });
 
-  it('fait un lien de la vitrine prête et grise celle qui ne le sait pas encore', async () => {
+  it('links the ready showcase and greys out the one that is not', async () => {
     const host = await render([READY, PENDING]);
     const link = host.querySelector('a');
     expect(link?.textContent).toContain('inputs');
@@ -33,7 +38,7 @@ describe('LabHome', () => {
     expect(pending[0]?.querySelector('a')).toBeNull();
   });
 
-  it('propose par défaut les vitrines du plan, toutes en attente', async () => {
+  it("offers the plan's showcases by default, the first being inputs", async () => {
     await TestBed.configureTestingModule({
       imports: [LabHome],
       providers: [provideRouter([])],

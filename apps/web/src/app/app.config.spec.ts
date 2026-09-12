@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { appConfig } from '@ui/app.config';
 
 describe('appConfig', () => {
-  it('fournit le routeur', () => {
+  it('provides the router', () => {
     TestBed.configureTestingModule({ providers: appConfig.providers });
     expect(TestBed.inject(Router)).toBeTruthy();
   });

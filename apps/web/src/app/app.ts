@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-/** L'application : une sortie de routeur, les routes décident de ce qu'elle contient. */
+/** The application: one router outlet, and the routes decide what is in it. */
 @Component({
   selector: 'hr-app',
   imports: [RouterOutlet],
