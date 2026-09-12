@@ -40,7 +40,7 @@ describe('GamepadSource', () => {
     source = TestBed.inject(GamepadSource);
   });
 
-  it("is not connected without a gamepad and reads actions at rest", () => {
+  it('is not connected without a gamepad and reads actions at rest', () => {
     expect(source.connected).toBe(false);
     source.poll();
     expect(source.actions.throttle).toBe(0);
@@ -53,14 +53,15 @@ describe('GamepadSource', () => {
     expect(source.connected).toBe(true);
   });
 
-  it('maps triggers, right stick, bumpers, Y, A and B', () => {
+  it('maps triggers, right stick, A, bumpers, Y and B', () => {
     const p = pad(0);
     p.buttons[7] = { pressed: true, value: 0.8 };
     p.buttons[6] = { pressed: false, value: 0.02 };
     p.axes[2] = 0.575;
-    p.buttons[5] = { pressed: true, value: 1 };
-    p.buttons[3] = { pressed: true, value: 1 };
     p.buttons[0] = { pressed: false, value: 0.7 };
+    p.buttons[5] = { pressed: true, value: 1 };
+    p.buttons[4] = { pressed: true, value: 1 };
+    p.buttons[3] = { pressed: true, value: 1 };
     p.buttons[1] = { pressed: true, value: 1 };
     pads = [p];
     connect(p);
@@ -70,6 +71,8 @@ describe('GamepadSource', () => {
     expect(a.brake).toBe(0);
     expect(a.steer).toBeCloseTo(0.5, 5);
     expect(a.handBrake).toBe(1);
+    expect(a.gearUp).toBe(1);
+    expect(a.gearDown).toBe(1);
     expect(a.reset).toBe(1);
     expect(a.confirm).toBe(1);
     expect(a.back).toBe(1);
@@ -138,7 +141,7 @@ describe('GamepadSource', () => {
     pads = [p];
     connect(p);
     source.poll();
-    expect(source.actions.confirm).toBe(1);
+    expect(source.actions.handBrake).toBe(1);
     expect(source.actions.throttle).toBe(0);
     expect(source.actions.steer).toBe(0);
   });

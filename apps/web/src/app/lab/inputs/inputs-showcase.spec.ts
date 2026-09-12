@@ -36,7 +36,7 @@ describe('InputsShowcase', () => {
     expect(host.querySelectorAll('thead th').length).toBe(2 + 3);
     expect(page.rows()).toEqual([]);
     frames[0]?.(16);
-    expect(page.rows().length).toBe(9);
+    expect(page.rows().length).toBe(11);
     expect(page.rows()[0]?.name).toBe('throttle');
     expect(page.activeSource()).toBe('none');
   });

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-/** A value from -1 to 1 as a bar: from the middle for a signed value, from the left otherwise. */
+/** A value as a bar: a signed one (-1 to 1) grows from the middle, the others (0 to 1) from the left. */
 @Component({
   selector: 'hr-bar',
   template: `
@@ -49,8 +49,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 })
 export class Bar {
   readonly value = input.required<number>();
-  /** Signed bars are for steer and navigation; everything else runs from 0 to 1. */
-  readonly signed = computed(() => this.value() < 0);
-  readonly left = computed(() => (this.signed() ? 50 + this.value() * 50 : 0));
+  readonly signed = input(false);
+  readonly left = computed(() => (this.signed() ? 50 + Math.min(this.value(), 0) * 50 : 0));
   readonly width = computed(() => Math.abs(this.value()) * (this.signed() ? 50 : 100));
 }

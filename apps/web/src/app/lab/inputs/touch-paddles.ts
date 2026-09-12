@@ -4,6 +4,8 @@ import { type TouchPaddle, type TouchSource } from '@hexrace/inputs';
 
 import { startFrameLoop } from '@ui/lab/frame-loop';
 
+const KNOB_PX = 56;
+
 /**
  * Draws the touch zones and the paddles of a `TouchSource`: three faint zones, and for each
  * finger down a ring at its origin and a knob at its deflection. Reads the source every frame;
@@ -17,7 +19,13 @@ import { startFrameLoop } from '@ui/lab/frame-loop';
     <div class="zone hand-brake" [class.active]="paddles()[2]?.active"></div>
     @for (paddle of paddles(); track paddle.zone) {
       @if (paddle.active && paddle.zone !== 'handBrake') {
-        <div class="ring" [style.left.px]="paddle.originX" [style.top.px]="paddle.originY"></div>
+        <div
+          class="ring"
+          [style.left.px]="paddle.originX"
+          [style.top.px]="paddle.originY"
+          [style.width.px]="ringPx()"
+          [style.height.px]="ringPx()"
+        ></div>
         <div class="knob" [style.left.px]="knobX(paddle)" [style.top.px]="knobY(paddle)"></div>
       }
     }
@@ -63,8 +71,6 @@ import { startFrameLoop } from '@ui/lab/frame-loop';
       border-radius: 50%;
     }
     .ring {
-      width: 160px;
-      height: 160px;
       border: 2px solid rgba(255, 255, 255, 0.4);
     }
     .knob {
@@ -78,6 +84,8 @@ import { startFrameLoop } from '@ui/lab/frame-loop';
 export class TouchPaddles {
   readonly source = input.required<TouchSource>();
   readonly paddles = signal<readonly TouchPaddle[]>([]);
+  /** The ring spans the full travel either side of the origin, plus the knob's own radius. */
+  readonly ringPx = signal(0);
 
   constructor() {
     startFrameLoop(this.tick);
@@ -93,5 +101,6 @@ export class TouchPaddles {
 
   private readonly tick = (): void => {
     this.paddles.set(this.source().paddles.map((p) => ({ ...p })));
+    this.ringPx.set(this.source().travelPx * 2 + KNOB_PX);
   };
 }

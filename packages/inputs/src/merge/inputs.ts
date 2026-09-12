@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { clamp } from 'lodash-es';
 
 import { InputActions } from '@inputs/entity/input-actions';
 import { INPUT_SOURCES, type InputSourceId } from '@inputs/entity/input-source';
@@ -25,17 +26,15 @@ export class Inputs {
       if (s.isEngaged()) this.activeSource = source.id;
       a.throttle = Math.max(a.throttle, s.throttle);
       a.brake = Math.max(a.brake, s.brake);
-      a.steer = clamp(a.steer + s.steer);
+      a.steer = clamp(a.steer + s.steer, -1, 1);
       a.handBrake = Math.max(a.handBrake, s.handBrake);
       a.reset = Math.max(a.reset, s.reset);
-      a.navigateX = clamp(a.navigateX + s.navigateX);
-      a.navigateY = clamp(a.navigateY + s.navigateY);
+      a.gearUp = Math.max(a.gearUp, s.gearUp);
+      a.gearDown = Math.max(a.gearDown, s.gearDown);
+      a.navigateX = clamp(a.navigateX + s.navigateX, -1, 1);
+      a.navigateY = clamp(a.navigateY + s.navigateY, -1, 1);
       a.confirm = Math.max(a.confirm, s.confirm);
       a.back = Math.max(a.back, s.back);
     }
   }
-}
-
-function clamp(v: number): number {
-  return Math.max(-1, Math.min(1, v));
 }

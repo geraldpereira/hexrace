@@ -28,6 +28,7 @@ describe('TouchSource', () => {
     Object.defineProperty(window, 'innerHeight', { configurable: true, value: 600 });
     TestBed.configureTestingModule({});
     source = TestBed.inject(TouchSource);
+    source.travelPx = 80;
   });
 
   afterEach(() => {
@@ -43,7 +44,7 @@ describe('TouchSource', () => {
     expect(source.zoneAt(500, 100)).toBeNull();
   });
 
-  it("is only connected after a first touch inside a zone", () => {
+  it('is only connected after a first touch inside a zone', () => {
     expect(source.connected).toBe(false);
     fire(pointer('pointerdown', 500, 100));
     expect(source.connected).toBe(false);

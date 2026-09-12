@@ -4,7 +4,7 @@ import { Injectable, inject } from '@angular/core';
 import { InputActions } from '@inputs/entity/input-actions';
 import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
 
-const PADDLE_TRAVEL_PX = 80;
+const PADDLE_TRAVEL_PX = 50;
 const PADDLE_ZONE_SHARE = 0.4;
 const HAND_BRAKE_FROM_SHARE = 0.55;
 

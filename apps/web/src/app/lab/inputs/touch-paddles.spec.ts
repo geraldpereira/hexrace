@@ -66,7 +66,9 @@ describe('TouchPaddles', () => {
     const { paddles, source } = await render();
     source.byZone.drive.active = true;
     source.byZone.drive.deflection = 0.3;
+    source.travelPx = 50;
     frames[0]?.(0);
+    expect(paddles.ringPx()).toBe(156);
     expect(paddles.paddles()[0]).toEqual(source.byZone.drive);
     expect(paddles.paddles()[0]).not.toBe(source.byZone.drive);
     source.byZone.drive.active = false;

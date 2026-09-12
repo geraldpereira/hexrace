@@ -222,7 +222,7 @@ Arcade, sans être basique. Après dix secondes le joueur doit sentir trois chos
 
 ### 3.3 Commandes
 
-Actions : accélérer, freiner / marche arrière, tourner, frein à main, reset (maintenu trois secondes, voir 3.8). Pas de contrôle de caméra.
+Actions : accélérer, freiner / marche arrière, tourner, frein à main, reset (maintenu trois secondes, voir 3.8), et monter / descendre un rapport quand la boîte est en manuel. Pas de contrôle de caméra.
 
 **Manette** (le mode de référence, analogique) :
 
@@ -231,11 +231,12 @@ Actions : accélérer, freiner / marche arrière, tourner, frein à main, reset 
 | Accélérer                | Gâchette droite |
 | Freiner / marche arrière | Gâchette gauche |
 | Tourner                  | Stick droit     |
-| Frein à main             | L1 ou R1        |
+| Frein à main             | A               |
+| Rapport supérieur / inférieur | R1 / L1    |
 | Reset                    | Y               |
-| Menus : naviguer         | Stick droit     |
-| Menus : valider          | Accélérer       |
-| Menus : retour           | Freiner         |
+| Menus : naviguer         | Stick droit ou croix |
+| Menus : valider          | A               |
+| Menus : retour           | B               |
 
 **Clavier** (PC, on accepte la perte de l'analogique) :
 
@@ -243,7 +244,9 @@ Actions : accélérer, freiner / marche arrière, tourner, frein à main, reset 
 |-----------------------------|-----------------|
 | Accélérer, freiner, tourner | WASD ou flèches |
 | Frein à main                | Espace          |
+| Rapport supérieur / inférieur | E / Q         |
 | Reset                       | R               |
+| Menus : valider             | Entrée          |
 | Menus : retour              | Échap           |
 
 **Tactile** (mobile) :
@@ -251,6 +254,7 @@ Actions : accélérer, freiner / marche arrière, tourner, frein à main, reset 
 - un **palonnier vertical à gauche** pour accélérer et freiner,
 - un **palonnier horizontal à droite** pour la direction,
 - un **bouton au milieu** pour le frein à main,
+- pas de changement de rapport : la boîte est automatique au tactile,
 - menus au toucher.
 
 ### 3.4 Comportement par surface

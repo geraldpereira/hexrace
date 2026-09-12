@@ -13,12 +13,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit"
   },
   "dependencies": {
+    "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
-    "@angular/common": "^22.0.0"
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@angular/compiler": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.0.0"
   }
 }

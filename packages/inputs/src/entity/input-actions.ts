@@ -15,6 +15,9 @@ export class InputActions {
   handBrake = 0;
   /** Held; the car counts the three seconds (functional spec 3.8). */
   reset = 0;
+  /** Manual gearbox only, 0 or 1; the touch screen has none. */
+  gearUp = 0;
+  gearDown = 0;
   /** Menus, -1 to 1, Y positive downwards. */
   navigateX = 0;
   navigateY = 0;
@@ -28,6 +31,8 @@ export class InputActions {
     this.steer = 0;
     this.handBrake = 0;
     this.reset = 0;
+    this.gearUp = 0;
+    this.gearDown = 0;
     this.navigateX = 0;
     this.navigateY = 0;
     this.confirm = 0;
@@ -42,6 +47,8 @@ export class InputActions {
       this.steer !== 0 ||
       this.handBrake > 0 ||
       this.reset > 0 ||
+      this.gearUp > 0 ||
+      this.gearDown > 0 ||
       this.navigateX !== 0 ||
       this.navigateY !== 0 ||
       this.confirm > 0 ||

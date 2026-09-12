@@ -23,7 +23,7 @@ describe('KeyboardSource', () => {
     window.dispatchEvent(new Event('blur'));
   });
 
-  it("is only connected after a first key", () => {
+  it('is only connected after a first key', () => {
     expect(source.connected).toBe(false);
     press('KeyW');
     expect(source.connected).toBe(true);
@@ -57,14 +57,18 @@ describe('KeyboardSource', () => {
     expect(source.actions.steer).toBe(0);
   });
 
-  it('maps Space, R, Enter and Escape', () => {
+  it('maps Space, R, E, Q, Enter and Escape', () => {
     press('Space');
     press('KeyR');
+    press('KeyE');
+    press('KeyQ');
     press('Enter');
     press('Escape');
     source.poll(1 / 60);
     expect(source.actions.handBrake).toBe(1);
     expect(source.actions.reset).toBe(1);
+    expect(source.actions.gearUp).toBe(1);
+    expect(source.actions.gearDown).toBe(1);
     expect(source.actions.confirm).toBe(1);
     expect(source.actions.back).toBe(1);
   });

@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
+import { clamp } from 'lodash-es';
 
 import { InputActions } from '@inputs/entity/input-actions';
 import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
@@ -25,8 +26,9 @@ const TRIGGER_DEADZONE = 0.05;
 /**
  * The gamepad in the Gamepad API's standard (Xbox) layout, mapped as the functional spec 3.3 says:
  * right trigger throttles, left trigger brakes, right stick steers (the left one is accepted too,
- * summed and clamped), LB or RB is the hand brake, Y resets, A confirms, B goes back, right stick
- * or D-pad navigates. The first gamepad plugged in is the one heard; if it leaves, the next takes over.
+ * summed and clamped), A is the hand brake, RB and LB shift up and down, Y resets; in menus A
+ * confirms, B goes back, right stick or D-pad navigates. The first gamepad plugged in is the one
+ * heard; if it leaves, the next takes over.
  */
 @Injectable({ providedIn: 'root' })
 export class GamepadSource implements InputSource {
@@ -61,12 +63,16 @@ export class GamepadSource implements InputSource {
     a.brake = this.trigger(pad, BUTTON_LT);
     const rx = this.axis(pad, AXIS_RX);
     const lx = this.axis(pad, AXIS_LX);
-    a.steer = clamp(rx + lx);
-    a.handBrake = Math.max(this.button(pad, BUTTON_LB), this.button(pad, BUTTON_RB));
+    a.steer = clamp(rx + lx, -1, 1);
+    a.handBrake = this.button(pad, BUTTON_A);
     a.reset = this.button(pad, BUTTON_Y);
-    a.navigateX = clamp(rx + this.button(pad, DPAD_RIGHT) - this.button(pad, DPAD_LEFT));
+    a.gearUp = this.button(pad, BUTTON_RB);
+    a.gearDown = this.button(pad, BUTTON_LB);
+    a.navigateX = clamp(rx + this.button(pad, DPAD_RIGHT) - this.button(pad, DPAD_LEFT), -1, 1);
     a.navigateY = clamp(
       this.axis(pad, AXIS_RY) + this.button(pad, DPAD_DOWN) - this.button(pad, DPAD_UP),
+      -1,
+      1,
     );
     a.confirm = this.button(pad, BUTTON_A);
     a.back = this.button(pad, BUTTON_B);
@@ -108,8 +114,4 @@ export class GamepadSource implements InputSource {
     this.actions.clear();
     this.activeIndex = this.firstConnected();
   };
-}
-
-function clamp(v: number): number {
-  return Math.max(-1, Math.min(1, v));
 }

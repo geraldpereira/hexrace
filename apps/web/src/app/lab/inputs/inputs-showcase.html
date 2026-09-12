@@ -22,9 +22,9 @@
       @for (row of rows(); track row.name) {
         <tr>
           <th>{{ row.name }}</th>
-          <td><hr-bar [value]="row.merged" /></td>
+          <td><hr-bar [value]="row.merged" [signed]="row.signed" /></td>
           @for (value of row.perSource; track $index) {
-            <td><hr-bar [value]="value" /></td>
+            <td><hr-bar [value]="value" [signed]="row.signed" /></td>
           }
         </tr>
       }
@@ -57,11 +57,11 @@
       <output>{{ gamepad.stickDeadzone }}</output>
     </label>
     <label>
-      Paddle travel (px)
+      Paddle travel (px, smaller = more sensitive)
       <input
         type="range"
         min="20"
-        max="200"
+        max="150"
         step="5"
         [value]="touch.travelPx"
         (input)="setTravel($any($event.target).value)"
@@ -75,9 +75,10 @@
   </section>
 
   <p class="hint">
-    Gamepad: RT throttle, LT brake, right stick steer, LB / RB hand brake, Y reset, A confirm, B
-    back. Keyboard: WASD or arrows, Space, R, Enter, Escape. Touch: left paddle drive, right paddle
-    steer, bottom middle hand brake.
+    Gamepad: RT throttle, LT brake, right stick steer, A hand brake, RB / LB gear up / down, Y
+    reset; menus A confirm, B back. Keyboard: WASD or arrows, Space hand brake, E / Q gears, R
+    reset, Enter, Escape. Touch: left paddle drive, right paddle steer, bottom middle hand brake, no
+    gears.
   </p>
 </main>
 

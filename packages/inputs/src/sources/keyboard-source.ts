@@ -8,10 +8,10 @@ const SMOOTHING_TIME = 0.1;
 
 /**
  * The keyboard, mapped as the functional spec 3.3 says: WASD or arrows to throttle, brake and
- * steer, Space for the hand brake, R for reset, Enter to confirm, Escape to go back. A key is 0 or
- * 1; the three driving actions ramp up and down over `smoothingTime` seconds to give the digital
- * keyboard back a little of the analogue it lacks (technical spec 5.3). A window losing focus
- * releases every key, since their release would otherwise never be seen.
+ * steer, Space hand brake, R reset, E / Q shift up / down, Enter confirm, Escape back. A key is 0
+ * or 1; the three driving actions ramp over `smoothingTime` seconds to give the digital keyboard a
+ * little of the analogue it lacks (technical spec 5.3). A window losing focus releases every key,
+ * since their release would otherwise never be seen.
  */
 @Injectable({ providedIn: 'root' })
 export class KeyboardSource implements InputSource {
@@ -43,6 +43,8 @@ export class KeyboardSource implements InputSource {
     a.steer += (t.steer - a.steer) * alpha;
     a.handBrake = t.handBrake;
     a.reset = t.reset;
+    a.gearUp = t.gearUp;
+    a.gearDown = t.gearDown;
     a.navigateX = t.navigateX;
     a.navigateY = t.navigateY;
     a.confirm = t.confirm;
@@ -57,6 +59,8 @@ export class KeyboardSource implements InputSource {
     t.steer = on('KeyD', 'ArrowRight') - on('KeyA', 'ArrowLeft');
     t.handBrake = on('Space');
     t.reset = on('KeyR');
+    t.gearUp = on('KeyE');
+    t.gearDown = on('KeyQ');
     t.navigateX = t.steer;
     t.navigateY = t.brake - t.throttle;
     t.confirm = on('Enter');
@@ -94,6 +98,8 @@ export class KeyboardSource implements InputSource {
     'ArrowRight',
     'Space',
     'KeyR',
+    'KeyE',
+    'KeyQ',
     'Enter',
     'Escape',
   ]);

@@ -21,6 +21,8 @@ const ACTION_NAMES = [
   'steer',
   'handBrake',
   'reset',
+  'gearUp',
+  'gearDown',
   'navigateX',
   'navigateY',
   'confirm',
@@ -29,9 +31,13 @@ const ACTION_NAMES = [
 
 type ActionName = (typeof ACTION_NAMES)[number];
 
+const SIGNED: ReadonlySet<ActionName> = new Set<ActionName>(['steer', 'navigateX', 'navigateY']);
+
 /** One row of the readout table: an action's merged value and each source's own. */
 export interface ActionRow {
   readonly name: ActionName;
+  /** Signed actions run from -1 to 1 and are drawn from the middle. */
+  readonly signed: boolean;
   readonly merged: number;
   readonly perSource: readonly number[];
 }
@@ -98,6 +104,7 @@ export class InputsShowcase {
     this.rows.set(
       ACTION_NAMES.map((name) => ({
         name,
+        signed: SIGNED.has(name),
         merged: this.inputs.actions[name],
         perSource: this.sources.map((s) => s.actions[name]),
       })),

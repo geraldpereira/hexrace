@@ -52,6 +52,8 @@ describe('Inputs', () => {
       gamepad.actions.brake = 0.6;
       gamepad.actions.handBrake = 1;
       keyboard.actions.reset = 1;
+      gamepad.actions.gearUp = 1;
+      keyboard.actions.gearDown = 1;
       keyboard.actions.confirm = 1;
       gamepad.actions.back = 1;
       inputs.poll(1 / 60);
@@ -60,6 +62,8 @@ describe('Inputs', () => {
       expect(a.brake).toBe(0.6);
       expect(a.handBrake).toBe(1);
       expect(a.reset).toBe(1);
+      expect(a.gearUp).toBe(1);
+      expect(a.gearDown).toBe(1);
       expect(a.confirm).toBe(1);
       expect(a.back).toBe(1);
     });

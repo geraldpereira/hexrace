@@ -14,6 +14,8 @@ describe('InputActions', () => {
     ['steer', -0.2],
     ['handBrake', 1],
     ['reset', 1],
+    ['gearUp', 1],
+    ['gearDown', 1],
     ['navigateX', 1],
     ['navigateY', -1],
     ['confirm', 1],
