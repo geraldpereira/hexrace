@@ -49,6 +49,17 @@ ruban au sol, posé sur le point de contact Jolt. Couleur et opacité viennent d
 noire sur l'asphalte, ornière plus discrète ailleurs. La glisse latérale peut aussi marquer (« Sideways
 too » dans le dossier Skid marks du panneau debug, avec les seuils et un bouton Clear).
 
+## Crissement de pneus
+
+Le bruit de glisse dépend du revêtement sous chaque roue. Un second AudioWorklet
+(`src/rally/car/tyreProcessor.ts`) tient une voix par revêtement, mélange entre un crissement tonal
+(bruit blanc dans une résonance aiguë dont la hauteur monte avec la glisse et tremble) et un
+crissement granuleux (train de grains de bruit sous un passe-bas, plus un grondement). L'asphalte
+siffle, le gravier crépite, la terre racle, la boue est étouffée. Les paramètres de chaque revêtement
+sont dans `surfaces.ts` (`slideSound`) et se règlent dans le dossier « Tyre sound » du panneau debug,
+avec l'intensité par revêtement en lecture. Le crissement suit exactement les traces au sol : mêmes
+seuils de glissement, ceux du dossier « Skid marks ».
+
 ## À tester
 
 - Tenue de route sur la piste, sous-virage / survirage au frein à main.

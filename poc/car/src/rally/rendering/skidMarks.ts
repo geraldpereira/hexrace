@@ -44,6 +44,8 @@ export class SkidMarksBehavior extends Component {
     widthScale = WIDTH_SCALE;
     /** Quads laid so far (wraps at the buffer size), debug readout. */
     segments = 0;
+    /** Slide intensity per wheel this frame (0..1), also what the tyre sound follows. */
+    readonly wheelIntensity: number[] = [];
 
     private car!: CarBehavior;
     private readonly mesh: THREE.Mesh;
@@ -97,6 +99,8 @@ export class SkidMarksBehavior extends Component {
             right: new THREE.Vector3(),
             intensity: 0,
         }));
+        this.wheelIntensity.length = car.readouts.length;
+        this.wheelIntensity.fill(0);
         this.scene.add(this.mesh);
     }
 
@@ -111,8 +115,9 @@ export class SkidMarksBehavior extends Component {
         for (const [i, readout] of this.car.readouts.entries()) {
             const trail = this.trails[i];
             if (!trail) continue;
-            const intensity = this.enabled && readout.contact ? this.intensity(readout) : 0;
-            if (intensity <= 0) {
+            const intensity = readout.contact ? this.intensity(readout) : 0;
+            this.wheelIntensity[i] = intensity;
+            if (intensity <= 0 || !this.enabled) {
                 trail.active = false;
                 continue;
             }

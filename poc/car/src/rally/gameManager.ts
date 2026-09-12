@@ -14,6 +14,7 @@ import { TerrainData, createTerrain } from './terrain/terrain';
 import { createCar } from './car/car';
 import { createEngineSound } from './car/engineSound';
 import { createSkidMarks } from './rendering/skidMarks';
+import { createTyreSound } from './car/tyreSound';
 import { ScoreComponent } from './score';
 import { BonusSpawnerBehavior } from './bonus';
 
@@ -57,6 +58,7 @@ export class GameManager {
         this.root.addChild(createHud());
         this.root.addChild(createEngineSound());
         this.root.addChild(createSkidMarks(scene));
+        this.root.addChild(createTyreSound());
 
         this.root.addChild(new GameObject('score', [new ScoreComponent()]));
         this.root.addChild(

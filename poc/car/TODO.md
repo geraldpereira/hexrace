@@ -12,10 +12,12 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
       manuel LB/RB en option debug), frein à main sur A. Son moteur procédural par impulsions de
       cylindres (AudioWorklet) avec rupteur, détonations et irrégularités : validé, pas
       d'échantillon. Le dosage fin de la courbe et des rapports se fera avec le chrono au tour.
+- [ ] Configuration du poids et de la position du centre de gravité de la voiture
 - [ ] Collisions. Dégats. 
 - [ ] **Traces de pneus et particules.** Traces au blocage de roue faites : ruban par roue, couleur
-      et opacité par revêtement (`surfaces.ts`), glisse latérale en option debug. Reste les
-      particules (poussière, gravillons, fumée) et à doser les seuils en roulant.
+      et opacité par revêtement (`surfaces.ts`), glisse latérale en option debug. Crissement de
+      pneus par revêtement fait (AudioWorklet, paramètres dans `surfaces.ts`). Reste les particules
+      (poussière, gravillons, fumée) et à doser seuils et timbres en roulant.
 - [ ] **Chrono au tour.** Ligne de départ sur la boucle, temps au tour courant et meilleur tour dans
       le HUD. Seul moyen de juger « sur asphalte glisser fait perdre du temps, sur gravier ne pas
       glisser en fait perdre » autrement qu'au ressenti.

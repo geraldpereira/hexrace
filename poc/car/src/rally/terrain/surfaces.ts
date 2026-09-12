@@ -33,6 +33,22 @@ export interface Surface {
     markColor: number;
     /** Skid mark opacity at full slip. */
     markOpacity: number;
+    /** What a sliding tyre sounds like here (see `tyreProcessor.ts`). */
+    slideSound: SlideSound;
+}
+
+export interface SlideSound {
+    /** 0 = grainy crunch (loose stuff), 1 = tonal squeal (asphalt). Mixes in between. */
+    tone: number;
+    /** Squeal centre frequency, or the crunch low-pass cutoff (Hz). */
+    freq: number;
+    /** Squeal resonance. */
+    q: number;
+    /** Grains per second at full slide, 0 for none. */
+    grainRate: number;
+    /** Grain length (s): short = gravel tick, long = mud blub. */
+    grainDur: number;
+    level: number;
 }
 
 export const SURFACE_ASPHALT = 0;
@@ -65,6 +81,7 @@ export const SURFACES: readonly Surface[] = [
         wavelength: 0.5,
         markColor: 0x111111,
         markOpacity: 0.75,
+        slideSound: { tone: 1, freq: 1000, q: 14, grainRate: 0, grainDur: 0.004, level: 1.8 },
     },
     {
         name: 'Gravel',
@@ -88,6 +105,7 @@ export const SURFACES: readonly Surface[] = [
         wavelength: 0.3,
         markColor: 0x2f2924,
         markOpacity: 0.45,
+        slideSound: { tone: 0.05, freq: 2400, q: 1, grainRate: 900, grainDur: 0.004, level: 0.9 },
     },
     {
         name: 'Dirt',
@@ -111,6 +129,7 @@ export const SURFACES: readonly Surface[] = [
         wavelength: 1.5,
         markColor: 0x231a10,
         markOpacity: 0.5,
+        slideSound: { tone: 0.1, freq: 1200, q: 1, grainRate: 350, grainDur: 0.008, level: 1 },
     },
     {
         name: 'Mud',
@@ -135,6 +154,7 @@ export const SURFACES: readonly Surface[] = [
         wavelength: 3,
         markColor: 0x120d08,
         markOpacity: 0.55,
+        slideSound: { tone: 0, freq: 350, q: 1, grainRate: 25, grainDur: 0.03, level: 1.3 },
     },
 ];
 
