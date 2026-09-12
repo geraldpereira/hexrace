@@ -12,9 +12,18 @@ const SEGMENT_LENGTH = 0.12;
 // Lift above the contact point so the mark doesn't z-fight the ground.
 const LIFT = 0.015;
 // Longitudinal slip ratio where the mark starts, and where it is full.
-// A locked wheel reads -1; a spinning one goes well past +1.
+// A locked wheel reads 1; a spinning one goes well past it.
 const LOCK_SLIP_START = 0.4;
 const LOCK_SLIP_FULL = 0.8;
+// The ratio alone flaps at a standstill (its denominator is the ground
+// speed), so the tyre must also actually scrub: slip speed in m/s where the
+// mark starts and is full.
+const SLIP_SPEED_START = 0.5;
+const SLIP_SPEED_FULL = 2.5;
+// Intensity smoothing (s): quick to appear, slower to let go, so a slide
+// that flickers around the threshold reads as one mark and one sound.
+const ATTACK = 0.05;
+const RELEASE = 0.2;
 // Lateral slip (°) where the mark starts and is full, when enabled.
 const LATERAL_ENABLED = false;
 const LATERAL_START_DEG = 12;
@@ -41,6 +50,10 @@ export class SkidMarksBehavior extends Component {
     lateralEnabled = LATERAL_ENABLED;
     lateralStartDeg = LATERAL_START_DEG;
     lateralFullDeg = LATERAL_FULL_DEG;
+    slipSpeedStart = SLIP_SPEED_START;
+    slipSpeedFull = SLIP_SPEED_FULL;
+    attack = ATTACK;
+    release = RELEASE;
     widthScale = WIDTH_SCALE;
     /** Quads laid so far (wraps at the buffer size), debug readout. */
     segments = 0;
@@ -110,12 +123,17 @@ export class SkidMarksBehavior extends Component {
         (this.mesh.material as THREE.Material).dispose();
     }
 
-    override render(): void {
+    override render(dt: number): void {
         let dirty = false;
         for (const [i, readout] of this.car.readouts.entries()) {
             const trail = this.trails[i];
             if (!trail) continue;
-            const intensity = readout.contact ? this.intensity(readout) : 0;
+            const raw = readout.contact ? this.intensity(readout) : 0;
+            const prev = this.wheelIntensity[i] ?? 0;
+            const tau = raw > prev ? this.attack : this.release;
+            const k = tau > 0 ? 1 - Math.exp(-dt / tau) : 1;
+            let intensity = prev + (raw - prev) * k;
+            if (intensity < 0.01) intensity = 0;
             this.wheelIntensity[i] = intensity;
             if (intensity <= 0 || !this.enabled) {
                 trail.active = false;
@@ -160,7 +178,8 @@ export class SkidMarksBehavior extends Component {
     }
 
     private intensity(r: WheelReadout): number {
-        const lock = ramp(Math.abs(r.long), this.lockSlipStart, this.lockSlipFull);
+        const scrub = ramp(r.slipSpeed, this.slipSpeedStart, this.slipSpeedFull);
+        const lock = ramp(Math.abs(r.long), this.lockSlipStart, this.lockSlipFull) * scrub;
         const lateral = this.lateralEnabled
             ? ramp(Math.abs(r.lat), this.lateralStartDeg, this.lateralFullDeg)
             : 0;
@@ -215,6 +234,10 @@ export class SkidMarksBehavior extends Component {
         f.add(this, 'enabled').name('Enabled');
         f.add(this, 'lockSlipStart', 0.05, 1, 0.05).name('Lock slip start');
         f.add(this, 'lockSlipFull', 0.1, 1.5, 0.05).name('Lock slip full');
+        f.add(this, 'slipSpeedStart', 0, 5, 0.1).name('Scrub start (m/s)');
+        f.add(this, 'slipSpeedFull', 0.2, 10, 0.1).name('Scrub full (m/s)');
+        f.add(this, 'attack', 0, 0.5, 0.01).name('Attack (s)');
+        f.add(this, 'release', 0, 1, 0.01).name('Release (s)');
         f.add(this, 'lateralEnabled').name('Sideways too');
         f.add(this, 'lateralStartDeg', 2, 45, 1).name('Lateral start (°)');
         f.add(this, 'lateralFullDeg', 5, 60, 1).name('Lateral full (°)');

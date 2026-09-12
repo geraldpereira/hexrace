@@ -201,6 +201,12 @@ export interface WheelReadout {
     readonly lateral: THREE.Vector3;
     /** Tyre width (m). */
     width: number;
+    /**
+     * Speed of the tyre surface against the ground along the rolling
+     * direction (m/s). Zero when rolling clean, the ground speed when locked,
+     * and, unlike the slip ratio, meaningless-noise-free at a standstill.
+     */
+    slipSpeed: number;
 }
 
 export class CarBehavior extends Component {
@@ -254,6 +260,7 @@ export class CarBehavior extends Component {
         normal: new THREE.Vector3(0, 1, 0),
         lateral: new THREE.Vector3(1, 0, 0),
         width: 0,
+        slipSpeed: 0,
     }));
 
     private input!: GameInput;
@@ -395,6 +402,21 @@ export class CarBehavior extends Component {
                 readout.normal.set(n.GetX(), n.GetY(), n.GetZ());
                 const l = wheel.GetContactLateral();
                 readout.lateral.set(l.GetX(), l.GetY(), l.GetZ());
+                // Same quantities Jolt's slip ratio is built from, kept in m/s.
+                // GetContactPointVelocity is the ground's velocity at the
+                // contact (zero on static terrain), so the car's own velocity
+                // at that point has to come from the body.
+                const along = wheel.GetContactLongitudinal();
+                const carVel = this.physics.bodyInterface.GetPointVelocity(this.body.GetID(), p);
+                const groundVel = wheel.GetContactPointVelocity();
+                const relative =
+                    (carVel.GetX() - groundVel.GetX()) * along.GetX() +
+                    (carVel.GetY() - groundVel.GetY()) * along.GetY() +
+                    (carVel.GetZ() - groundVel.GetZ()) * along.GetZ();
+                const tyre = wheel.GetAngularVelocity() * wheel.GetSettings().mRadius;
+                readout.slipSpeed = Math.abs(tyre - relative);
+            } else {
+                readout.slipSpeed = 0;
             }
         }
     }

@@ -38,7 +38,11 @@ class Voice {
         this.bp1 = new Biquad(); this.bp2 = new Biquad();
         this.lp = new Biquad(); this.rumble = new Biquad();
         this.grains = [];
-        this.wander = 0; this.lfo = Math.random() * 6.28;
+        // Slow random walks: pitch, level, flutter rate.
+        this.wander = 0; this.levelWander = 0; this.flutterHz = 35;
+        this.lfo = Math.random() * 6.28; this.flutterPhase = 0;
+        // Chirp gate: the squeal comes and goes, more so on a partial slide.
+        this.gate = 1; this.gateTarget = 1; this.gateTimer = 0;
     }
 }
 
@@ -62,32 +66,59 @@ class TyreProcessor extends AudioWorkletProcessor {
         const out = outputs[0][0];
         if (!out) return true;
         const sr = sampleRate;
+        const blockSec = out.length / sr;
+        const speedFactor = Math.min(1, this.speed / 25);
         out.fill(0);
         for (const v of this.voices) {
             const p = v.params;
             if (v.target <= 0.001 && v.intensity <= 0.001) { v.intensity = 0; continue; }
-            // Per-block filter update: the squeal pitch wanders slowly and
-            // climbs with the slide; the crunch cutoff opens with speed.
-            v.wander += (Math.random() - 0.5) * 0.06 - v.wander * 0.02;
+            const it0 = v.intensity;
+
+            // Per-block modulation.
+            v.wander += (Math.random() - 0.5) * 0.12 - v.wander * 0.03;
+            v.levelWander += (Math.random() - 0.5) * 0.1 - v.levelWander * 0.02;
+            v.flutterHz += (Math.random() - 0.5) * 2 - (v.flutterHz - 35) * 0.02;
             v.lfo += 0.0008 * out.length;
-            const pitch = p.freq * (1 + 0.18 * v.intensity + 0.04 * v.wander + 0.02 * Math.sin(v.lfo * 5));
+            // Chirp gate: hold a state for 40-200 ms, then maybe flip. A full
+            // slide stays mostly open; a light one stutters.
+            v.gateTimer -= blockSec;
+            if (v.gateTimer <= 0) {
+                const openChance = 0.35 + 0.6 * it0;
+                v.gateTarget = Math.random() < openChance ? 1 : 0.1 + Math.random() * 0.3;
+                v.gateTimer = 0.04 + Math.random() * 0.16;
+            }
+            // Pitch: rises with slide and speed, wanders, and vibrates.
+            const pitch = p.freq * (1 + 0.3 * it0 + 0.2 * speedFactor + 0.08 * v.wander + 0.03 * Math.sin(v.lfo * 6.3));
             v.bp1.bandpass(pitch, p.q);
             v.bp2.bandpass(pitch * 2.02, p.q * 0.8);
-            v.lp.lowpass(p.freq * (0.7 + 0.5 * Math.min(1, this.speed / 25)), 0.9);
-            v.rumble.lowpass(160, 0.8);
+            v.lp.lowpass(p.freq * (0.6 + 0.6 * speedFactor) * (1 + 0.15 * v.wander), 0.9);
+            v.rumble.lowpass(140 + 60 * speedFactor, 0.8);
+            const level = p.level * (1 + 0.2 * v.levelWander);
+            // Grains: denser with slide and speed.
+            const grainRate = p.grainRate * (0.2 + 0.8 * it0) * (0.4 + 0.8 * speedFactor);
+            const flutterStep = (2 * Math.PI * v.flutterHz) / sr;
+
             for (let i = 0; i < out.length; i++) {
                 v.intensity += (v.target - v.intensity) * 0.002;
+                v.gate += (v.gateTarget - v.gate) * 0.004;
                 const it = v.intensity;
                 const white = Math.random() * 2 - 1;
                 let y = 0;
                 if (p.tone > 0) {
-                    // Stick-slip flutter: the squeal amplitude shivers.
-                    const flutter = 0.8 + 0.2 * Math.sin(v.lfo * 31 + i * 0.01);
-                    y += p.tone * (v.bp1.run(white) * 2.5 + v.bp2.run(white) * 0.8) * flutter;
+                    // Stick-slip flutter: irregular amplitude shiver.
+                    v.flutterPhase += flutterStep;
+                    const flutter = 0.7 + 0.3 * Math.sin(v.flutterPhase) * Math.sin(v.flutterPhase * 0.37);
+                    y += p.tone * (v.bp1.run(white) * 2.5 + v.bp2.run(white) * 0.8) * flutter * v.gate;
                 }
                 if (p.tone < 1) {
-                    if (p.grainRate > 0 && Math.random() < (p.grainRate * (0.3 + 0.7 * it)) / sr) {
-                        v.grains.push({ t: 0, dur: p.grainDur * (0.6 + Math.random() * 0.8), amp: 0.5 + Math.random() });
+                    if (grainRate > 0 && Math.random() < grainRate / sr) {
+                        // Every so often a bigger stone.
+                        const stone = Math.random() < 0.04;
+                        v.grains.push({
+                            t: 0,
+                            dur: p.grainDur * (0.5 + Math.random() * 1.2) * (stone ? 3 : 1),
+                            amp: (0.3 + Math.random() * 1.2) * (stone ? 2.5 : 1),
+                        });
                     }
                     let g = 0;
                     for (let k = v.grains.length - 1; k >= 0; k--) {
@@ -99,7 +130,7 @@ class TyreProcessor extends AudioWorkletProcessor {
                     }
                     y += (1 - p.tone) * (v.lp.run(g * 1.6 + white * 0.12) + v.rumble.run(white) * 1.2);
                 }
-                out[i] += y * p.level * Math.pow(it, 1.3);
+                out[i] += y * level * Math.pow(it, 1.3);
             }
         }
         for (let i = 0; i < out.length; i++) out[i] = Math.tanh(out[i]);

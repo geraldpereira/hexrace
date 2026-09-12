@@ -7,6 +7,9 @@ import { TYRE_PROCESSOR_SOURCE } from './tyreProcessor';
 
 const VOLUME = 0.6;
 const SMOOTHING = 0.03;
+// Slide intensity below which the tyre stays silent; above it the range is
+// stretched back to 0..1 so a full slide is still full.
+const AUDIBLE_FROM = 0.2;
 
 /**
  * Tyre slide noise: follows the skid marks exactly. Each wheel's slide
@@ -21,6 +24,7 @@ const SMOOTHING = 0.03;
 export class TyreSoundBehavior extends Component {
     enabled = true;
     volume = VOLUME;
+    audibleFrom = AUDIBLE_FROM;
     /** Per-surface slide intensity this frame. */
     readonly intensities: number[] = SURFACES.map(() => 0);
     /** Same, as rows lil-gui can listen to. */
@@ -63,7 +67,8 @@ export class TyreSoundBehavior extends Component {
         // Skid marks render before us (scene order), so their intensities are current.
         for (const [i, readout] of car.readouts.entries()) {
             if (!readout.contact) continue;
-            const w = this.skidMarks.wheelIntensity[i] ?? 0;
+            const raw = this.skidMarks.wheelIntensity[i] ?? 0;
+            const w = this.audibleFrom < 1 ? (raw - this.audibleFrom) / (1 - this.audibleFrom) : 0;
             if (w <= 0) continue;
             const id = readout.surfaceId;
             silence[id] = (silence[id] ?? 1) * (1 - w);
@@ -91,6 +96,7 @@ export class TyreSoundBehavior extends Component {
         f.close();
         f.add(this, 'enabled').name('Enabled');
         f.add(this, 'volume', 0, 1, 0.05).name('Volume');
+        f.add(this, 'audibleFrom', 0, 0.9, 0.05).name('Audible from (intensity)');
         for (const [i, surface] of SURFACES.entries()) {
             const sf = f.addFolder(surface.name);
             sf.close();
