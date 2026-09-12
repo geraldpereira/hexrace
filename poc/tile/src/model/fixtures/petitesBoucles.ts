@@ -85,3 +85,18 @@ export const relief: Track = {
         }),
     ),
 };
+
+/** Une piste volontairement fautive, pour voir la validation à l'œuvre : profil sans paysage à gauche, hazard qui déborde, tours hors Track. */
+export const invalide: Track = {
+    id: 'europe-invalid-01',
+    name: 'Invalide',
+    environment: 'europe',
+    mode: 'rally',
+    laps: 2,
+    tiles: [
+        tile(12),
+        tile(2, { position: 1 }),
+        { ...tile(12), obstacles: [{ kind: 'hazard', size: 'large', at: 0.05, offset: 3 }] },
+        tile(12),
+    ],
+};

@@ -25,6 +25,7 @@ export function drawTrackMap(
     placement: Placement,
     environment: Environment,
     transition?: TransitionSpan,
+    faulty: ReadonlySet<number> = new Set(),
 ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -81,6 +82,8 @@ export function drawTrackMap(
             }
         }
         polygon(hexCorners(center), null, '#0c0a09');
+        if (faulty.has(placed.index))
+            polygon(hexCorners(center), 'rgba(239, 68, 68, 0.35)', '#ef4444');
     });
 
     ctx.font = `${Math.max(9, SIDE * k * 0.35)}px system-ui, sans-serif`;

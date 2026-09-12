@@ -31,7 +31,12 @@ const SKIRT_DEPTH = 2 * HEIGHT_UNIT;
 const SKIRT_COLOR = '#292524';
 
 export interface View3d {
-    setPlacement(placement: Placement, environment: Environment, transition?: TransitionSpan): void;
+    setPlacement(
+        placement: Placement,
+        environment: Environment,
+        transition?: TransitionSpan,
+        faulty?: ReadonlySet<number>,
+    ): void;
     setEdges(visible: boolean): void;
     /** Caméra en hauteur au sud de la piste, ou au ras du sol à l'est pour lire le relief de profil. */
     lookFrom(where: 'above' | 'side'): void;
@@ -53,7 +58,8 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
 
     let group = new THREE.Group();
     let edges = new THREE.Group();
-    scene.add(group, edges);
+    let marks = new THREE.Group();
+    scene.add(group, edges, marks);
 
     const resize = (): void => {
         const { clientWidth, clientHeight } = canvas;
@@ -66,12 +72,14 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         placement: Placement,
         environment: Environment,
         transition?: TransitionSpan,
+        faulty: ReadonlySet<number> = new Set(),
     ): void => {
-        scene.remove(group, edges);
+        scene.remove(group, edges, marks);
         group = new THREE.Group();
         edges = new THREE.Group();
+        marks = new THREE.Group();
         edges.visible = edgesVisible;
-        scene.add(group, edges);
+        scene.add(group, edges, marks);
 
         const positions: number[] = [];
         const colors: number[] = [];
@@ -103,6 +111,17 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
                 new THREE.LineBasicMaterial({ color: '#0c0a09' }),
             );
             edges.add(line);
+            if (faulty.has(placed.index)) {
+                const mark = new THREE.LineLoop(
+                    new THREE.BufferGeometry().setFromPoints(
+                        corners.map(
+                            (p) => new THREE.Vector3(p.x, tileHeightAt(sweep, p) + 0.3, -p.y),
+                        ),
+                    ),
+                    new THREE.LineBasicMaterial({ color: '#ef4444' }),
+                );
+                marks.add(mark);
+            }
             for (const c of corners)
                 box.expandByPoint(new THREE.Vector3(c.x, tileHeightAt(sweep, c), -c.y));
         }

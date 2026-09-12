@@ -1,0 +1,17 @@
+hexrace-track 1
+
+id: europe-invalid-01
+name: Invalide
+environment: europe  # Europe
+mode: rally
+laps: 2
+
+# Une ligne par tuile, dans l'ordre de parcours. L'entrée est toujours la face 6.
+# exit face de sortie · pos/w position et largeur de la piste en sortie · sh bas-côtés gauche,droite
+# h hauteur · t rangs piste/bas-côté/paysage · obs obstacles (voir trackFile.ts)
+
+[tiles]
+start  exit=12  pos=3  w=2  sh=1,1  h=3   t=2/2/2
+       exit=2   pos=1  w=2  sh=1,1  h=3   t=2/2/2
+       exit=12  pos=3  w=2  sh=1,1  h=3   t=2/2/2  obs=hazard:large@0.05/3
+       exit=12  pos=3  w=2  sh=1,1  h=3   t=2/2/2

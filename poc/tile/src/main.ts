@@ -1,15 +1,12 @@
 import { drawTrackMap } from './map2d';
 import type { Track } from './model';
 import {
-    closureError,
     environmentOf,
-    overlapErrors,
+    formatIssue,
     parseTrack,
-    placeTrack,
-    placedObstacleErrors,
-    trackErrors,
     transitionOfExtent,
     validPrefix,
+    validateTrack,
 } from './model';
 import { createView3d } from './view3d';
 
@@ -90,26 +87,19 @@ if (app) {
         }
         const track = entry.track;
         const environment = environmentOf(track.environment);
-        const placement = placeTrack(track);
-        const closure = closureError(track, placement);
-        const errors = [
-            ...trackErrors(track),
-            ...overlapErrors(placement),
-            ...placedObstacleErrors(placement),
-            ...(closure ? [closure] : []),
-        ];
+        const { placement, issues, faulty } = validateTrack(track);
         status.textContent =
-            errors.length === 0
+            issues.length === 0
                 ? `${track.mode} · ${environment.name} · ${track.tiles.length} tuiles · valide`
-                : errors.join(' ; ');
-        status.style.color = errors.length === 0 ? '#86efac' : '#fca5a5';
+                : issues.map(formatIssue).join(' ; ');
+        status.style.color = issues.length === 0 ? '#86efac' : '#fca5a5';
         extentValue.value = String(Math.round(Number(extent.value) * 100));
         const transition = force.checked
             ? transitionOfExtent(Number(extent.value))
             : environment.transition;
-        drawTrackMap(map, placement, environment, transition);
+        drawTrackMap(map, placement, environment, transition, faulty);
         // La 3D ne construit que ce qui est valide : jusqu'à la première tuile qui en recouvre une autre.
-        view.setPlacement(validPrefix(placement), environment, transition);
+        view.setPlacement(validPrefix(placement), environment, transition, faulty);
     };
     const fromHash = entries.findIndex(
         (entry) => `#${entry.track?.id ?? entry.file}` === window.location.hash,

@@ -391,7 +391,7 @@ Les contraintes sur les tuiles et leur succession (2.6) rendent jouable toute pi
 
 - que chaque jonction respecte 2.6,
 - qu'il y a un départ et une arrivée,
-- que la piste **ne se recoupe pas** : un nombre limité de virages serrés consécutifs, et aucune tuile posée sur une tuile existante,
+- que la piste **ne se recoupe pas** : aucune tuile posée sur une case déjà occupée. C'est le test d'occupation de la grille qui fait foi, une borne sur les virages serrés consécutifs ne suffit pas (six virages larges recoupent aussi) ; limiter les virages serrés enchaînés reste un réglage de style du générateur,
 - en mode Track, que la piste se referme sur son départ.
 
 ---
@@ -628,6 +628,7 @@ Par ordre d'envie :
 | 2026-09-11 | Surfaces nommées par rang dans la palette, ordonnées par adhérence, jamais par matière | Transposition entre environnements ; l'asphalte n'est qu'un habillage   |
 | 2026-09-11 | Marches acceptées dans le paysage entre tuiles voisines par le côté, jamais sur la piste ni les bas-côtés | Le modèle ne fixe la hauteur qu'aux faces d'entrée et de sortie ; c'est du relief |
 | 2026-09-11 | Hauteur le long de la piste = spline monotone par les faces, pente déduite des voisines       | Une montée régulière est une rampe, pas des paliers ; rien de plus dans le fichier |
+| 2026-09-12 | Recoupe = test d'occupation de la grille, pas une borne de virages serrés                     | Exact ; la borne devient un réglage de style du générateur                  |
 
 ### 11.2 Questions ouvertes
 

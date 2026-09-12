@@ -15,9 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Validation.** Règles 2.6 et 5.5 : jonctions, départ et arrivée, pas d'auto-intersection,
-      nombre maximal de virages serrés consécutifs, fermeture en Track. Une piste invalide est
-      refusée avec la raison, et la tuile fautive est surlignée dans la vue.
 - [ ] **Générateur à graine.** PRNG déterministe, une tuile après l'autre à partir de la précédente,
       quelques cadrans (tournant / droit, ampleur des déclivités, variation de largeur) dans la même
       chaîne (5.3). Même graine, même piste ; la piste générée passe la validation. Reprendre le
@@ -49,8 +46,10 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Décisions à trancher ici, à reporter dans la spec
 
-- [ ] **Virages serrés consécutifs** (5.5). Trouver le nombre au-delà duquel la piste se recoupe, et
-      si une simple borne suffit ou s'il faut un vrai test d'occupation de la grille.
+- [x] **Virages serrés consécutifs** (5.5). Tranché : une borne ne suffit pas (six virages larges
+      recoupent aussi, trois serrés dans le même sens forment une boucle valide) ; le test
+      d'occupation de la grille fait foi, la borne devient un réglage de style du générateur.
+      Spec 5.5 mise à jour.
 - [ ] **Grammaire du fichier de piste** (spec technique 3.3). Celle de `trackFile.ts` est la proposition
       du POC ; à reporter dans la spec technique une fois validée.
 - [ ] **Taille de tuile** (8 unités par côté) : confirmer que le profil piste + bas-côtés + paysage
@@ -166,3 +165,9 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   avec messages par ligne, sérialiseur qui redonne la piste à l'identique (testé sur les huit
   fixtures). Les pistes de la page sont les fichiers `tracks/*.track`, rechargés à chaud par Vite ;
   `npm run tracks` les régénère depuis les fixtures et un test garantit qu'ils leur restent égaux.
+- **Validation** (`validation.ts`). Un seul passage qui renvoie des problèmes structurés avec le
+  numéro de tuile : en-tête, profils, case déjà occupée, fermeture en Track (désigne la dernière
+  tuile), obstacles qui débordent. Les tuiles fautives sont surlignées en rouge sur la carte et
+  cerclées en rouge dans la 3D. Fixture Invalide pour le voir : profil sans paysage à gauche, hazard
+  qui déborde, tours hors Track. Le décalage de position par tuile n'est pas une erreur : avec la
+  transition sur toute la tuile il ne fait plus de chicane, il passe en réglage du générateur.

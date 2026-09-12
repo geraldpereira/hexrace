@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { catalogue } from './fixtures/catalogue';
 import { courbes } from './fixtures/courbes';
 import { petitAnneau } from './fixtures/petitAnneau';
-import { hexagone, ligne, recoupe, relief, triangle } from './fixtures/petitesBoucles';
+import { hexagone, invalide, ligne, recoupe, relief, triangle } from './fixtures/petitesBoucles';
 import { parseObstacle, parseTrack, serializeObstacle, serializeTrack } from './trackFile';
 
 const croquis6 = `hexrace-track 1
@@ -51,14 +51,21 @@ describe('fichier de piste', () => {
         ]);
     });
 
-    it.each([petitAnneau, triangle, hexagone, ligne, relief, recoupe, courbes, catalogue])(
-        'réécrit puis relit $name à l’identique',
-        (fixture) => {
-            const { track, errors } = parseTrack(serializeTrack(fixture));
-            expect(errors).toEqual([]);
-            expect(track).toEqual(fixture);
-        },
-    );
+    it.each([
+        petitAnneau,
+        triangle,
+        hexagone,
+        ligne,
+        relief,
+        recoupe,
+        invalide,
+        courbes,
+        catalogue,
+    ])('réécrit puis relit $name à l’identique', (fixture) => {
+        const { track, errors } = parseTrack(serializeTrack(fixture));
+        expect(errors).toEqual([]);
+        expect(track).toEqual(fixture);
+    });
 
     it('écrit et relit chaque sorte d’obstacle', () => {
         const samples = [

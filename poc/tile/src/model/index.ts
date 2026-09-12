@@ -15,3 +15,4 @@ export * from './geometry';
 export * from './slope';
 export * from './environment';
 export * from './trackFile';
+export * from './validation';
