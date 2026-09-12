@@ -1,5 +1,10 @@
 # TODO — POC voiture
 
+**En pause depuis le 2026-09-12.** Le ressenti, la boîte, les sons, les traces et les particules sont
+en place et validés ; les critères restants du POC 1 (chrono, glace, barrières, caméra de la spec,
+tactile, mesure mobile, rendus de 8.1) attendent une reprise, probablement avec le POC 3 qui met la
+voiture sur les tuiles.
+
 Ce qui manque pour couvrir le POC 1 de la spec (`docs/specs-fonctionnelles.md`, 10.1), dans l'ordre
 où on compte s'y attaquer. Le grain, les assistances arcade et les options garage sont faits et
 commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus bas).
@@ -21,7 +26,8 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
 - [x] Configuration du poids et de la position du centre de gravité de la voiture : dossier
       « Mass & balance », à chaud, valeurs par défaut dans `chassisSpec.ts`. Reste à trouver deux
       ou trois jeux de valeurs qui donnent des caractères distincts (spec 3.1).
-- [ ] Collisions. Dégats. 
+- [~] **Collisions.** Testées avec la rampe et le dos d'âne, rien à ajouter au POC. Les dégâts et
+      les sons de collision viendront plus tard, c'est bien plus simple que ce qui a été fait ici.
 - [x] **Traces de pneus et particules.** Traces au blocage de roue : ruban par roue, couleur et
       opacité par revêtement, glisse latérale en option debug. Particules : bouffées et débris par
       revêtement, émission sur glisse et roulement. Crissement par revêtement. Tout est réglable dans
