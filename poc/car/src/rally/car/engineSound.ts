@@ -31,7 +31,9 @@ const LIMITER_HZ = 14;
 // gear at the shift-down rpm (~38 % of max), so the floor sits just under.
 const POP_THROTTLE = 0.3;
 const POP_MIN_RPM_SHARE = 0.3;
-const POP_LEVEL = 1;
+const POP_LEVEL = 1.4;
+// How uneven the engine runs: firing scatter, drift, misfires, pipe drift.
+const UNEVENNESS = 0.6;
 const POPS_MIN = 1;
 const POPS_MAX = 3;
 // Overrun: lifting off from a hard pull at high revs bangs once or twice,
@@ -63,6 +65,7 @@ export class EngineSoundBehavior extends Component {
     wobble = WOBBLE;
     limiterHz = LIMITER_HZ;
     popLevel = POP_LEVEL;
+    unevenness = UNEVENNESS;
     overrunRate = OVERRUN_RATE;
     /** Rev limiter active this frame, debug readout. */
     limiter = false;
@@ -164,6 +167,7 @@ export class EngineSoundBehavior extends Component {
         f.add(this, 'wobble', 0, 0.1, 0.005).name('Idle wobble').onChange(tune);
         f.add(this, 'limiterHz', 5, 30, 1).name('Limiter chatter (Hz)').onChange(tune);
         f.add(this, 'popLevel', 0, 3, 0.1).name('Pop level').onChange(tune);
+        f.add(this, 'unevenness', 0, 1, 0.05).name('Unevenness').onChange(tune);
         f.add(this, 'overrunRate', 0, 8, 0.5).name('Overrun crackle (/s)');
         f.add(this, 'limiter').name('Limiter active').listen().disable();
         f.add({ pop: () => this.node?.port.postMessage({ pops: 2 }) }, 'pop').name('Test pops');
@@ -182,6 +186,7 @@ export class EngineSoundBehavior extends Component {
             wobble: this.wobble,
             limiterHz: this.limiterHz,
             popLevel: this.popLevel,
+            unevenness: this.unevenness,
         });
     }
 

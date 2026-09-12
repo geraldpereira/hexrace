@@ -7,13 +7,11 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
 ## Valider les critères de la spec
 
 
-- [ ] **Boîte et régime moteur.** Premier jet fait : moteur et boîte Jolt réglables dans le GUI
-      (courbe de couple, inertie, rapports, temps de passage), compte-tours et rapport dans le HUD,
-      son moteur procédural par impulsions de cylindres (AudioWorklet), validé : pas d'échantillon.
-      Rupteur à la montée plein gaz et détonations au rétrogradage pied levé ajoutés, à doser.
-      Reste à doser la courbe et les rapports en roulant. Boîte auto (décidé) ; un mode
-      manuel LB/RB existe en option debug pour sentir les rapports. Frein à main sur A.
-
+- [x] **Boîte et régime moteur.** Moteur et boîte Jolt réglables dans le GUI (courbe de couple,
+      inertie, rapports, temps de passage), compte-tours et rapport dans le HUD, boîte auto (mode
+      manuel LB/RB en option debug), frein à main sur A. Son moteur procédural par impulsions de
+      cylindres (AudioWorklet) avec rupteur, détonations et irrégularités : validé, pas
+      d'échantillon. Le dosage fin de la courbe et des rapports se fera avec le chrono au tour.
 - [ ] Collisions. Dégats. 
 - [ ] Traces de pneus et particules.
 - [ ] **Chrono au tour.** Ligne de départ sur la boucle, temps au tour courant et meilleur tour dans
