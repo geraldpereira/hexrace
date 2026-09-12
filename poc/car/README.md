@@ -60,6 +60,18 @@ sont dans `surfaces.ts` (`slideSound`) et se règlent dans le dossier « Tyre so
 avec l'intensité par revêtement en lecture. Le crissement suit exactement les traces au sol : mêmes
 seuils de glissement, ceux du dossier « Skid marks ».
 
+## Roulement, vent, suspensions
+
+Un troisième AudioWorklet (`src/rally/car/chassisProcessor.ts`) porte le reste : le roulement, une
+voix par revêtement (souffle de pneu, grains de cailloux ou de mottes, grondement, paramètres
+`rollSound` dans `surfaces.ts`) dosée par le nombre de roues au sol et la vitesse ; le vent, bruit
+filtré qui s'ouvre et enfle avec la vitesse, avec des rafales ; et les suspensions, un coup sourd à
+chaque compression ou détente rapide, plus dur et métallique quand la suspension talonne. Dossier
+« Chassis sound » du panneau debug, avec un bouton « Test hard hit ».
+
+Tous les sons partagent un seul AudioContext (`src/engine/audio/audioHub.ts`), créé au premier clic
+ou à la première touche.
+
 ## À tester
 
 - Tenue de route sur la piste, sous-virage / survirage au frein à main.

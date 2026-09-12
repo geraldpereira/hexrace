@@ -207,6 +207,10 @@ export interface WheelReadout {
      * and, unlike the slip ratio, meaningless-noise-free at a standstill.
      */
     slipSpeed: number;
+    /** Suspension length change rate (m/s), negative when compressing. */
+    suspensionVelocity: number;
+    /** The suspension bottomed out this tick. */
+    hardHit: boolean;
 }
 
 export class CarBehavior extends Component {
@@ -261,7 +265,10 @@ export class CarBehavior extends Component {
         lateral: new THREE.Vector3(1, 0, 0),
         width: 0,
         slipSpeed: 0,
+        suspensionVelocity: 0,
+        hardHit: false,
     }));
+    private readonly suspensionLength: number[] = WHEEL_NAMES.map(() => Number.NaN);
 
     private input!: GameInput;
     private rearLateralScale = 1;
@@ -394,6 +401,14 @@ export class CarBehavior extends Component {
             readout.lat = wheel.get_mLateralSlip() * RAD_TO_DEG;
             readout.surfaceId = this.wheelSurface[i] ?? 0;
             readout.width = wheel.GetSettings().mWidth;
+            const length = wheel.GetSuspensionLength();
+            const prevLength = this.suspensionLength[i];
+            readout.suspensionVelocity =
+                prevLength === undefined || Number.isNaN(prevLength)
+                    ? 0
+                    : (length - prevLength) / PHYSICS_TIMESTEP;
+            this.suspensionLength[i] = length;
+            readout.hardHit = wheel.HasHitHardPoint();
             readout.contact = wheel.HasContact();
             if (readout.contact) {
                 const p = wheel.GetContactPosition();

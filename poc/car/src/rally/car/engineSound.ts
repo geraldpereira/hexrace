@@ -1,5 +1,6 @@
 import type GUI from 'lil-gui';
 import { Component, GameObject } from '../../engine/gameObject';
+import { AudioHub } from '../../engine/audio/audioHub';
 import { CarBehavior } from './carBehavior';
 import { ENGINE_PROCESSOR_SOURCE } from './engineProcessor';
 
@@ -50,9 +51,7 @@ const OVERRUN_RATE = 2;
  * (see `engineProcessor.ts`). This component feeds it rpm and throttle each
  * frame and owns the final low-pass and volume.
  *
- * Browsers only let audio start after a user gesture, so the context is
- * created on the first key press or click. Gamepad input alone doesn't count:
- * click the page once.
+ * Audio starts on the first key press or click (see AudioHub).
  */
 export class EngineSoundBehavior extends Component {
     enabled = true;
@@ -81,24 +80,22 @@ export class EngineSoundBehavior extends Component {
     private prevGear = 0;
     private prevLimiter = false;
     private prevThrottle = 0;
-    private readonly onGesture = (): void => {
-        void this.ensureContext();
-    };
+    private destroyed = false;
 
     override start(): void {
         const car = this.gameObject.findInScene(CarBehavior);
         if (!car) throw new Error('EngineSoundBehavior: no CarBehavior in scene');
         this.car = car;
-        window.addEventListener('keydown', this.onGesture);
-        window.addEventListener('pointerdown', this.onGesture);
+        AudioHub.get().whenReady((ctx) => {
+            void this.build(ctx);
+        });
     }
 
     override onDestroy(): void {
-        window.removeEventListener('keydown', this.onGesture);
-        window.removeEventListener('pointerdown', this.onGesture);
-        void this.ctx?.close();
-        this.ctx = null;
+        this.destroyed = true;
+        this.node?.disconnect();
         this.node = null;
+        this.ctx = null;
     }
 
     override render(dt: number): void {
@@ -190,23 +187,10 @@ export class EngineSoundBehavior extends Component {
         });
     }
 
-    private async ensureContext(): Promise<void> {
-        if (this.ctx) {
-            if (this.ctx.state === 'suspended') await this.ctx.resume();
-            return;
-        }
-        const ctx = new AudioContext();
+    private async build(ctx: AudioContext): Promise<void> {
+        await AudioHub.get().loadWorklet(ctx, 'engine-processor', ENGINE_PROCESSOR_SOURCE);
+        if (this.destroyed) return;
         this.ctx = ctx;
-
-        const blob = new Blob([ENGINE_PROCESSOR_SOURCE], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        try {
-            await ctx.audioWorklet.addModule(url);
-        } finally {
-            URL.revokeObjectURL(url);
-        }
-        // The component may have been destroyed while the module loaded.
-        if (this.ctx !== ctx) return;
 
         this.master = ctx.createGain();
         this.master.gain.value = 0;

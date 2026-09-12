@@ -1,5 +1,6 @@
 import type GUI from 'lil-gui';
 import { Component, GameObject } from '../../engine/gameObject';
+import { AudioHub } from '../../engine/audio/audioHub';
 import { CarBehavior } from './carBehavior';
 import { SkidMarksBehavior } from '../rendering/skidMarks';
 import { SURFACES, type SlideSound } from '../terrain/surfaces';
@@ -18,8 +19,6 @@ const AUDIBLE_FROM = 0.2;
  * ground. The wheels are added up per surface and the intensities fed to
  * an AudioWorklet with one voice per surface (see `tyreProcessor.ts`). The
  * surface parameters live in `surfaces.ts`.
- *
- * Same gesture rule as the engine: audio starts on the first key or click.
  */
 export class TyreSoundBehavior extends Component {
     enabled = true;
@@ -35,9 +34,7 @@ export class TyreSoundBehavior extends Component {
     private ctx: AudioContext | null = null;
     private node: AudioWorkletNode | null = null;
     private master!: GainNode;
-    private readonly onGesture = (): void => {
-        void this.ensureContext();
-    };
+    private destroyed = false;
 
     override start(): void {
         const car = this.gameObject.findInScene(CarBehavior);
@@ -46,16 +43,16 @@ export class TyreSoundBehavior extends Component {
         const skidMarks = this.gameObject.findInScene(SkidMarksBehavior);
         if (!skidMarks) throw new Error('TyreSoundBehavior: no SkidMarksBehavior in scene');
         this.skidMarks = skidMarks;
-        window.addEventListener('keydown', this.onGesture);
-        window.addEventListener('pointerdown', this.onGesture);
+        AudioHub.get().whenReady((ctx) => {
+            void this.build(ctx);
+        });
     }
 
     override onDestroy(): void {
-        window.removeEventListener('keydown', this.onGesture);
-        window.removeEventListener('pointerdown', this.onGesture);
-        void this.ctx?.close();
-        this.ctx = null;
+        this.destroyed = true;
+        this.node?.disconnect();
         this.node = null;
+        this.ctx = null;
     }
 
     override render(): void {
@@ -120,21 +117,10 @@ export class TyreSoundBehavior extends Component {
         this.node?.port.postMessage({ index, params: { ...params } });
     }
 
-    private async ensureContext(): Promise<void> {
-        if (this.ctx) {
-            if (this.ctx.state === 'suspended') await this.ctx.resume();
-            return;
-        }
-        const ctx = new AudioContext();
+    private async build(ctx: AudioContext): Promise<void> {
+        await AudioHub.get().loadWorklet(ctx, 'tyre-processor', TYRE_PROCESSOR_SOURCE);
+        if (this.destroyed) return;
         this.ctx = ctx;
-        const blob = new Blob([TYRE_PROCESSOR_SOURCE], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        try {
-            await ctx.audioWorklet.addModule(url);
-        } finally {
-            URL.revokeObjectURL(url);
-        }
-        if (this.ctx !== ctx) return;
 
         this.master = ctx.createGain();
         this.master.gain.value = 0;

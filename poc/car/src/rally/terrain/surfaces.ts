@@ -35,6 +35,20 @@ export interface Surface {
     markOpacity: number;
     /** What a sliding tyre sounds like here (see `tyreProcessor.ts`). */
     slideSound: SlideSound;
+    /** What rolling over it sounds like (see `chassisProcessor.ts`). */
+    rollSound: RollSound;
+}
+
+export interface RollSound {
+    /** Broadband tyre roar level and its low-pass cutoff (Hz). */
+    hiss: number;
+    hissFreq: number;
+    /** Stones and clods: grains per second at full speed, their length (s) and level. */
+    grainRate: number;
+    grainDur: number;
+    grainLevel: number;
+    /** Low rumble level. */
+    rumble: number;
 }
 
 export interface SlideSound {
@@ -82,6 +96,14 @@ export const SURFACES: readonly Surface[] = [
         markColor: 0x111111,
         markOpacity: 0.75,
         slideSound: { tone: 1, freq: 1000, q: 14, grainRate: 0, grainDur: 0.004, level: 1.8 },
+        rollSound: {
+            hiss: 0.5,
+            hissFreq: 1800,
+            grainRate: 0,
+            grainDur: 0.003,
+            grainLevel: 0,
+            rumble: 0.15,
+        },
     },
     {
         name: 'Gravel',
@@ -106,6 +128,14 @@ export const SURFACES: readonly Surface[] = [
         markColor: 0x2f2924,
         markOpacity: 0.45,
         slideSound: { tone: 0.05, freq: 2400, q: 1, grainRate: 900, grainDur: 0.004, level: 0.9 },
+        rollSound: {
+            hiss: 0.15,
+            hissFreq: 2500,
+            grainRate: 400,
+            grainDur: 0.003,
+            grainLevel: 0.9,
+            rumble: 0.5,
+        },
     },
     {
         name: 'Dirt',
@@ -130,6 +160,14 @@ export const SURFACES: readonly Surface[] = [
         markColor: 0x231a10,
         markOpacity: 0.5,
         slideSound: { tone: 0.1, freq: 1200, q: 1, grainRate: 350, grainDur: 0.008, level: 1 },
+        rollSound: {
+            hiss: 0.2,
+            hissFreq: 1200,
+            grainRate: 120,
+            grainDur: 0.006,
+            grainLevel: 0.5,
+            rumble: 0.6,
+        },
     },
     {
         name: 'Mud',
@@ -155,6 +193,14 @@ export const SURFACES: readonly Surface[] = [
         markColor: 0x120d08,
         markOpacity: 0.55,
         slideSound: { tone: 0, freq: 350, q: 1, grainRate: 25, grainDur: 0.03, level: 1.3 },
+        rollSound: {
+            hiss: 0.1,
+            hissFreq: 500,
+            grainRate: 30,
+            grainDur: 0.02,
+            grainLevel: 0.6,
+            rumble: 0.7,
+        },
     },
 ];
 
