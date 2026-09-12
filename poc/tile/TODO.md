@@ -15,10 +15,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Construire, du plus simple au plus complet
 
-- [ ] **Générateur à graine.** PRNG déterministe, une tuile après l'autre à partir de la précédente,
-      quelques cadrans (tournant / droit, ampleur des déclivités, variation de largeur) dans la même
-      chaîne (5.3). Même graine, même piste ; la piste générée passe la validation. Reprendre le
-      principe de la forge de hexact. Champ graine dans le GUI, régénération instantanée.
 - [ ] **Fenêtre de tuiles.** Un curseur « position du joueur » le long de la piste ; seules X tuiles
       devant et Y derrière existent dans la scène (9.2). Chargement et déchargement au passage d'une
       tuile à l'autre, sans allocation visible dans le profileur.
@@ -27,12 +23,14 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 
 ## Valider les critères de la spec (10.2) qui ne demandent pas de voiture
 
-- [ ] Toute suite de tuiles respectant 2.6 se raccorde sans couture visible.
-- [ ] Une piste fermée se referme sur elle-même.
+- [x] Toute suite de tuiles respectant 2.6 se raccorde sans couture visible (fixtures et pistes
+      générées, à plat comme en relief).
+- [x] Une piste fermée se referme sur elle-même (Petit Anneau, Triangle, Hexagone ; la fermeture
+      est vérifiée par la validation).
 - [ ] La fenêtre d'affichage (X devant, Y derrière) ne se voit pas depuis une caméra placée comme
       celle de la spec (3.9), simulée au-dessus du curseur de position.
-- [ ] Une piste générée depuis n'importe quelle graine passe la validation (test vitest sur un grand
-      nombre de graines).
+- [x] Une piste générée depuis n'importe quelle graine passe la validation : 240 pistes de 40 tuiles
+      (60 graines × 4 jeux de cadrans, dont tout à 0 et tout à 9) valides et à la longueur demandée.
 
 ## Reporté au POC 3 (spec 10.3, la voiture sur le terrain)
 
@@ -63,9 +61,12 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
       dans la tuile est une cubique de Hermite. Montée régulière = rampe rectiligne, tuile plate =
       plate, pente nulle aux bouts d'une piste ouverte et là où la piste change de sens ; jamais
       d'arête. Spec 2.3 et 2.2 mises à jour, TODO technique 3.5 fermé.
-- [ ] **Densité de sommets** pour que le balayage soit propre en flat shading, surtout en épingle
-      (rayon 4, axe de 8,4 unités) : 24 échantillons par tuile aujourd'hui, quelques facettes sombres
-      visibles sur la piste d'une épingle qui change de hauteur.
+- [x] **Densité de sommets.** Tranches adaptées à la sortie : 24 en ligne droite, 36 en virage large,
+      48 en épingle. Et une case « Lissage » fusionne les sommets confondus de même couleur pour
+      moyenner les normales (smooth shading three.js), à comparer au flat shading par défaut. Le bec
+      vu au fond d'une épingle générée n'était pas un manque de polygones mais la marche entre les
+      deux tuiles voisines au sommet, concentrée en une pointe verticale par le changement de hauteur
+      de l'épingle ; le générateur garde désormais profil et hauteur constants en épingle.
 - [x] **Marches entre tuiles voisines par le côté.** Tranchée : acceptées dans le paysage comme
       relief, jamais sur la piste ni les bas-côtés, ce que la règle d'assemblage garantit déjà
       (spec 2.3). Rien à faire dans la validation.
@@ -171,3 +172,14 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   cerclées en rouge dans la 3D. Fixture Invalide pour le voir : profil sans paysage à gauche, hazard
   qui déborde, tours hors Track. Le décalage de position par tuile n'est pas une erreur : avec la
   transition sur toute la tuile il ne fait plus de chicane, il passe en réglage du générateur.
+- **Générateur à graine** (`rng.ts`, `generator.ts`). Chaîne unique `europe:hexrace:t5s3r4v4o3:n30`
+  (environnement, graine, cinq cadrans de 0 à 9 : tournant, serré, relief, variété, obstacles,
+  longueur), PRNG sfc32 déterministe. Une tuile après l'autre : sorties tirées selon les cadrans,
+  case occupée et anticipation d'un pas refusées, retour arrière en cas d'impasse ; enchaînement de
+  virages serrés borné par le cadran ; profil par petits pas (largeur ±1, décalage ≤ 1 en virage et
+  ≤ 2 en droite, types, hauteur ±1 avec tendance) ; obstacles selon la densité, chacun vérifié dans
+  sa tuile. Panneau dans la page : champ graine, bouton Générer, chaîne dans l'URL, et le fichier de
+  la piste affichée dans une zone de texte à copier vers `tracks/`. En épingle, seules les variantes
+  changent : un décalage ou une pente sur un arc de rayon 4 vrille la piste (bord intérieur à 48 %
+  pour une unité, bord extérieur à 12 %) et fait une pointe au sommet. Champ « Tuile » qui cadre la
+  caméra sur une tuile donnée.

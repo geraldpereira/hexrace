@@ -1,3 +1,4 @@
+import type { ExitFace } from './face';
 import { turnOf } from './face';
 import type { Vec2 } from './layout';
 import { SIDE, add, entryFrame, facePoint, hexCorners, scale } from './layout';
@@ -50,6 +51,16 @@ export interface ZonePolygon {
 }
 
 export const DEFAULT_SAMPLES = 24;
+
+/**
+ * Tranches par tuile selon la sortie : une épingle tourne de 120° sur un axe court, il en faut plus
+ * pour que les bords restent ronds et que les quadrilatères vrillés par une pente ne fassent pas
+ * de paliers visibles en flat shading.
+ */
+export function samplesFor(exit: ExitFace): number {
+    const turn = Math.abs(turnOf(exit));
+    return turn === 0 ? DEFAULT_SAMPLES : turn === 1 ? 36 : 48;
+}
 /**
  * En épingle, le paysage intérieur se réduit à un secteur dont la pointe est le sommet commun aux
  * faces d'entrée et de sortie. Ce point appartient aux deux faces, à deux hauteurs différentes : on
@@ -57,7 +68,7 @@ export const DEFAULT_SAMPLES = 24;
  */
 export const APEX_RADIUS = 0.01;
 
-export function tileSlices(sweep: TileSweep, samples = DEFAULT_SAMPLES): Slice[] {
+export function tileSlices(sweep: TileSweep, samples = samplesFor(sweep.exit)): Slice[] {
     return sliceParameters(sweep, samples).map((s) => {
         const b = boundariesAt(sweep, s);
         const at = (p: Vec2): SPoint => ({ x: p.x, y: p.y, s });
@@ -74,7 +85,7 @@ export function tileSlices(sweep: TileSweep, samples = DEFAULT_SAMPLES): Slice[]
 }
 
 /** Les quadrilatères d'une tuile, un par zone et par intervalle de tranches. */
-export function tileQuads(sweep: TileSweep, samples = DEFAULT_SAMPLES): ZoneQuad[] {
+export function tileQuads(sweep: TileSweep, samples = samplesFor(sweep.exit)): ZoneQuad[] {
     const slices = tileSlices(sweep, samples);
     const { entry, exitProfile } = sweep;
     const quads: ZoneQuad[] = [];
@@ -111,7 +122,7 @@ export function tileQuads(sweep: TileSweep, samples = DEFAULT_SAMPLES): ZoneQuad
  * l'aller, bord droit au retour. Piste et bas-côtés sont coupés au milieu pour porter les types
  * d'entrée puis de sortie.
  */
-export function tilePolygons(sweep: TileSweep, samples = DEFAULT_SAMPLES): ZonePolygon[] {
+export function tilePolygons(sweep: TileSweep, samples = samplesFor(sweep.exit)): ZonePolygon[] {
     const slices = tileSlices(sweep, samples);
     const { entry, exitProfile } = sweep;
     const polygons: ZonePolygon[] = [];
@@ -152,7 +163,7 @@ export function tilePolygons(sweep: TileSweep, samples = DEFAULT_SAMPLES): ZoneP
  * Le contour d'une tuile dans l'ordre, avec les mêmes points que les tranches : chaîne extérieure
  * gauche de l'entrée à la sortie, puis chaîne droite de la sortie à l'entrée. Sert aux jupes.
  */
-export function tileBoundary(sweep: TileSweep, samples = DEFAULT_SAMPLES): SPoint[] {
+export function tileBoundary(sweep: TileSweep, samples = samplesFor(sweep.exit)): SPoint[] {
     const slices = tileSlices(sweep, samples);
     return [...slices.map((sl) => sl.outerLeft), ...slices.map((sl) => sl.outerRight).reverse()];
 }

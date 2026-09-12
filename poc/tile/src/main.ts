@@ -1,9 +1,14 @@
 import { drawTrackMap } from './map2d';
 import type { Track } from './model';
 import {
+    DEFAULT_CONFIG,
     environmentOf,
+    formatConfig,
     formatIssue,
+    generateTrack,
+    parseConfig,
     parseTrack,
+    serializeTrack,
     transitionOfExtent,
     validPrefix,
     validateTrack,
@@ -35,8 +40,16 @@ if (app) {
             <label><input id="force" type="checkbox" /> Forcer la transition à <output id="extentValue">40</output> % de la tuile
                 <input id="extent" type="range" min="0.2" max="1" step="0.1" value="0.4" style="vertical-align:middle" /></label>
             <label><input id="edges" type="checkbox" /> Contours des tuiles</label>
+            <label><input id="smooth" type="checkbox" /> Lissage</label>
             <label><input id="showMap" type="checkbox" checked /> Carte 2D</label>
-            <span>Vue <button id="above" type="button">Dessus</button> <button id="side" type="button">Profil</button></span>
+            <span>Vue <button id="above" type="button">Dessus</button> <button id="side" type="button">Profil</button>
+                <label>Tuile <input id="focus" type="number" min="0" value="0" style="width: 4em" /></label></span>
+            <label>Graine <input id="config" size="36" spellcheck="false" /></label>
+            <button id="generate" type="button">Générer</button>
+            <details id="filePanel" style="flex-basis: 100%">
+                <summary>Fichier de la piste affichée</summary>
+                <textarea id="file" readonly rows="14" style="width: 100%; font: 12px/1.3 monospace; background: #0c0a09; color: #e7e5e4; border: 1px solid #44403c"></textarea>
+            </details>
             <p id="status"></p>
         </div>
         <div id="stage">
@@ -51,10 +64,15 @@ if (app) {
     const extent = app.querySelector<HTMLInputElement>('#extent');
     const extentValue = app.querySelector<HTMLOutputElement>('#extentValue');
     const edges = app.querySelector<HTMLInputElement>('#edges');
+    const smooth = app.querySelector<HTMLInputElement>('#smooth');
     const showMap = app.querySelector<HTMLInputElement>('#showMap');
     const force = app.querySelector<HTMLInputElement>('#force');
     const above = app.querySelector<HTMLButtonElement>('#above');
     const side = app.querySelector<HTMLButtonElement>('#side');
+    const focus = app.querySelector<HTMLInputElement>('#focus');
+    const config = app.querySelector<HTMLInputElement>('#config');
+    const generate = app.querySelector<HTMLButtonElement>('#generate');
+    const file = app.querySelector<HTMLTextAreaElement>('#file');
     if (
         !select ||
         !status ||
@@ -63,10 +81,15 @@ if (app) {
         !extent ||
         !extentValue ||
         !edges ||
+        !smooth ||
         !showMap ||
         !force ||
         !above ||
-        !side
+        !side ||
+        !config ||
+        !generate ||
+        !file ||
+        !focus
     ) {
         throw new Error('page incomplète');
     }
@@ -76,10 +99,33 @@ if (app) {
         select.add(new Option(entry.track?.name ?? `${entry.file} (invalide)`, String(i)));
     });
 
+    /** La piste générée occupe la dernière option du sélecteur ; sa chaîne de configuration va dans l'URL. */
+    const GENERATED = entries.length;
+    select.add(new Option('Générée', String(GENERATED)));
+    let generatedConfig = formatConfig(DEFAULT_CONFIG);
+    config.value = generatedConfig;
+    const regenerate = (): boolean => {
+        const parsed = parseConfig(config.value);
+        if (!parsed) {
+            status.textContent = `chaîne de génération invalide : « ${config.value} », attendu par exemple ${formatConfig(DEFAULT_CONFIG)}`;
+            status.style.color = '#fca5a5';
+            return false;
+        }
+        generatedConfig = formatConfig(parsed);
+        config.value = generatedConfig;
+        entries[GENERATED] = { file: 'générée', track: generateTrack(parsed), errors: [] };
+        return true;
+    };
+    regenerate();
+
     const show = (): void => {
         const entry = entries[Number(select.value)];
         if (!entry) return;
-        window.location.hash = entry.track?.id ?? entry.file;
+        window.location.hash =
+            Number(select.value) === GENERATED ? generatedConfig : (entry.track?.id ?? entry.file);
+        file.value = entry.track
+            ? serializeTrack(entry.track, environmentOf(entry.track.environment))
+            : '';
         if (!entry.track) {
             status.textContent = entry.errors.join(' ; ');
             status.style.color = '#fca5a5';
@@ -101,15 +147,36 @@ if (app) {
         // La 3D ne construit que ce qui est valide : jusqu'à la première tuile qui en recouvre une autre.
         view.setPlacement(validPrefix(placement), environment, transition, faulty);
     };
+    const hash = decodeURIComponent(window.location.hash.slice(1));
     const fromHash = entries.findIndex(
-        (entry) => `#${entry.track?.id ?? entry.file}` === window.location.hash,
+        (entry, i) => i !== GENERATED && (entry.track?.id ?? entry.file) === hash,
     );
     if (fromHash >= 0) select.value = String(fromHash);
+    else if (parseConfig(hash)) {
+        config.value = hash;
+        regenerate();
+        select.value = String(GENERATED);
+    }
+    focus.addEventListener('change', () => {
+        view.focusTile(Number(focus.value));
+    });
+    generate.addEventListener('click', () => {
+        if (regenerate()) {
+            select.value = String(GENERATED);
+            show();
+        }
+    });
+    config.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') generate.click();
+    });
     select.addEventListener('change', show);
     extent.addEventListener('input', show);
     force.addEventListener('change', show);
     edges.addEventListener('change', () => {
         view.setEdges(edges.checked);
+    });
+    smooth.addEventListener('change', () => {
+        view.setSmooth(smooth.checked);
     });
     showMap.addEventListener('change', () => {
         map.hidden = !showMap.checked;

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Environment, Obstacle, Placement, TransitionSpan } from './model';
 import {
     HEIGHT_UNIT,
@@ -38,8 +39,15 @@ export interface View3d {
         faulty?: ReadonlySet<number>,
     ): void;
     setEdges(visible: boolean): void;
+    /**
+     * Lissage : les sommets confondus de même couleur sont fusionnés et leurs normales moyennées,
+     * ce qui gomme les facettes des quadrilatères vrillés ; sinon une normale par face (flat shading).
+     */
+    setSmooth(smooth: boolean): void;
     /** Caméra en hauteur au sud de la piste, ou au ras du sol à l'est pour lire le relief de profil. */
     lookFrom(where: 'above' | 'side'): void;
+    /** Caméra rapprochée sur une tuile de la dernière piste affichée. */
+    focusTile(index: number): void;
     resize(): void;
 }
 
@@ -125,26 +133,40 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
             for (const c of corners)
                 box.expandByPoint(new THREE.Vector3(c.x, tileHeightAt(sweep, c), -c.y));
         }
-        const geometry = new THREE.BufferGeometry();
+        let geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        if (smoothShading) geometry = mergeVertices(geometry, 1e-4);
         geometry.computeVertexNormals();
         group.add(
             new THREE.Mesh(
                 geometry,
                 new THREE.MeshLambertMaterial({
                     vertexColors: true,
-                    flatShading: true,
+                    flatShading: !smoothShading,
                     side: THREE.DoubleSide,
                 }),
             ),
         );
+        lastShown = { placement, environment, transition, faulty };
 
         bounds.copy(box);
+        shown = placement;
         lookFrom('above');
     };
 
     const bounds = new THREE.Box3();
+    let shown: Placement | null = null;
+    const focusTile = (index: number): void => {
+        const placed = shown?.tiles[index];
+        if (!placed) return;
+        const sweep = tileSweep(placed);
+        const c = cellToWorld(placed.cell);
+        const target = new THREE.Vector3(c.x, tileHeightAt(sweep, c), -c.y);
+        camera.position.set(target.x + SIDE * 1.5, target.y + SIDE * 2.2, target.z + SIDE * 2.2);
+        controls.target.copy(target);
+        controls.update();
+    };
     const lookFrom = (where: 'above' | 'side'): void => {
         const center = bounds.getCenter(new THREE.Vector3());
         const size = bounds.getSize(new THREE.Vector3());
@@ -162,6 +184,28 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         edges.visible = visible;
     };
 
+    let smoothShading = false;
+    let lastShown: {
+        placement: Placement;
+        environment: Environment;
+        transition: TransitionSpan | undefined;
+        faulty: ReadonlySet<number>;
+    } | null = null;
+    const setSmooth = (smooth: boolean): void => {
+        smoothShading = smooth;
+        if (!lastShown) return;
+        const saved = { position: camera.position.clone(), target: controls.target.clone() };
+        setPlacement(
+            lastShown.placement,
+            lastShown.environment,
+            lastShown.transition,
+            lastShown.faulty,
+        );
+        camera.position.copy(saved.position);
+        controls.target.copy(saved.target);
+        controls.update();
+    };
+
     const loop = (): void => {
         controls.update();
         renderer.render(scene, camera);
@@ -169,7 +213,7 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
     };
     resize();
     loop();
-    return { setPlacement, setEdges, lookFrom, resize };
+    return { setPlacement, setEdges, setSmooth, lookFrom, focusTile, resize };
 }
 
 type HeightAt = (p: SPoint) => number;
