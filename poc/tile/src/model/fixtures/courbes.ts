@@ -16,7 +16,7 @@ const base: Profile = {
     roadWidth: 1,
     leftShoulder: 1,
     rightShoulder: 1,
-    height: 3,
+    height: 24,
     road: 1,
     shoulder: 1,
     landscape: 1,
@@ -41,15 +41,15 @@ export const courbes: Track = {
         tile(10, 5), // gauche qui s'ouvre
         tile(10, 5), // gauche large constante, rayon 13,5
         tile(12, 2), // ligne droite avec décalage de 5 à 2
-        tile(2, 2, 4), // grand virage à droite sur deux tuiles, 120° au rayon 13,5, et montée
-        tile(2, 2, 5), // d'une unité par tuile sur trois tuiles
-        tile(12, 3, 6), // ligne droite, recentrage, fin de la montée
-        tile(10, 3, 6), // chicane gauche-droite près du centre de la face, rayon 12
-        tile(2, 3, 6),
-        tile(12, 2, 6), // recentrage à gauche sur une droite
-        tile(10, 3, 5), // gauche qui s'ouvre progressivement : une unité par tuile, en descente
-        tile(10, 4, 4),
-        tile(10, 5, 3),
-        tile(12, 5, 3),
+        tile(2, 2, 32), // grand virage à droite sur deux tuiles, 120° au rayon 13,5, et montée
+        tile(2, 2, 40), // d'une unité par tuile sur trois tuiles
+        tile(12, 3, 48), // ligne droite, recentrage, fin de la montée
+        tile(10, 3, 48), // chicane gauche-droite près du centre de la face, rayon 12
+        tile(2, 3, 48),
+        tile(12, 2, 48), // recentrage à gauche sur une droite
+        tile(10, 3, 40), // gauche qui s'ouvre progressivement : une unité par tuile, en descente
+        tile(10, 4, 32),
+        tile(10, 5, 24),
+        tile(12, 5, 24),
     ],
 };

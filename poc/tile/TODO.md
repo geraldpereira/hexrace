@@ -183,3 +183,10 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   changent : un décalage ou une pente sur un arc de rayon 4 vrille la piste (bord intérieur à 48 %
   pour une unité, bord extérieur à 12 %) et fait une pointe au sommet. Champ « Tuile » qui cadre la
   caméra sur une tuile donnée.
+- **Unités et pentes** (`units.ts`, `slope.ts`, `validation.ts`). Pas de hauteur de 20 cm, largeur de
+  voiture 1,7 m (`UNIT_METERS`, à confirmer au POC 3), hauteurs de 0 à 1000. Validation de la pente
+  par tuile le long de l'axe (20 % droite, 15 % virage large, 10 % épingle, soit 23, 16 et 7 pas) et
+  de l'amplitude (200 m, redondante tant que les hauteurs sont bornées à 1000). Le générateur se
+  limite à la moitié des seuils (11, 8, 3 pas), suit la tendance en cours, respecte l'amplitude, et
+  change désormais la hauteur en épingle, modérément. Jupe jusqu'à 2 m sous le point le plus bas.
+  Fixtures converties (une ancienne unité ≈ 8 pas), la Ligne droite monte de 23 pas sur une tuile.

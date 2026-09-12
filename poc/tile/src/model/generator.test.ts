@@ -70,7 +70,7 @@ describe('générateur de pistes', () => {
         expect(obstacles).toBeGreaterThan(200);
     });
 
-    it('garde le profil et la hauteur constants dans les épingles', () => {
+    it('garde le profil constant dans les épingles et n’y change la hauteur que modérément', () => {
         for (let i = 0; i < 40; i++) {
             const track = generateTrack({
                 ...DEFAULT_CONFIG,
@@ -82,7 +82,12 @@ describe('générateur de pistes', () => {
                 const entry = track.tiles[index - 1]?.profile;
                 expect(entry).toBeDefined();
                 if (!entry) return;
-                expect({ ...tile.profile, road: 0 }).toEqual({ ...entry, road: 0 });
+                expect({ ...tile.profile, road: 0, height: 0 }).toEqual({
+                    ...entry,
+                    road: 0,
+                    height: 0,
+                });
+                expect(Math.abs(tile.profile.height - entry.height)).toBeLessThanOrEqual(3);
             });
         }
     });

@@ -20,6 +20,8 @@ import {
 import type { Rng } from './rng';
 import { createRng } from './rng';
 import type { TileSweep } from './sweep';
+import { GENERATOR_SLOPE_FACTOR, maxHeightSteps } from './slope';
+import { MAX_AMPLITUDE_STEPS } from './units';
 import type { Tile } from './tile';
 import type { Track } from './track';
 
@@ -111,6 +113,7 @@ export function generateTrack(config: GeneratorConfig): Track {
     let profile = start;
     let trend = 0;
     let sharpRun = 0;
+    const range = { min: start.height, max: start.height };
     let candidates = rankedExits(rng, dials, pose, occupied, sharpRun, maxSharpRun, true);
     // Retour arrière borné : assez pour sortir d'une spirale, fini pour ne jamais boucler.
     let budget = config.length * 500;
@@ -132,7 +135,9 @@ export function generateTrack(config: GeneratorConfig): Track {
             continue;
         }
         const isFirst = steps.length === 0;
-        const nextProfile = isFirst ? profile : nextProfileFrom(rng, dials, profile, exit);
+        const nextProfile = isFirst
+            ? profile
+            : nextProfileFrom(rng, dials, profile, exit, trend, range);
         const nextTrend = isFirst ? trend : nextProfile.height - profile.height;
         const sweep: TileSweep = {
             center: cellToWorld(pose.cell),
@@ -153,6 +158,8 @@ export function generateTrack(config: GeneratorConfig): Track {
         pose = { cell: neighbor(pose.cell, heading), heading };
         occupied.add(cellKey(pose.cell));
         profile = nextProfile;
+        range.min = Math.min(range.min, nextProfile.height);
+        range.max = Math.max(range.max, nextProfile.height);
         trend = nextTrend === 0 ? trend : Math.sign(nextTrend);
         sharpRun = Math.abs(turnOf(exit)) === 2 ? sharpRun + 1 : 0;
         candidates = rankedExits(rng, dials, pose, occupied, sharpRun, maxSharpRun, false);
@@ -226,7 +233,8 @@ function startProfile(rng: Rng): Profile {
         roadWidth,
         leftShoulder: 1,
         rightShoulder: 1,
-        height: 5 + rng.int(3),
+        // N'importe quelle altitude (spec 2.3) : entre 40 et 80 m.
+        height: 200 + rng.int(200),
         road: 1,
         shoulder: 1,
         landscape: 1,
@@ -234,44 +242,59 @@ function startProfile(rng: Rng): Profile {
 }
 
 /**
- * Le profil de sortie à partir du profil d'entrée : petits pas de largeur, de position, de types et
- * de hauteur. En épingle, seuls les types changent : un décalage ou une pente sur un arc de rayon 4
- * vrille la piste (bord intérieur à 48 % de pente pour une unité, bord extérieur à 12 %) et la
- * marche entre les deux tuiles voisines se concentre au sommet en une pointe verticale.
+ * Le profil de sortie à partir du profil d'entrée : petits pas de largeur, de position et de types,
+ * hauteur par une déclivité bornée à la moitié du seuil de la sortie (spec 2.3), qui suit la tendance
+ * en cours pour faire des montées régulières, et reste dans l'amplitude de la piste. En épingle,
+ * seuls les types et la hauteur changent : un décalage sur un arc de rayon 4 vrille la piste.
  */
-function nextProfileFrom(rng: Rng, dials: Dials, entry: Profile, exit: ExitFace): Profile {
-    if (Math.abs(turnOf(exit)) === 2) {
-        const road = rng.chance(dials.variety * 0.2) ? ((1 + rng.int(3)) as RoadType) : entry.road;
-        return { ...entry, road };
-    }
-    let { roadWidth, position, leftShoulder, rightShoulder, road, shoulder, height } = entry;
+function nextProfileFrom(
+    rng: Rng,
+    dials: Dials,
+    entry: Profile,
+    exit: ExitFace,
+    trend: number,
+    range: { min: number; max: number },
+): Profile {
+    const sharp = Math.abs(turnOf(exit)) === 2;
+    let { roadWidth, position, leftShoulder, rightShoulder, road, shoulder } = entry;
     const { landscape } = entry;
-    if (rng.chance(dials.variety * 0.35)) {
-        roadWidth = clamp(roadWidth + (rng.chance(0.5) ? 1 : -1), MIN_ROAD_WIDTH, MAX_ROAD_WIDTH);
+    if (!sharp) {
+        if (rng.chance(dials.variety * 0.35)) {
+            roadWidth = clamp(
+                roadWidth + (rng.chance(0.5) ? 1 : -1),
+                MIN_ROAD_WIDTH,
+                MAX_ROAD_WIDTH,
+            );
+        }
+        if (rng.chance(dials.variety * 0.15)) leftShoulder = leftShoulder === 1 ? 0 : 1;
+        if (rng.chance(dials.variety * 0.15)) rightShoulder = rightShoulder === 1 ? 0 : 1;
+        // Piste plus bas-côtés au plus six unités.
+        while (roadWidth + leftShoulder + rightShoulder > MAX_BLOCK_WIDTH) {
+            if (leftShoulder === 1) leftShoulder = 0;
+            else if (rightShoulder === 1) rightShoulder = 0;
+            else roadWidth--;
+        }
+        // Décalage d'une unité au plus par tuile, deux en ligne droite.
+        const maxShift = turnOf(exit) === 0 ? 2 : 1;
+        if (rng.chance(dials.variety * 0.5)) position += rng.int(2 * maxShift + 1) - maxShift;
+        const minPosition = MIN_LANDSCAPE_WIDTH + leftShoulder;
+        const maxPosition = FACE_WIDTH - MIN_LANDSCAPE_WIDTH - rightShoulder - roadWidth;
+        position = clamp(position, minPosition, maxPosition);
+        if (rng.chance(dials.variety * 0.1)) shoulder = (1 + rng.int(3)) as ShoulderType;
     }
-    if (rng.chance(dials.variety * 0.15)) leftShoulder = leftShoulder === 1 ? 0 : 1;
-    if (rng.chance(dials.variety * 0.15)) rightShoulder = rightShoulder === 1 ? 0 : 1;
-    // Piste plus bas-côtés au plus six unités.
-    while (roadWidth + leftShoulder + rightShoulder > MAX_BLOCK_WIDTH) {
-        if (leftShoulder === 1) leftShoulder = 0;
-        else if (rightShoulder === 1) rightShoulder = 0;
-        else roadWidth--;
-    }
-    // Décalage d'une unité au plus par tuile, deux en ligne droite.
-    const maxShift = turnOf(exit) === 0 ? 2 : 1;
-    if (rng.chance(dials.variety * 0.5)) position += rng.int(2 * maxShift + 1) - maxShift;
-    const minPosition = MIN_LANDSCAPE_WIDTH + leftShoulder;
-    const maxPosition = FACE_WIDTH - MIN_LANDSCAPE_WIDTH - rightShoulder - roadWidth;
-    position = clamp(position, minPosition, maxPosition);
     if (rng.chance(dials.variety * 0.2)) road = (1 + rng.int(3)) as RoadType;
-    if (rng.chance(dials.variety * 0.1)) shoulder = (1 + rng.int(3)) as ShoulderType;
+
+    let height = entry.height;
     if (rng.chance(dials.relief * 0.55)) {
-        const trend = rng.chance(0.65)
-            ? Math.sign(height - entry.height) || (rng.chance(0.5) ? 1 : -1)
-            : rng.chance(0.5)
-              ? 1
-              : -1;
-        height = clamp(height + trend, MIN_HEIGHT, MAX_HEIGHT);
+        const limit = maxHeightSteps(exit, GENERATOR_SLOPE_FACTOR);
+        const magnitude = Math.min(
+            limit,
+            1 + rng.int(Math.max(1, Math.round(limit * dials.relief))),
+        );
+        const direction = trend !== 0 && rng.chance(0.7) ? trend : rng.chance(0.5) ? 1 : -1;
+        const candidate = clamp(height + direction * magnitude, MIN_HEIGHT, MAX_HEIGHT);
+        const amplitude = Math.max(range.max, candidate) - Math.min(range.min, candidate);
+        if (amplitude <= MAX_AMPLITUDE_STEPS) height = candidate;
     }
     return { position, roadWidth, leftShoulder, rightShoulder, height, road, shoulder, landscape };
 }

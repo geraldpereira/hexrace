@@ -1,4 +1,8 @@
+import type { ExitFace } from './face';
+import { turnKind } from './face';
+import type { TurnKind } from './face';
 import { pathLength } from './path';
+import { HEIGHT_STEP_METERS, UNIT_METERS } from './units';
 import type { Track } from './track';
 import { entryProfile, isClosed } from './track';
 
@@ -68,4 +72,28 @@ export function hermite(h0: number, t0: number, h1: number, t1: number, s: numbe
         (-2 * s3 + 3 * s2) * h1 +
         (s3 - s2) * t1
     );
+}
+
+/**
+ * Pente maximale d'une tuile selon sa sortie (spec 2.3), le long de l'axe : en virage, le bord
+ * intérieur de la piste est plus raide que l'axe, d'où des seuils plus bas.
+ */
+export const MAX_SLOPE: Readonly<Record<TurnKind, number>> = {
+    straight: 0.2,
+    wide: 0.15,
+    sharp: 0.1,
+};
+
+/** Le générateur reste en dessous de la main : la moitié du seuil. */
+export const GENERATOR_SLOPE_FACTOR = 0.5;
+
+/** Pente d'une tuile en fraction (0,2 = 20 %), déclivité en pas sur longueur d'axe, le tout en mètres. */
+export function slopeOf(exit: ExitFace, heightSteps: number): number {
+    return (heightSteps * HEIGHT_STEP_METERS) / (pathLength(exit) * UNIT_METERS);
+}
+
+/** Déclivité maximale d'une tuile, en pas entiers, pour rester sous le seuil de sa sortie. */
+export function maxHeightSteps(exit: ExitFace, factor = 1): number {
+    const slope = MAX_SLOPE[turnKind(exit)] * factor;
+    return Math.floor((slope * pathLength(exit) * UNIT_METERS) / HEIGHT_STEP_METERS + 1e-9);
 }

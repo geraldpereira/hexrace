@@ -38,10 +38,10 @@ describe('piste', () => {
 
     it('signale les profils invalides avec le numéro de tuile', () => {
         const tiles = petitAnneau.tiles.map((tile, i) =>
-            i === 3 ? { ...tile, profile: { ...tile.profile, height: 0 } } : tile,
+            i === 3 ? { ...tile, profile: { ...tile.profile, height: -1 } } : tile,
         );
         expect(trackErrors({ ...petitAnneau, tiles })).toEqual([
-            'tuile 3 : hauteur 0, attendu un entier de 1 à 20',
+            'tuile 3 : hauteur -1, attendu un entier de 0 à 1000',
         ]);
     });
 

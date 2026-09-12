@@ -4,6 +4,7 @@ import { SIDE, add, scale } from './layout';
 import type { TransitionSpan } from './path';
 import { DEFAULT_TRANSITION, axisParameter, pathLength, transition, worldPath } from './path';
 import { hermite } from './slope';
+import { HEIGHT_UNIT } from './units';
 import type { Heading, PlacedTile } from './placement';
 import { cellToWorld } from './layout';
 import { exitHeading } from './placement';
@@ -109,9 +110,6 @@ function normalize(v: Vec2): Vec2 {
     const length = Math.hypot(v.x, v.y);
     return length === 0 ? { x: 0, y: 1 } : { x: v.x / length, y: v.y / length };
 }
-
-/** Une unité de hauteur de profil (spec 2.1), en unités du monde. À confirmer en roulant (POC 3). */
-export const HEIGHT_UNIT = 1;
 
 /**
  * Hauteur de l'axe à l'avancement `s` : cubique de Hermite entre les hauteurs des deux faces, avec

@@ -8,6 +8,7 @@ import { exitHeading } from './placement';
 import type { Profile } from './profile';
 import type { TileSweep } from './sweep';
 import { tileHeightAt } from './sweep';
+import { HEIGHT_UNIT } from './units';
 
 const low: Profile = {
     position: 2,
@@ -53,8 +54,8 @@ describe('hauteur', () => {
                 const inn = entryFrame(center, heading);
                 const out = exitFrame(center, exitHeading(heading, exit));
                 for (const u of [0.01, 2, 5.5, 7.99]) {
-                    expect(tileHeightAt(sweep, facePoint(inn, u))).toBeCloseTo(3, 9);
-                    expect(tileHeightAt(sweep, facePoint(out, u))).toBeCloseTo(7, 9);
+                    expect(tileHeightAt(sweep, facePoint(inn, u))).toBeCloseTo(3 * HEIGHT_UNIT, 9);
+                    expect(tileHeightAt(sweep, facePoint(out, u))).toBeCloseTo(7 * HEIGHT_UNIT, 9);
                 }
             }
         }
@@ -77,7 +78,7 @@ describe('hauteur', () => {
             previous = height;
         }
         const step = 0.05;
-        const slopeStart = tileHeightAt(sweep, { x: 0, y: -APOTHEM + step }) - 3;
+        const slopeStart = tileHeightAt(sweep, { x: 0, y: -APOTHEM + step }) - 3 * HEIGHT_UNIT;
         const slopeMiddle =
             tileHeightAt(sweep, { x: 0, y: step / 2 }) -
             tileHeightAt(sweep, { x: 0, y: -step / 2 });

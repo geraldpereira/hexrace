@@ -13,8 +13,9 @@ export const MAX_ROAD_WIDTH = 5;
 /** Piste plus bas-côtés, de sorte qu'il reste au moins une unité de paysage de chaque côté. */
 export const MAX_BLOCK_WIDTH = 6;
 export const MIN_LANDSCAPE_WIDTH = 1;
-export const MIN_HEIGHT = 1;
-export const MAX_HEIGHT = 20;
+/** Hauteurs en pas de 20 cm (spec 2.1) ; l'amplitude d'une piste est bornée à part (spec 2.3). */
+export const MIN_HEIGHT = 0;
+export const MAX_HEIGHT = 1000;
 
 export type RoadType = 1 | 2 | 3;
 export type ShoulderType = 1 | 2 | 3;
@@ -30,7 +31,7 @@ export interface Profile {
     readonly leftShoulder: ShoulderWidth;
     /** Bas-côté droit, 0 ou 1 unité. */
     readonly rightShoulder: ShoulderWidth;
-    /** Hauteur entière de la face, de 1 à 20. */
+    /** Hauteur entière de la face, en pas de 20 cm, de 0 à 1000. */
     readonly height: number;
     readonly road: RoadType;
     readonly shoulder: ShoulderType;

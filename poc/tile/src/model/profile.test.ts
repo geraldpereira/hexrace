@@ -53,10 +53,10 @@ describe('profil', () => {
         expect(profileErrors({ ...croquis3, roadWidth: 0 })).toContain(
             'piste de 0 unités, attendu de 1 à 5',
         );
-        expect(profileErrors({ ...croquis3, height: 0 })).toContain(
-            'hauteur 0, attendu un entier de 1 à 20',
+        expect(profileErrors({ ...croquis3, height: -1 })).toContain(
+            'hauteur -1, attendu un entier de 0 à 1000',
         );
-        expect(profileErrors({ ...croquis3, height: 21 })).toHaveLength(1);
+        expect(profileErrors({ ...croquis3, height: 1001 })).toHaveLength(1);
         expect(profileErrors({ ...croquis3, height: 2.5 })).toHaveLength(1);
     });
 

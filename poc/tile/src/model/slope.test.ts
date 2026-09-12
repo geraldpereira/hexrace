@@ -3,6 +3,7 @@ import type { Profile } from './profile';
 import { placeTrack } from './placement';
 import { faceSlopes, steffen } from './slope';
 import { heightOfS, tileSweep } from './sweep';
+import { HEIGHT_UNIT } from './units';
 import type { Track } from './track';
 import { pathLength } from './path';
 
@@ -50,7 +51,7 @@ describe('pente aux faces', () => {
         const length = pathLength(12);
         for (let i = 0; i <= 10; i++) {
             const s = i / 10;
-            expect(heightOfS(sweep, s)).toBeCloseTo(4 + s, 9);
+            expect(heightOfS(sweep, s)).toBeCloseTo((4 + s) * HEIGHT_UNIT, 9);
         }
         // Pente constante d'une tuile à l'autre : la même juste avant et juste après la jonction.
         const before = placement.tiles[1];
@@ -63,7 +64,7 @@ describe('pente aux faces', () => {
         const slopeAfter =
             (heightOfS(tileSweep(after), step) - heightOfS(tileSweep(after), 0)) / (step * length);
         expect(slopeBefore).toBeCloseTo(slopeAfter, 4);
-        expect(slopeBefore).toBeCloseTo(1 / length, 4);
+        expect(slopeBefore).toBeCloseTo(HEIGHT_UNIT / length, 4);
     });
 
     it('laisse plate une tuile plate entre deux montées, sans dépassement', () => {
@@ -71,13 +72,15 @@ describe('pente aux faces', () => {
         const placement = placeTrack(track);
         const flat = placement.tiles[2];
         if (!flat) return;
-        for (let i = 0; i <= 20; i++) expect(heightOfS(tileSweep(flat), i / 20)).toBeCloseTo(4, 9);
+        for (let i = 0; i <= 20; i++) {
+            expect(heightOfS(tileSweep(flat), i / 20)).toBeCloseTo(4 * HEIGHT_UNIT, 9);
+        }
         const climb = placement.tiles[1];
         if (!climb) return;
         for (let i = 0; i <= 20; i++) {
             const h = heightOfS(tileSweep(climb), i / 20);
-            expect(h).toBeGreaterThanOrEqual(3 - 1e-9);
-            expect(h).toBeLessThanOrEqual(4 + 1e-9);
+            expect(h).toBeGreaterThanOrEqual(3 * HEIGHT_UNIT - 1e-9);
+            expect(h).toBeLessThanOrEqual(4 * HEIGHT_UNIT + 1e-9);
         }
     });
 

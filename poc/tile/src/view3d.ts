@@ -5,6 +5,8 @@ import type { Environment, Obstacle, Placement, TransitionSpan } from './model';
 import {
     HEIGHT_UNIT,
     SIDE,
+    SKIRT_DEPTH_METERS,
+    metersToUnits,
     cellToWorld,
     heightOf,
     hexCorners,
@@ -27,8 +29,8 @@ import { OBSTACLE } from './palette';
 const HAZARD_HEIGHT = 1;
 const BARRIER_HEIGHT = 0.8;
 const FLAT_LIFT = 0.04;
-/** Les jupes descendent sous la tuile la plus basse de cette hauteur. */
-const SKIRT_DEPTH = 2 * HEIGHT_UNIT;
+/** Les jupes descendent sous la tuile la plus basse jusqu'à un niveau commun (spec 2.7). */
+const SKIRT_DEPTH = metersToUnits(SKIRT_DEPTH_METERS);
 const SKIRT_COLOR = '#292524';
 
 export interface View3d {

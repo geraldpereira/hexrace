@@ -69,7 +69,7 @@ Un **hexagone** (ou **tuile**) est l'unité de construction d'une piste. Il est 
   - piste plus bas-côtés font **6 unités au plus**, de sorte qu'il reste **au moins 1 unité de paysage de chaque côté**. Une piste de 5 unités n'a donc qu'un bas-côté au plus ;
   - la **position** du bloc piste plus bas-côtés sur la face se donne en unités depuis la gauche.
 - **Variation dans la tuile** : largeur, position et types peuvent différer entre l'entrée et la sortie. La piste se resserre, s'élargit ou se décale dans la tuile, le long de son axe, sur une **étendue de transition** fixée par l'environnement (voir 2.2) ; aux faces, le profil est exactement celui écrit. Une piste étroite peut entrer à gauche d'une face et sortir à droite d'une autre.
-- **Hauteur** : chaque tuile porte une hauteur d'entrée et une hauteur de sortie, entières, bornées (1 à 20 pour fixer les idées). Leur différence est la **déclivité** de la tuile, positive, négative ou nulle.
+- **Hauteur** : chaque tuile porte une hauteur d'entrée et une hauteur de sortie, entières, en **pas de 20 cm**, de 0 à 1000 (voir 2.3 pour l'amplitude et les pentes). Leur différence est la **déclivité** de la tuile, positive, négative ou nulle. Contrairement aux longueurs, la hauteur se compte en mètres et non en largeurs de voiture : le relief d'une piste est le même quelle que soit la voiture.
 - **Obstacles** : une tuile peut porter des obstacles le long de la piste (voir 2.4).
 
 **Nommage des faces.** Les six faces sont nommées par les **heures d'une horloge** : avec le côté plat vers l'avant, la face de devant est 12, celle de derrière 6, et les quatre faces latérales 2, 4, 8 et 10. Dans le fichier de piste, l'entrée d'une tuile est toujours la face 6 par convention (on vient de derrière), et seule la face de sortie est écrite : 12 pour une droite, 10 ou 2 pour un virage à 60°, 8 ou 4 pour un virage à 120°. L'orientation absolue d'une tuile se déduit de celle de la précédente.
@@ -115,7 +115,14 @@ Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 - Les sauts se font sur des **rampes** et des **dos d'âne** posés comme obstacles sur la piste, pas par le relief des tuiles.
 - La hauteur n'est fixée que sur les faces d'entrée et de sortie. Deux tuiles qui se touchent par une face latérale sans y être reliées par la piste peuvent y avoir des hauteurs différentes : il en résulte une **marche dans le paysage**, acceptée comme relief. Une marche n'est jamais admise **sur la piste ni sur les bas-côtés**, ce que garantit déjà la règle d'assemblage 2.6.
 
-<CHOIX> Différence de hauteur maximale entre l'entrée et la sortie d'une même tuile. Une pente trop raide en huit unités devient un mur ; à mesurer dans le POC 3, le seul où l'on conduit sur des tuiles.
+**Pentes et amplitude.**
+
+- La **pente maximale d'une tuile** dépend de sa sortie, parce qu'en virage le bord intérieur de la piste parcourt moins de distance que l'axe pour la même montée et se trouve donc plus raide : **20 %** en ligne droite, **15 %** en virage large, **10 %** en virage serré, mesurés le long de l'axe de la tuile. Avec une largeur de voiture de 1,7 m, cela fait au plus 23 pas de hauteur sur une ligne droite (axe de 23,6 m), 16 en virage large (21,4 m) et 7 en virage serré (14,2 m).
+- L'**amplitude** d'une piste, du point le plus bas au plus haut, est au plus de **200 m**, soit 1000 pas.
+- Le **départ et l'arrivée ne sont pas nécessairement à l'altitude 0** : une piste peut commencer à mi-hauteur, monter puis descendre sous son point de départ, tant que l'amplitude tient dans les 200 m.
+- Le **générateur** reste plus prudent que la main : il se limite à la **moitié** de ces seuils, soit 10 % en ligne droite, 7,5 % en virage large et 5 % en virage serré, où la marche entre les deux tuiles voisines se concentre au sommet. Une piste faite à la main va jusqu'aux seuils pleins.
+
+<TODO> Les seuils de 15 % et 10 % en virage, et la largeur de voiture en mètres qui sert à convertir les pentes en pas, sont posés pour fixer les idées ; à confirmer en roulant au POC 3.
 
 ### 2.4 Habillage d'une tuile
 
@@ -173,6 +180,9 @@ Une piste est une **liste ordonnée de tuiles** : chaque tuile suit la précéde
 - **Sortir de l'hexagone** (tomber du terrain) :
   - en **Track** et **Rally**, la voiture est remise immédiatement au centre de la dernière tuile parcourue, à l'arrêt ;
   - en **Collapse**, la partie est perdue.
+- **Les tuiles ont une épaisseur.** Le monde n'a pas de sol : sous le contour de chaque tuile, une **jupe** verticale descend jusqu'à un niveau commun à toute la piste, situé sous son point le plus bas. La jupe est donc visible même quand la piste est à l'altitude 0, et c'est elle qui rend lisibles les marches entre tuiles voisines (voir 2.3) et le vide au bord du terrain.
+
+<TODO> Épaisseur de la jupe sous le point le plus bas, 2 m pour fixer les idées.
 
 ---
 
@@ -629,12 +639,13 @@ Par ordre d'envie :
 | 2026-09-11 | Marches acceptées dans le paysage entre tuiles voisines par le côté, jamais sur la piste ni les bas-côtés | Le modèle ne fixe la hauteur qu'aux faces d'entrée et de sortie ; c'est du relief |
 | 2026-09-11 | Hauteur le long de la piste = spline monotone par les faces, pente déduite des voisines       | Une montée régulière est une rampe, pas des paliers ; rien de plus dans le fichier |
 | 2026-09-12 | Recoupe = test d'occupation de la grille, pas une borne de virages serrés                     | Exact ; la borne devient un réglage de style du générateur                  |
+| 2026-09-12 | Pas de hauteur fixe de 20 cm, pente maximale par tuile 20 / 15 / 10 % selon la sortie, amplitude 200 m | Le relief se pense en mètres ; le bord intérieur d'un virage est plus raide que l'axe |
+| 2026-09-12 | Départ et arrivée à n'importe quelle altitude ; jupe visible sous chaque tuile même à 0        | Une piste peut descendre sous son départ ; le monde n'a pas de sol           |
 
 ### 11.2 Questions ouvertes
 
 | Réf. | Question                                                                                                                                                                                                                                                                                                                                    |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.3  | Différence de hauteur maximale dans une tuile, à mesurer dans le POC 3                                                                                                                                                                                                                                                                      |
 | 8.1  | Flat shading, textures pixelisées avec post-traitement ou rendu à la PlayStation, à tester dans le POC 1 ; la lisibilité de la piste tranche                                                                                                                                                                                                 |
 
 ---
@@ -651,7 +662,8 @@ Par ordre d'envie :
 - **Bas-côté** : 0 ou 1 unité de chaque côté de la piste, avec son propre grip.
 - **Paysage** : le reste de la tuile, au moins 1 unité de chaque côté, avec son propre grip, éventuellement bloquant.
 - **Environnement** : un thème (Nord, Europe, Afrique) qui fixe la palette de surfaces et l'habillage des obstacles.
-- **Déclivité** : différence entre la hauteur de sortie et la hauteur d'entrée d'une tuile.
+- **Pas de hauteur** : 20 cm ; les hauteurs d'une tuile se comptent en pas, de 0 à 1000.
+- **Déclivité** : différence entre la hauteur de sortie et la hauteur d'entrée d'une tuile, en pas de hauteur.
 - **Obstacle** : ce qui se pose sur une tuile par rapport à la piste, par une fraction de l'axe et un décalage depuis le centre : hazard (small, medium, large), barrière, rampe, dos d'âne, plaque.
 - **Graine** : la chaîne qui définit entièrement une piste générée.
 - **Front de disparition** : en Collapse, la limite derrière la voiture au-delà de laquelle la piste n'existe plus.

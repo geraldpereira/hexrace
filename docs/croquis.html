@@ -39,23 +39,23 @@ laps: 3
 # exit      face de sortie (12, 2, 4, 8, 10)
 # pos/w     position et largeur de la piste en sortie
 # sh        bas-côtés gauche,droite en sortie (0 ou 1)
-# h         hauteur en sortie
+# h         hauteur en sortie, en pas de 20 cm
 # t         types piste/bas-côté/paysage en sortie (1 à 3, 1 à 3, 1 à 2)
 # obs       obstacles, optionnels : nom@unité[,largeur]
 
 [tiles]
-start  exit=12  pos=2 w=3  sh=1,1  h=5  t=1/1/1
-       exit=2   pos=2 w=3  sh=1,1  h=5  t=1/1/1
-       exit=12  pos=2 w=3  sh=1,1  h=6  t=1/1/1   obs=bump@3
-       exit=2   pos=2 w=3  sh=1,1  h=6  t=2/1/1
-       exit=12  pos=3 w=2  sh=1,1  h=6  t=2/1/1
-       exit=2   pos=3 w=2  sh=1,1  h=6  t=2/1/1   obs=barrier@2 barrier@5
-       exit=12  pos=3 w=2  sh=1,1  h=7  t=2/1/1   obs=ramp@3,2
-       exit=2   pos=3 w=2  sh=1,1  h=7  t=2/1/1
-       exit=12  pos=2 w=3  sh=1,1  h=6  t=1/1/1
-       exit=2   pos=2 w=3  sh=1,1  h=6  t=1/1/1   obs=hay@1
-       exit=12  pos=2 w=3  sh=1,1  h=5  t=1/1/1
-       exit=2   pos=2 w=3  sh=1,1  h=5  t=1/1/1
+start  exit=12  pos=2 w=3  sh=1,1  h=40  t=1/1/1
+       exit=2   pos=2 w=3  sh=1,1  h=40  t=1/1/1
+       exit=12  pos=2 w=3  sh=1,1  h=48  t=1/1/1   obs=bump@3
+       exit=2   pos=2 w=3  sh=1,1  h=48  t=2/1/1
+       exit=12  pos=3 w=2  sh=1,1  h=48  t=2/1/1
+       exit=2   pos=3 w=2  sh=1,1  h=48  t=2/1/1   obs=barrier@2 barrier@5
+       exit=12  pos=3 w=2  sh=1,1  h=56  t=2/1/1   obs=ramp@3,2
+       exit=2   pos=3 w=2  sh=1,1  h=56  t=2/1/1
+       exit=12  pos=2 w=3  sh=1,1  h=48  t=1/1/1
+       exit=2   pos=2 w=3  sh=1,1  h=48  t=1/1/1   obs=hay@1
+       exit=12  pos=2 w=3  sh=1,1  h=40  t=1/1/1
+       exit=2   pos=2 w=3  sh=1,1  h=40  t=1/1/1
 </pre>
 <figcaption>Fig. 6. Le fichier qui décrit la boucle de la figure 5. En-tête versionné, paires clé/valeur, puis la liste ordonnée des tuiles. Chaque ligne ne donne que le profil de sortie : le profil d'entrée est celui de la tuile précédente. La tuile <code>start</code> porte le départ et, en mode Track, l'arrivée.</figcaption>
 </figure>

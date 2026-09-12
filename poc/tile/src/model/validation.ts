@@ -2,6 +2,10 @@ import { obstacleErrors } from './obstacle';
 import type { Placement } from './placement';
 import { cellKey, closureError, placeTrack } from './placement';
 import { profileErrors } from './profile';
+import { MAX_SLOPE, slopeOf } from './slope';
+import { turnKind } from './face';
+import { entryProfile } from './track';
+import { MAX_AMPLITUDE_STEPS, HEIGHT_STEP_METERS } from './units';
 import { tileSweep } from './sweep';
 import type { Track } from './track';
 import { ENVIRONMENT_IDS } from './environment';
@@ -15,7 +19,8 @@ import { TRACK_MODES } from './track';
  * - chaque profil respecte 2.1 (les jonctions respectent 2.6 par construction) ;
  * - aucune tuile posée sur une case déjà occupée ;
  * - en Track, la boucle se referme sur la première tuile ;
- * - chaque obstacle tient dans sa tuile.
+ * - chaque obstacle tient dans sa tuile ;
+ * - la pente de chaque tuile reste sous le seuil de sa sortie, et l'amplitude de la piste sous 200 m.
  *
  * La spec 5.5 parlait aussi d'un nombre maximal de virages serrés consécutifs. Une borne ne suffit
  * pas (six virages larges recoupent aussi) et le test d'occupation de la grille tranche exactement :
@@ -74,6 +79,33 @@ export function validateTrack(track: Track): Validation {
         for (const obstacle of placed.tile.obstacles ?? []) {
             for (const message of obstacleErrors(sweep, obstacle))
                 issues.push({ tile: placed.index, message });
+        }
+    }
+
+    const kinds = {
+        straight: 'ligne droite',
+        wide: 'virage large',
+        sharp: 'virage serré',
+    } as const;
+    track.tiles.forEach((tile, index) => {
+        const kind = turnKind(tile.exit);
+        const slope = Math.abs(
+            slopeOf(tile.exit, tile.profile.height - entryProfile(track, index).height),
+        );
+        if (slope > MAX_SLOPE[kind] + 1e-9) {
+            issues.push({
+                tile: index,
+                message: `pente de ${Math.round(slope * 100)} % en ${kinds[kind]}, au plus ${Math.round(MAX_SLOPE[kind] * 100)} %`,
+            });
+        }
+    });
+    const heights = track.tiles.map((t) => t.profile.height);
+    if (heights.length > 0) {
+        const amplitude = Math.max(...heights) - Math.min(...heights);
+        if (amplitude > MAX_AMPLITUDE_STEPS) {
+            whole(
+                `amplitude de ${Math.round(amplitude * HEIGHT_STEP_METERS)} m, au plus ${Math.round(MAX_AMPLITUDE_STEPS * HEIGHT_STEP_METERS)} m`,
+            );
         }
     }
 

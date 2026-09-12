@@ -9,7 +9,7 @@ const base: Profile = {
     roadWidth: 2,
     leftShoulder: 1,
     rightShoulder: 1,
-    height: 3,
+    height: 24,
     road: 2,
     shoulder: 2,
     landscape: 2,
@@ -24,7 +24,7 @@ export const triangle: Track = {
     name: 'Triangle',
     environment: 'africa',
     mode: 'track',
-    tiles: [tile(4), tile(4, { height: 4 }), tile(4)],
+    tiles: [tile(4), tile(4, { height: 30 }), tile(4)],
 };
 
 export const hexagone: Track = {
@@ -34,8 +34,8 @@ export const hexagone: Track = {
     mode: 'track',
     tiles: [
         tile(10),
-        tile(10, { height: 4 }),
-        tile(10, { height: 4 }),
+        tile(10, { height: 32 }),
+        tile(10, { height: 32 }),
         tile(10),
         tile(10, { position: 2, roadWidth: 3 }),
         tile(10),
@@ -50,9 +50,9 @@ export const ligne: Track = {
     mode: 'rally',
     tiles: [
         tile(12),
-        tile(12, { roadWidth: 1, position: 4, leftShoulder: 0, height: 4 }),
-        tile(12, { height: 7 }),
-        tile(12, { height: 7 }),
+        tile(12, { roadWidth: 1, position: 4, leftShoulder: 0, height: 32 }),
+        tile(12, { height: 55 }), // 23 pas : la pente maximale d'une ligne droite
+        tile(12, { height: 55 }),
     ],
 };
 
@@ -74,7 +74,7 @@ export const relief: Track = {
     name: 'Relief',
     environment: 'europe',
     mode: 'rally',
-    tiles: [3, 4, 5, 6, 5, 4, 4, 5, 6].map((height, i) =>
+    tiles: [24, 32, 40, 48, 40, 32, 32, 40, 48].map((height, i) =>
         tile(12, {
             height,
             position: 3,
