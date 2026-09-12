@@ -1,3 +1,4 @@
+import { lineMarks, markTileError } from './marks';
 import { obstacleErrors } from './obstacle';
 import type { Placement } from './placement';
 import { cellKey, closureError, placeTrack } from './placement';
@@ -20,7 +21,8 @@ import { TRACK_MODES } from './track';
  * - aucune tuile posée sur une case déjà occupée ;
  * - en Track, la boucle se referme sur la première tuile ;
  * - chaque obstacle tient dans sa tuile ;
- * - la pente de chaque tuile reste sous le seuil de sa sortie, et l'amplitude de la piste sous 200 m.
+ * - la pente de chaque tuile reste sous le seuil de sa sortie, et l'amplitude de la piste sous 200 m ;
+ * - les tuiles de départ et d'arrivée ne sont pas des épingles (spec 2.5).
  *
  * La spec 5.5 parlait aussi d'un nombre maximal de virages serrés consécutifs. Une borne ne suffit
  * pas (six virages larges recoupent aussi) et le test d'occupation de la grille tranche exactement :
@@ -107,6 +109,11 @@ export function validateTrack(track: Track): Validation {
                 `amplitude de ${Math.round(amplitude * HEIGHT_STEP_METERS)} m, au plus ${Math.round(MAX_AMPLITUDE_STEPS * HEIGHT_STEP_METERS)} m`,
             );
         }
+    }
+
+    for (const mark of lineMarks(track)) {
+        const message = markTileError(track, mark);
+        if (message) issues.push({ tile: mark.tile, message });
     }
 
     const faulty = new Set<number>();

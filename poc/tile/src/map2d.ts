@@ -1,9 +1,10 @@
-import type { Environment, Placement, PlacedTile, TransitionSpan, Vec2 } from './model';
+import type { Environment, LineMark, Placement, PlacedTile, TransitionSpan, Vec2 } from './model';
 import {
     APOTHEM,
     SIDE,
     add,
     cellToWorld,
+    checkerSquares,
     entryFrame,
     hexCorners,
     obstacleFootprint,
@@ -26,6 +27,7 @@ export function drawTrackMap(
     environment: Environment,
     transition?: TransitionSpan,
     faulty: ReadonlySet<number> = new Set(),
+    marks: readonly LineMark[] = [],
 ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -79,6 +81,11 @@ export function drawTrackMap(
             else {
                 polygon(outline, colors.outline);
                 polygon(body, colors.body);
+            }
+        }
+        for (const mark of marks.filter((m) => m.tile === placed.index)) {
+            for (const square of checkerSquares(sweep, mark.at)) {
+                polygon(square.points, square.dark ? '#111111' : '#f5f5f4');
             }
         }
         polygon(hexCorners(center), null, '#0c0a09');

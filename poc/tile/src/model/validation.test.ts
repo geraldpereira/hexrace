@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { catalogue } from './fixtures/catalogue';
 import { courbes } from './fixtures/courbes';
 import { petitAnneau } from './fixtures/petitAnneau';
-import { hexagone, invalide, ligne, recoupe, relief, triangle } from './fixtures/petitesBoucles';
+import { hexagone, invalide, ligne, recoupe, relief } from './fixtures/petitesBoucles';
 import type { Track } from './track';
 import { formatIssue, isValid, validateTrack } from './validation';
 
 describe('validation', () => {
-    it.each([petitAnneau, triangle, hexagone, ligne, relief, courbes, catalogue])(
+    it.each([petitAnneau, hexagone, ligne, relief, courbes, catalogue])(
         '$name est valide',
         (track) => {
             expect(validateTrack(track).issues).toEqual([]);

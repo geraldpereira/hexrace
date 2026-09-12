@@ -160,7 +160,7 @@ Il n'y a **aucun décor** hors des tuiles : le monde se limite aux hexagones, é
 
 Deux seulement : **départ** et **arrivée**. Pas de checkpoint, pas de ligne de secteur, pas de zone de respawn dédiée (le respawn se fait sur la dernière tuile parcourue, voir 3.8).
 
-En mode Track, la tuile de départ porte aussi la ligne d'arrivée.
+La tuile de départ est la première de la liste ; en mode Track elle porte aussi la ligne d'arrivée, en Rally l'arrivée est la dernière tuile. Ces deux tuiles peuvent tourner large et monter, mais **jamais en épingle**. La **ligne** est au milieu de la tuile, en travers de la piste, dessinée en damier ; en mode Track, c'est la même ligne qui donne le départ et compte les tours.
 
 ### 2.6 Règles d'assemblage
 
@@ -641,6 +641,7 @@ Par ordre d'envie :
 | 2026-09-12 | Recoupe = test d'occupation de la grille, pas une borne de virages serrés                     | Exact ; la borne devient un réglage de style du générateur                  |
 | 2026-09-12 | Pas de hauteur fixe de 20 cm, pente maximale par tuile 20 / 15 / 10 % selon la sortie, amplitude 200 m | Le relief se pense en mètres ; le bord intérieur d'un virage est plus raide que l'axe |
 | 2026-09-12 | Départ et arrivée à n'importe quelle altitude ; jupe visible sous chaque tuile même à 0        | Une piste peut descendre sous son départ ; le monde n'a pas de sol           |
+| 2026-09-12 | Tuiles de départ et d'arrivée jamais en épingle, ligne en damier au milieu                     | Une ligne lisible en travers de la piste                                    |
 
 ### 11.2 Questions ouvertes
 

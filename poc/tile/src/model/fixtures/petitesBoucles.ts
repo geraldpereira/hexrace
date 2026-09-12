@@ -2,7 +2,11 @@ import type { Profile } from '../profile';
 import type { Tile } from '../tile';
 import type { Track } from '../track';
 
-/** Les plus petites boucles possibles : trois virages serrés autour d'un sommet, six virages larges autour d'une tuile. */
+/**
+ * Les plus petites boucles possibles : trois virages serrés autour d'un sommet, six virages larges
+ * autour d'une tuile. Le Triangle se referme mais n'est pas valide : sa tuile de départ est une
+ * épingle (spec 2.5) ; il sert au placement et à montrer le message.
+ */
 
 const base: Profile = {
     position: 3,
@@ -67,14 +71,14 @@ export const recoupe: Track = {
 
 /**
  * Une ligne droite pour juger le relief seul : montée régulière sur trois tuiles, crête et descente
- * immédiate, plat, puis creux et remontée. La pente à chaque face se déduit des tuiles voisines.
+ * immédiate, plat, puis creux, remontée et arrivée à plat. La pente à chaque face se déduit des tuiles voisines.
  */
 export const relief: Track = {
     id: 'europe-relief-01',
     name: 'Relief',
     environment: 'europe',
     mode: 'rally',
-    tiles: [24, 32, 40, 48, 40, 32, 32, 40, 48].map((height, i) =>
+    tiles: [24, 32, 40, 48, 40, 32, 32, 40, 40].map((height, i) =>
         tile(12, {
             height,
             position: 3,

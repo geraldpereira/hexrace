@@ -18,8 +18,6 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
 - [ ] **Fenêtre de tuiles.** Un curseur « position du joueur » le long de la piste ; seules X tuiles
       devant et Y derrière existent dans la scène (9.2). Chargement et déchargement au passage d'une
       tuile à l'autre, sans allocation visible dans le profileur.
-- [ ] **Tuiles départ et arrivée.** Marquage visuel de la première et de la dernière tuile ; en
-      boucle, la même tuile porte les deux (2.5).
 
 ## Valider les critères de la spec (10.2) qui ne demandent pas de voiture
 
@@ -190,3 +188,9 @@ modèle. Caméra libre (OrbitControls) pour inspecter les raccords sous tous les
   limite à la moitié des seuils (11, 8, 3 pas), suit la tendance en cours, respecte l'amplitude, et
   change désormais la hauteur en épingle, modérément. Jupe jusqu'à 2 m sous le point le plus bas.
   Fixtures converties (une ancienne unité ≈ 8 pas), la Ligne droite monte de 23 pas sur une tuile.
+- **Départ et arrivée** (`marks.ts`). Première tuile = départ, et arrivée aussi en Track ; en Rally
+  l'arrivée est la dernière. Ligne en damier au milieu de la tuile, en travers de la piste, cases
+  d'une demi-unité sur deux rangées, dessinée sur la carte et en 3D. Ces tuiles ne peuvent pas être
+  des épingles (spec 2.5) : la validation le vérifie, le générateur part tout droit, n'arrive jamais en
+  épingle et ne pose pas d'obstacle sur ces deux tuiles. Le Triangle, trois épingles, est une fixture
+  invalide qui montre le message ; l'Hexagone, six virages larges, reste valide.

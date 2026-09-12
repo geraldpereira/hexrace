@@ -39,6 +39,8 @@ describe('générateur de pistes', () => {
         expect(a.tiles).not.toEqual(c.tiles);
         expect(a.tiles).toHaveLength(30);
         expect(a.tiles[0]?.exit).toBe(12);
+        expect(a.tiles[29]?.exit).not.toBe(4);
+        expect(a.tiles[29]?.exit).not.toBe(8);
     });
 
     it('produit une piste valide pour un grand nombre de graines et de cadrans', () => {

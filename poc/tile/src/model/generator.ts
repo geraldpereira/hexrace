@@ -114,7 +114,9 @@ export function generateTrack(config: GeneratorConfig): Track {
     let trend = 0;
     let sharpRun = 0;
     const range = { min: start.height, max: start.height };
-    let candidates = rankedExits(rng, dials, pose, occupied, sharpRun, maxSharpRun, true);
+    // Départ tout droit ; arrivée jamais en épingle (spec 2.5).
+    const isEnd = (n: number): boolean => n === config.length - 1;
+    let candidates = rankedExits(rng, dials, pose, occupied, sharpRun, maxSharpRun, true, false);
     // Retour arrière borné : assez pour sortir d'une spirale, fini pour ne jamais boucler.
     let budget = config.length * 500;
 
@@ -135,6 +137,7 @@ export function generateTrack(config: GeneratorConfig): Track {
             continue;
         }
         const isFirst = steps.length === 0;
+        const isLast = steps.length === config.length - 1;
         const nextProfile = isFirst
             ? profile
             : nextProfileFrom(rng, dials, profile, exit, trend, range);
@@ -146,7 +149,8 @@ export function generateTrack(config: GeneratorConfig): Track {
             entry: profile,
             exitProfile: nextProfile,
         };
-        const obstacles = isFirst ? [] : makeObstacles(rng, dials, sweep);
+        // Pas d'obstacle sur la ligne de départ ni d'arrivée.
+        const obstacles = isFirst || isLast ? [] : makeObstacles(rng, dials, sweep);
         const tile: Tile = {
             exit,
             profile: nextProfile,
@@ -162,7 +166,16 @@ export function generateTrack(config: GeneratorConfig): Track {
         range.max = Math.max(range.max, nextProfile.height);
         trend = nextTrend === 0 ? trend : Math.sign(nextTrend);
         sharpRun = Math.abs(turnOf(exit)) === 2 ? sharpRun + 1 : 0;
-        candidates = rankedExits(rng, dials, pose, occupied, sharpRun, maxSharpRun, false);
+        candidates = rankedExits(
+            rng,
+            dials,
+            pose,
+            occupied,
+            sharpRun,
+            maxSharpRun,
+            steps.length === 0,
+            isEnd(steps.length),
+        );
     }
 
     return {
@@ -188,6 +201,7 @@ function normalize(dials: Dials): Dials {
 /**
  * Les sorties possibles depuis une pose, dans un ordre tiré au sort selon les cadrans, en écartant
  * celles qui mènent sur une case occupée ou dans une case d'où toutes les sorties sont bouchées.
+ * La première tuile est une ligne droite, la dernière n'est jamais une épingle.
  */
 function rankedExits(
     rng: Rng,
@@ -196,11 +210,13 @@ function rankedExits(
     occupied: Set<string>,
     sharpRun: number,
     maxSharpRun: number,
-    first: boolean,
+    straightOnly: boolean,
+    noSharp: boolean,
 ): ExitFace[] {
     const weight = (exit: ExitFace): number => {
         const turn = Math.abs(turnOf(exit));
-        if (first && turn !== 0) return 0;
+        if (straightOnly && turn !== 0) return 0;
+        if (noSharp && turn === 2) return 0;
         if (turn === 0) return 1 - dials.turning + 0.05;
         if (turn === 1)
             return dials.turning === 0 ? 0 : (dials.turning * (1 - dials.sharpness)) / 2 + 0.02;
@@ -215,10 +231,11 @@ function rankedExits(
             (next) => !occupied.has(cellKey(neighbor(cell, exitHeading(heading, next)))),
         );
     });
+    // Une sortie de poids nul est exclue, pas seulement reléguée : sans candidate, on revient en arrière.
     const ranked: ExitFace[] = [];
-    const pool = [...free];
+    const pool = free.filter((exit) => weight(exit) > 0);
     while (pool.length > 0) {
-        const chosen = rng.weighted(pool, weight) ?? pool[0];
+        const chosen = rng.weighted(pool, weight);
         if (chosen === undefined) break;
         ranked.push(chosen);
         pool.splice(pool.indexOf(chosen), 1);

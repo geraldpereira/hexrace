@@ -6,6 +6,7 @@ import {
     formatConfig,
     formatIssue,
     generateTrack,
+    lineMarks,
     parseConfig,
     parseTrack,
     serializeTrack,
@@ -143,9 +144,10 @@ if (app) {
         const transition = force.checked
             ? transitionOfExtent(Number(extent.value))
             : environment.transition;
-        drawTrackMap(map, placement, environment, transition, faulty);
+        const marks = lineMarks(track);
+        drawTrackMap(map, placement, environment, transition, faulty, marks);
         // La 3D ne construit que ce qui est valide : jusqu'à la première tuile qui en recouvre une autre.
-        view.setPlacement(validPrefix(placement), environment, transition, faulty);
+        view.setPlacement(validPrefix(placement), environment, transition, faulty, marks);
     };
     const hash = decodeURIComponent(window.location.hash.slice(1));
     const fromHash = entries.findIndex(

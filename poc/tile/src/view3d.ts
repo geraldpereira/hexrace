@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { Environment, Obstacle, Placement, TransitionSpan } from './model';
+import type { Environment, LineMark, Obstacle, Placement, TransitionSpan } from './model';
 import {
     HEIGHT_UNIT,
     SIDE,
     SKIRT_DEPTH_METERS,
     metersToUnits,
     cellToWorld,
+    checkerSquares,
     heightOf,
     hexCorners,
     obstacleFootprint,
@@ -39,6 +40,7 @@ export interface View3d {
         environment: Environment,
         transition?: TransitionSpan,
         faulty?: ReadonlySet<number>,
+        lines?: readonly LineMark[],
     ): void;
     setEdges(visible: boolean): void;
     /**
@@ -83,6 +85,7 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         environment: Environment,
         transition?: TransitionSpan,
         faulty: ReadonlySet<number> = new Set(),
+        lines: readonly LineMark[] = [],
     ): void => {
         scene.remove(group, edges, marks);
         group = new THREE.Group();
@@ -108,6 +111,12 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
             }
             for (const obstacle of placed.tile.obstacles ?? []) {
                 obstacleMesh(sweep, obstacle, environment, heightAt, positions, colors);
+            }
+            for (const mark of lines.filter((m) => m.tile === placed.index)) {
+                for (const square of checkerSquares(sweep, mark.at)) {
+                    color.set(square.dark ? '#111111' : '#f5f5f4');
+                    fan(square.points, heightAt, positions, colors, color, FLAT_LIFT * 1.5);
+                }
             }
             color.set(SKIRT_COLOR);
             skirt(tileBoundary(sweep), heightAt, skirtBase, positions, colors, color);
@@ -150,7 +159,7 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
                 }),
             ),
         );
-        lastShown = { placement, environment, transition, faulty };
+        lastShown = { placement, environment, transition, faulty, lines };
 
         bounds.copy(box);
         shown = placement;
@@ -192,6 +201,7 @@ export function createView3d(canvas: HTMLCanvasElement): View3d {
         environment: Environment;
         transition: TransitionSpan | undefined;
         faulty: ReadonlySet<number>;
+        lines: readonly LineMark[];
     } | null = null;
     const setSmooth = (smooth: boolean): void => {
         smoothShading = smooth;
