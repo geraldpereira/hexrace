@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
@@ -11,7 +11,8 @@ import {
   type InputActions,
 } from '@hexrace/inputs';
 
-import { startFrameLoop } from '@ui/lab/frame-loop';
+import { DebugPanel, startFrameLoop, type DebugFolder } from '@hexrace/hud';
+
 import { Bar } from '@ui/lab/inputs/bar';
 import { TouchPaddles } from '@ui/lab/inputs/touch-paddles';
 
@@ -44,9 +45,9 @@ export interface ActionRow {
 
 /**
  * The inputs showcase: every action live, merged and per source, with the touch paddles drawn
- * over the page. It runs its own animation loop because the engine does not exist yet; the loop
- * only polls the inputs and refreshes signals. `showPaddles` is initialised after `document`
- * because field initialisers run in order.
+ * over the page and the sources' settings in a folder of the debug panel. It runs its own animation
+ * loop because the engine does not exist yet; the loop only polls the inputs and refreshes signals.
+ * `showPaddles` is initialised after `document` because field initialisers run in order.
  */
 @Component({
   selector: 'hr-inputs-showcase',
@@ -68,9 +69,12 @@ export class InputsShowcase {
 
   private readonly document = inject(DOCUMENT);
   readonly showPaddles = signal(this.prefersTouch());
+  private readonly panel = inject(DebugPanel);
   private last = performance.now();
 
   constructor() {
+    this.panel.register('Inputs', (f) => this.buildFolder(f), inject(DestroyRef));
+    this.panel.show();
     startFrameLoop(this.tick);
   }
 
@@ -80,16 +84,18 @@ export class InputsShowcase {
     this.touch.acceptMouse = this.showPaddles();
   }
 
-  setKeyboardSmoothing(value: string): void {
-    this.keyboard.smoothingTime = Number(value);
-  }
-
-  setStickDeadzone(value: string): void {
-    this.gamepad.stickDeadzone = Number(value);
-  }
-
-  setTravel(value: string): void {
-    this.touch.travelPx = Number(value);
+  private buildFolder(folder: DebugFolder): void {
+    folder.add(this.keyboard, 'smoothingTime', 0, 0.5, 0.01).name('Keyboard smoothing (s)');
+    folder.add(this.gamepad, 'stickDeadzone', 0, 0.5, 0.01).name('Stick deadzone');
+    folder.add(this.gamepad, 'triggerDeadzone', 0, 0.3, 0.01).name('Trigger deadzone');
+    folder.add(this.touch, 'travelPx', 20, 150, 5).name('Paddle travel (px)');
+    folder
+      .add({ paddles: this.showPaddles() }, 'paddles')
+      .name('Show touch paddles')
+      .onChange((v: boolean) => {
+        this.showPaddles.set(v);
+        this.touch.acceptMouse = v;
+      });
   }
 
   private prefersTouch(): boolean {

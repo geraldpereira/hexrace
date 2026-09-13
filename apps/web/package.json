@@ -16,6 +16,7 @@
     "@angular/core": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
+    "@hexrace/hud": "*",
     "@hexrace/inputs": "*",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

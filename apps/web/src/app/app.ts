@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-/** The application: one router outlet, and the routes decide what is in it. */
+import { PerfCorner } from '@hexrace/hud';
+
+/** The application: one router outlet, the routes decide what is in it, and the fps corner over all. */
 @Component({
   selector: 'hr-app',
-  imports: [RouterOutlet],
-  template: '<router-outlet />',
+  imports: [RouterOutlet, PerfCorner],
+  template: '<router-outlet /><hr-perf-corner />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {}

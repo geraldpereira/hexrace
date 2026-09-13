@@ -4,7 +4,7 @@
 DEPCRUISE := npx depcruise src --config $(CURDIR)/.dependency-cruiser.js --ts-config
 
 # Chaque projet qui a son tsconfig. Un package ajouté se déclare ici et dans eslint.config.js.
-PROJECTS := packages/inputs $(WEB)
+PROJECTS := packages/inputs packages/hud $(WEB)
 ONLY ?= $(PROJECTS)
 FILES ?= .
 

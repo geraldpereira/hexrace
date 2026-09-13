@@ -1,0 +1,23 @@
+{
+  "name": "@hexrace/hud",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The only package with Angular components: what the player sees over the canvas, and the debug panel the developer sees.",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "lil-gui": "^0.21.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@types/node": "^24.0.0"
+  }
+}

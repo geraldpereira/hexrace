@@ -150,6 +150,20 @@ a besoin.
 **Sa vitrine.** Un panneau qui pilote un objet de démonstration et montre chaque type de contrôle, y
 compris une courbe et un tracé en temps réel. La vitrine `inputs` migre ses trois curseurs dessus.
 
+**Fait le 2026-09-13.** Package `hud`, sous-module `debug`. `DebugPanel` (service) crée lil-gui à la
+première demande, caché, et le bascule avec la touche `\``. `register(title, build, destroyRef)`
+construit un dossier, restaure ses valeurs depuis le stockage local (`DebugStore`, une clé par
+dossier, relevés et boutons exclus), les sauve à chaque changement, lui ajoute un « Reset folder »
+et le détruit avec son propriétaire. La racine porte le dossier Performance (`PerfMeter` : fps,
+durée d'image, durée du pas physique que le moteur renseignera, tracé des fps, case pour le coin
+d'écran `PerfCorner`), « Copy values as JSON » (valeurs courantes contre valeurs initiales) et
+« Reset all ». Les ajouts du POC sont portés : `addCurveEditor` (découpé en mise en page, peinture et
+DOM pour tenir dans les tailles de fichier) et le nouveau `addPlot`, tracé glissant qui s'échantillonne
+lui-même et s'arrête quand son canvas quitte la page. `startFrameLoop` vit ici et sert à toutes les
+vitrines. La vitrine `inputs` a migré ses réglages dans un dossier Inputs. Vérifié dans Chrome :
+contrôles, courbe, tracés, persistance, reset, bascule clavier, coin fps, destruction du dossier au
+changement de page. Le dessin sur canvas se teste avec un faux contexte 2D (`canvas.mock.ts`).
+
 **Le reste du `hud`** (compte-tours, rapport, vitesse, dégâts, chrono, cartes, conteneur de canvas…)
 arrive module par module quand le module qui produit la donnée existe : le compte-tours avec `car`, le
 chrono avec `game-commons`, les cartes avec `game/track`. L'inventaire complet est en spec

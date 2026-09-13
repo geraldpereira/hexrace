@@ -35,7 +35,7 @@ describe('InputsShowcase', () => {
     const { host, page } = await render();
     expect(host.querySelectorAll('thead th').length).toBe(2 + 3);
     expect(page.rows()).toEqual([]);
-    frames[0]?.(16);
+    [...frames].forEach((cb) => cb(16));
     expect(page.rows().length).toBe(11);
     expect(page.rows()[0]?.name).toBe('throttle');
     expect(page.activeSource()).toBe('none');
@@ -45,8 +45,8 @@ describe('InputsShowcase', () => {
     const { page } = await render();
     TestBed.inject(KeyboardSource).smoothingTime = 0;
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW', cancelable: true }));
-    frames[0]?.(16);
-    frames[1]?.(32);
+    [...frames].forEach((cb) => cb(16));
+    [...frames].forEach((cb) => cb(32));
     expect(page.rows()[0]?.merged).toBe(1);
     expect(page.activeSource()).toBe('keyboard');
     expect(page.connected()[1]).toBe(true);
@@ -70,16 +70,18 @@ describe('InputsShowcase', () => {
     });
     const { page } = await render();
     expect(page.showPaddles()).toBe(true);
-    Reflect.deleteProperty(window, 'matchMedia');
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: () => ({ matches: false }),
+    });
   });
 
-  it('tunes the sources from the settings', async () => {
-    const { page } = await render();
-    page.setKeyboardSmoothing('0.25');
-    page.setStickDeadzone('0.3');
-    page.setTravel('120');
-    expect(TestBed.inject(KeyboardSource).smoothingTime).toBe(0.25);
-    expect(TestBed.inject(GamepadSource).stickDeadzone).toBe(0.3);
-    expect(TestBed.inject(TouchSource).travelPx).toBe(120);
+  it('puts the sources’ settings in an Inputs folder of the debug panel, shown', async () => {
+    await render();
+    const panel = document.querySelector<HTMLElement>('.lil-gui')!;
+    expect(panel.style.display).toBe('');
+    expect(panel.textContent).toContain('Keyboard smoothing (s)');
+    expect(panel.textContent).toContain('Paddle travel (px)');
+    expect(TestBed.inject(GamepadSource).stickDeadzone).toBe(0.15);
   });
 });

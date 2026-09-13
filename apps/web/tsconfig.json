@@ -9,6 +9,8 @@
     "paths": {
       "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
       "@inputs/*": ["../../packages/inputs/src/*"],
+      "@hexrace/hud": ["../../packages/hud/src/index.ts"],
+      "@hud/*": ["../../packages/hud/src/*"],
       "@ui/*": ["./src/app/*"]
     }
   },

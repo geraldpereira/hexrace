@@ -2,8 +2,8 @@ import { DestroyRef, NgZone, inject } from '@angular/core';
 
 /**
  * Runs `tick` on every animation frame, outside Angular's zone, until the caller is destroyed.
- * To be called from a constructor: it injects the zone and the caller's `DestroyRef`. The lab's
- * stand-in for the engine loop that does not exist yet.
+ * To be called from a constructor: it injects the zone and the caller's `DestroyRef`. The HUD's
+ * stand-in for the engine loop wherever a display refreshes itself.
  */
 export function startFrameLoop(tick: FrameRequestCallback): void {
   const zone = inject(NgZone);

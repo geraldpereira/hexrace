@@ -29,6 +29,7 @@ export default tseslint.config(
       parserOptions: {
         project: [
           './packages/inputs/tsconfig.spec.json',
+          './packages/hud/tsconfig.spec.json',
           './apps/web/tsconfig.app.json',
           './apps/web/tsconfig.spec.json',
         ],
@@ -47,7 +48,7 @@ export default tseslint.config(
           patterns: [
             {
               group: ['./*', '../*', '.', '..'],
-              message: 'Un module se lit par son nom : @inputs/*, @hexrace/inputs, @ui/*.',
+              message: 'Reach a module by its name: @hexrace/<package>, @<package>/*, @ui/*.',
             },
           ],
         },
@@ -79,7 +80,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['apps/web/**/*.ts'],
+    files: ['apps/web/**/*.ts', 'packages/hud/**/*.ts'],
     extends: [...angular.configs.tsRecommended],
     processor: angular.processInlineTemplates,
     rules: {
@@ -96,7 +97,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['apps/web/**/*.html'],
+    files: ['apps/web/**/*.html', 'packages/hud/**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
   },
 

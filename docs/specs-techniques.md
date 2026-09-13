@@ -339,6 +339,9 @@ performance ; voir la décision du 2026-09-13).
   *Routage des écrans [F 7.1], cohabitation d'un canvas three.js persistant avec les vues, cycle de vie des scènes (2.2).*
 - 8.2 HUD
   *En DOM par-dessus le canvas ou dans la scène ; fréquence de rafraîchissement ; l'indicateur du front de disparition [F 7.2]. Ce qui bouge à chaque image se met à jour hors de la détection de changement, par signaux ou écriture directe du DOM depuis la boucle.*
+- 8.6 Panneau de debug (écrit le 2026-09-13, référence `packages/hud/src/debug`)
+  lil-gui derrière le service `DebugPanel` : un module appelle `register(titre, build, destroyRef)` et construit son dossier dans `build` ; le service restaure les valeurs du dossier depuis `localStorage` (clé `hexrace.debug.<titre>`, sans les relevés ni les boutons), les sauve à chaque `onFinishChange`, ajoute un bouton de reset et détruit le dossier avec son propriétaire. La racine porte le dossier Performance (`PerfMeter`, alimenté par la boucle ; le moteur y écrira la durée du pas), l'export JSON des valeurs (courantes contre initiales, via `controller.initialValue`) et le reset général. Deux rangées maison : `addCurveEditor` (le POC voiture) et `addPlot` (tracé glissant). Bascule par la touche `\``. Le panneau est créé à la demande : un jeu livré qui ne l'appelle pas ne le charge pas.
+  L'indicateur de performance en coin d'écran est le composant `PerfCorner`, monté dans l'application et affiché quand `PerfMeter.cornerVisible` est vrai.
 - 8.3 Éditeur
   *Architecture de l'éditeur [F 5.2], réutilisation du rendu de piste, interactions clavier et souris, sauvegarde.*
 - 8.4 Garage

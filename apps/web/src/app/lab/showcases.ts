@@ -23,7 +23,7 @@ export const SHOWCASES = new InjectionToken<readonly Showcase[]>('SHOWCASES', {
       module: 'hud/debug',
       path: 'lab/debug',
       summary: 'The lil-gui tuning panel, with the POC add-ons.',
-      ready: false,
+      ready: true,
     },
     {
       module: 'engine',

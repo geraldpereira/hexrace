@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": [],
+    "paths": { "@hud/*": ["./src/*"] }
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts", "src/**/*.mock.ts"]
+}

@@ -31,48 +31,11 @@
     </tbody>
   </table>
 
-  <section class="settings">
-    <label>
-      Keyboard smoothing (s)
-      <input
-        type="range"
-        min="0"
-        max="0.5"
-        step="0.01"
-        [value]="keyboard.smoothingTime"
-        (input)="setKeyboardSmoothing($any($event.target).value)"
-      />
-      <output>{{ keyboard.smoothingTime }}</output>
-    </label>
-    <label>
-      Stick deadzone
-      <input
-        type="range"
-        min="0"
-        max="0.5"
-        step="0.01"
-        [value]="gamepad.stickDeadzone"
-        (input)="setStickDeadzone($any($event.target).value)"
-      />
-      <output>{{ gamepad.stickDeadzone }}</output>
-    </label>
-    <label>
-      Paddle travel (px, smaller = more sensitive)
-      <input
-        type="range"
-        min="20"
-        max="150"
-        step="5"
-        [value]="touch.travelPx"
-        (input)="setTravel($any($event.target).value)"
-      />
-      <output>{{ touch.travelPx }}</output>
-    </label>
-    <label>
-      <input type="checkbox" [checked]="showPaddles()" (change)="togglePaddles()" />
-      Show touch paddles (mouse counts as a finger)
-    </label>
-  </section>
+  <p class="hint">
+    Smoothing, dead zones, paddle travel and the paddles' visibility are in the Inputs folder of the
+    debug panel, top right (press <kbd>`</kbd> to toggle it). With the paddles shown, the mouse
+    counts as a finger.
+  </p>
 
   <p class="hint">
     Gamepad: RT throttle, LT brake, right stick steer, A hand brake, RB / LB gear up / down, Y

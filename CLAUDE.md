@@ -48,6 +48,8 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 
 ```
 packages/inputs/   @hexrace/inputs - les entrées : actions, manette / clavier / tactile, fusion.
+packages/hud/      @hexrace/hud    - le seul package à composants ; debug/ enveloppe lil-gui,
+                                     startFrameLoop y sert à toute vitrine qui se rafraîchit.
 apps/web/          @hexrace/web    - l'application Angular 22 : le lab des vitrines, puis le jeu.
 ```
 

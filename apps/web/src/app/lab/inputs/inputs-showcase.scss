@@ -30,22 +30,10 @@ tbody th {
   width: 7rem;
 }
 
-.settings {
-  display: grid;
-  gap: 0.6rem;
-  margin: 1.5rem 0;
-}
-
-.settings label {
-  display: grid;
-  grid-template-columns: 12rem 1fr 3rem;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.9rem;
-}
-
-.settings label:last-child {
-  grid-template-columns: auto 1fr;
+kbd {
+  padding: 0 0.3rem;
+  border: 1px solid #4a5560;
+  border-radius: 0.2rem;
 }
 
 .hint {
