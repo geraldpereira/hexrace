@@ -8,22 +8,22 @@
   <section class="race">
     <div class="frame">
       <hr-canvas-frame [canvas]="canvas" />
-      <div class="overlay top-left">
-        <hr-race-timer [readout]="timer()" />
-      </div>
-      <div class="overlay top-right">
-        <hr-assist-lamps [assists]="assists()" />
-        <hr-damage-indicator [damage]="damage()" [hit]="hit()" />
-      </div>
-      <div class="overlay bottom-right dashboard">
-        <hr-speed-indicator [kmh]="kmh()" />
-        <hr-gear-indicator [gear]="gear()" [shiftHint]="race.shiftHint" />
+      <div class="overlay top-left dashboard">
         <hr-rev-counter
           [rpm]="rpm()"
           [maxRpm]="race.maxRpm"
           [redlineRpm]="race.redlineRpm"
           [limiter]="race.limiter"
         />
+        <hr-gear-indicator [gear]="gear()" [shiftHint]="race.shiftHint" />
+        <hr-speed-indicator [kmh]="kmh()" />
+      </div>
+      <div class="overlay top-right">
+        <hr-assist-lamps [assists]="assists()" />
+        <hr-damage-indicator [damage]="damage()" [hit]="hit()" />
+      </div>
+      <div class="overlay bottom-right">
+        <hr-race-timer [readout]="timer()" />
       </div>
       <div class="overlay bottom-left">
         <hr-reset-gauge [progress]="race.resetProgress" />

@@ -43,7 +43,10 @@ header a {
 .bottom-right {
   bottom: 0;
   right: 0;
-  align-items: flex-end;
+}
+
+.dashboard {
+  align-items: flex-start;
 }
 
 .bottom-left {
