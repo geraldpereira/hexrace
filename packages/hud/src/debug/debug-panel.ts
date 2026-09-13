@@ -68,7 +68,7 @@ export class DebugPanel {
 
   private root(): GUI {
     if (this.gui) return this.gui;
-    const gui = new GUI({ title: 'Debug', width: WIDTH, container: this.document.body });
+    const gui = new GUI({ title: 'Debug', width: WIDTH, autoPlace: true });
     gui.hide();
     this.gui = gui;
     this.buildRoot(gui);
