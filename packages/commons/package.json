@@ -1,0 +1,21 @@
+{
+  "name": "@hexrace/commons",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The words every package shares: the typed event bus, seeded randomness, the arithmetic more than one module needs. Angular services, no DOM, no three.js, no Jolt.",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@angular/core": "^22.0.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@types/node": "^24.0.0"
+  }
+}

@@ -51,6 +51,7 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 ## Les modules
 
 ```
+packages/commons/  @hexrace/commons - EventBus typé par augmentation, Random à graine, arithmétique.
 packages/inputs/   @hexrace/inputs - les entrées : actions, manette / clavier / tactile, fusion.
 packages/hud/      @hexrace/hud    - le seul package à composants : game/ (compte-tours, dégâts,
                                      chrono…), commons/ (cadre de canvas, cartes), dialog/, debug/

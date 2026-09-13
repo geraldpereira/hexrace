@@ -110,6 +110,8 @@ On peut voir a faire en sorte que chaque module puisse être testé dans le navi
 
 Les tests instancient les services via `TestBed` ou `runInInjectionContext`, en remplaçant les jetons par des doublures. Le mot « pur » dans ce document désigne un package **sans DOM, sans three.js et sans Jolt**, pas un package sans Angular.
 
+**L'EventBus, écrit (2026-09-13, `packages/commons`).** Un service `EventBus` dont les noms d'événements et leurs charges sont les clés de l'interface `HexraceEvents`, vide dans `commons` et augmentée par chaque package qui publie (`declare module '@hexrace/commons' { interface HexraceEvents { 'car/collision': Collision } }`). Le bus reste ainsi typé de bout en bout sans que `commons` connaisse un seul événement. `publish` est synchrone et appelle les abonnés dans l'ordre d'inscription ; `on` rend la désinscription ; `once` s'en va après un appel. Le même package porte `Random`, seule source d'aléa (`seeded` rejouable, `fresh` pour les effets), et l'arithmétique partagée.
+
 **Dépendances autorisées** : une règle par ligne dans dependency-cruiser, comme hexact. Le `hud` peut lire tous les packages ; aucun package ne lit le `hud`.
 
 <TODO> Écrire la liste des règles, y compris celles entre sous-modules `entity` / `physics` / `render` (2.1).

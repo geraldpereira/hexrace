@@ -37,6 +37,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         project: [
+          './packages/commons/tsconfig.spec.json',
           './packages/inputs/tsconfig.spec.json',
           './packages/hud/tsconfig.spec.json',
           './apps/web/tsconfig.app.json',

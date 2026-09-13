@@ -7,6 +7,8 @@
     "noPropertyAccessFromIndexSignature": true,
     "declaration": false,
     "paths": {
+      "@hexrace/commons": ["../../packages/commons/src/index.ts"],
+      "@commons/*": ["../../packages/commons/src/*"],
       "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
       "@inputs/*": ["../../packages/inputs/src/*"],
       "@hexrace/hud": ["../../packages/hud/src/index.ts"],

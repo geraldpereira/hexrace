@@ -216,6 +216,13 @@ implémentation factice pour les tests.
 temps de pas physique. C'est là qu'on mesure le poids du wasm et son temps de démarrage sur mobile
 (spec technique 1.4, `<TODO>`).
 
+**`commons` fait le 2026-09-13.** Trois choses et rien de plus : `EventBus`, typé par l'interface
+`HexraceEvents` que chaque package augmente par fusion de déclarations, avec `on`, `once` et
+`publish` synchrone ; `Random`, la seule source d'aléa du jeu, `seeded(graine)` pour ce qui doit se
+rejouer et `fresh()` pour ce qui doit seulement avoir l'air aléatoire, sur le sfc32 du POC 2 ; et
+l'arithmétique partagée (`lerp`, `inverseLerp`, `ramp`, degrés, km/h). Pas de vitrine : rien à voir,
+la vitrine de l'étape est celle d'`engine`. Couverture et type-coverage à 100 %.
+
 ### 2.4 `camera`
 
 **Ce qu'il possède.** La caméra de la spec fonctionnelle 3.9 : vue du dessus qui suit l'orientation
