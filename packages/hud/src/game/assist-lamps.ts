@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 
 /** Each assist: null when the car does not have it, else whether it is acting right now. */
 export interface AssistReadout {
@@ -9,12 +10,22 @@ export interface AssistReadout {
 /** One lamp per bought assist, lit while it works, like a dashboard (functional spec 7.5). */
 @Component({
   selector: 'hr-assist-lamps',
+  imports: [MatIcon],
   template: `
     @if (assists().abs !== null) {
-      <span class="lamp" [class.on]="assists().abs">ABS</span>
+      <mat-icon class="lamp" [class.on]="assists().abs" title="ABS" aria-label="ABS"
+        >tire_repair</mat-icon
+      >
     }
     @if (assists().tractionControl !== null) {
-      <span class="lamp" [class.on]="assists().tractionControl">TC</span>
+      <mat-icon
+        class="lamp"
+        [class.on]="assists().tractionControl"
+        title="Traction control"
+        aria-label="Traction control"
+      >
+        swap_driving_apps_wheel
+      </mat-icon>
     }
   `,
   styles: `
@@ -23,19 +34,16 @@ export interface AssistReadout {
       gap: 0.4rem;
     }
     .lamp {
-      padding: 0.1rem 0.4rem;
-      border-radius: 0.3rem;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      font-size: 0.75rem;
-      font-weight: 700;
-      opacity: 0.35;
+      width: 1.6rem;
+      height: 1.6rem;
+      font-size: 1.6rem;
+      opacity: 0.3;
       transition: all 0.1s;
     }
     .lamp.on {
       opacity: 1;
-      background: #ffaa00;
-      color: #111;
-      border-color: #ffaa00;
+      color: #ffaa00;
+      filter: drop-shadow(0 0 4px #ffaa00);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
