@@ -12,6 +12,8 @@ commités ; leurs valeurs par défaut restent un premier jet à doser (voir plus
 ## Valider les critères de la spec
 
 
+- [ ] Test son à partir de vrais samples voir ce que ça donne
+
 - [x] **Boîte et régime moteur.** Moteur et boîte Jolt réglables dans le GUI (courbe de couple,
       inertie, rapports, temps de passage), compte-tours et rapport dans le HUD, boîte auto (mode
       manuel LB/RB en option debug), frein à main sur A. Son moteur procédural par impulsions de

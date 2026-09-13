@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make *)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npm install)",
+      "Bash(npx prettier *)",
+      "Bash(git add *)",
+      "Bash(git status *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git diff)",
+      "Bash(git log *)",
+      "Bash(python3 -)",
+      "Read(//home/ubuntu/.nvm/**)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git push)"
+    ]
+  }
+}
