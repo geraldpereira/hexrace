@@ -24,9 +24,7 @@
             "tsConfig": "apps/web/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "apps/web/src/styles"
-              ]
+              "includePaths": ["apps/web/src/styles"]
             },
             "assets": [
               {
@@ -34,9 +32,8 @@
                 "input": "apps/web/public"
               }
             ],
-            "styles": [
-              "apps/web/src/styles.scss"
-            ]
+            "styles": ["apps/web/src/styles.scss"],
+            "externalDependencies": ["node:module"]
           },
           "configurations": {
             "production": {
@@ -80,17 +77,10 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "setupFiles": [
-              "apps/web/src/test-setup.ts"
-            ],
+            "setupFiles": ["apps/web/src/test-setup.ts"],
             "coverage": true,
-            "coverageInclude": [
-              "apps/web/src/**/*.ts"
-            ],
-            "coverageReporters": [
-              "text-summary",
-              "html"
-            ],
+            "coverageInclude": ["apps/web/src/**/*.ts"],
+            "coverageReporters": ["text-summary", "html"],
             "coverageExclude": [
               "**/*.spec.ts",
               "**/index.ts",
@@ -117,22 +107,11 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "tsConfig": "packages/hud/tsconfig.spec.json",
-            "setupFiles": [
-              "packages/hud/test-setup.ts"
-            ],
+            "setupFiles": ["packages/hud/test-setup.ts"],
             "coverage": true,
-            "coverageInclude": [
-              "packages/hud/src/**/*.ts"
-            ],
-            "coverageReporters": [
-              "text-summary",
-              "html"
-            ],
-            "coverageExclude": [
-              "**/*.spec.ts",
-              "**/*.mock.ts",
-              "**/index.ts"
-            ],
+            "coverageInclude": ["packages/hud/src/**/*.ts"],
+            "coverageReporters": ["text-summary", "html"],
+            "coverageExclude": ["**/*.spec.ts", "**/*.mock.ts", "**/index.ts"],
             "coverageThresholds": {
               "statements": 100,
               "branches": 100,

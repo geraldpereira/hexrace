@@ -39,6 +39,7 @@ export default tseslint.config(
         project: [
           './packages/commons/tsconfig.spec.json',
           './packages/inputs/tsconfig.spec.json',
+          './packages/engine/tsconfig.spec.json',
           './packages/hud/tsconfig.spec.json',
           './apps/web/tsconfig.app.json',
           './apps/web/tsconfig.spec.json',

@@ -18,13 +18,17 @@
     "@angular/material": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
+    "@hexrace/commons": "*",
+    "@hexrace/engine": "*",
     "@hexrace/hud": "*",
     "@hexrace/inputs": "*",
     "material-symbols": "^0.35.0",
     "rxjs": "~7.8.0",
+    "three": "^0.184.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/compiler-cli": "^22.0.0"
+    "@angular/compiler-cli": "^22.0.0",
+    "@types/three": "^0.184.0"
   }
 }

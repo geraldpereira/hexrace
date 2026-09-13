@@ -1,0 +1,27 @@
+{
+  "name": "@hexrace/engine",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The loop, the scenes, GameObject / Component, and the two services that wrap three.js and Jolt behind tokens. Angular services; the only package that imports three.js and jolt-physics directly, besides tile and car's physics and render sub-modules.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "jolt-physics": "^1.0.0",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@types/node": "^24.0.0",
+    "@types/three": "^0.184.0"
+  }
+}

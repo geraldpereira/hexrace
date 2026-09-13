@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": ["vitest/globals", "node"],
+    "noEmit": true,
+    "paths": {
+      "@engine/*": ["./src/*"],
+      "@hexrace/commons": ["../commons/src/index.ts"],
+      "@commons/*": ["../commons/src/*"]
+    }
+  },
+  "include": ["src", "test-setup.ts", "vitest.config.ts"]
+}

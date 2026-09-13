@@ -31,8 +31,8 @@ const PLANNED: readonly Showcase[] = [
   {
     module: 'engine',
     path: 'lab/engine',
-    summary: 'A ground, a falling box, the frame counter.',
-    ready: false,
+    summary: 'A ground, falling crates, the frame counter and the wasm start-up time.',
+    ready: true,
   },
   {
     module: 'camera',

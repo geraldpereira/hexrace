@@ -5,7 +5,7 @@ DEPCRUISE := npx depcruise src --config $(CURDIR)/.dependency-cruiser.js --ts-co
 TYPE_COVERAGE := npx type-coverage --at-least 100 --project
 
 # Chaque projet qui a son tsconfig. Un package ajouté se déclare ici et dans eslint.config.js.
-PROJECTS := packages/commons packages/inputs packages/hud $(WEB)
+PROJECTS := packages/commons packages/inputs packages/engine packages/hud $(WEB)
 ONLY ?= $(PROJECTS)
 FILES ?= .
 

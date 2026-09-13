@@ -75,20 +75,20 @@ Les packages sont ceux de la spec technique 2.1, plus deux que la spec sous-ente
 Component, et les deux services qui enveloppent three.js et Jolt). À acter dans la spec au moment du
 squelette.
 
-| Ordre | Module                 | Ce qu'il possède                                                      | Sa vitrine                                                                       |
-|-------|------------------------|-----------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| 0     | squelette              | workspace, app, Makefile, qualité, route `lab/`                       | page d'accueil du lab qui liste les vitrines                                     |
-| 1     | `inputs`               | actions, sources manette / clavier / tactile, fusion, palonniers      | état des entrées en direct, palonniers sur mobile                                |
-| 2     | `hud/debug`            | lil-gui enveloppé, avec courbes, persistance, export et tracé du POC  | un panneau de démonstration : dossiers, curseurs, relevés, courbes               |
-| 2 bis | `hud/game`, `hud/commons`, `hud/dialog` | tous les composants de la spec 7.5 qui ne dépendent d'aucun module | `lab/hud` : une fausse course pilotée par le panneau debug                 |
-| 3     | `commons` + `engine`   | EventBus, boucle à pas fixe, scènes, GameObject, rendu three, Jolt    | une scène vide avec un sol, une boîte qui tombe, le compteur d'images            |
-| 4     | `camera`               | la caméra de la spec 3.9, hauteur selon la vitesse, visée             | la caméra suit un mobile factice qu'on pilote au stick                           |
-| 5     | `tile`                 | `entity` du POC 2, `render` d'une tuile, `physics` de son collider    | une tuile dont on change chaque paramètre en direct, zones colorées              |
-| 6     | `track`                | format de fichier, validation, générateur, assemblage, fenêtre        | le POC 2 refait : charger ou générer, caméra libre, curseur joueur               |
-| 7     | `car`                  | `entity`, `render`, `physics` du POC 1, sons, traces, particules      | le POC 1 refait : la voiture sur un sol plat multi-surfaces                      |
-| 8     | `game-commons`         | machine à états d'une partie, compte à rebours, chrono, résultats     | la voiture sur une piste : le POC 3 que l'on n'a jamais fait, chrono au tour     |
-| 9     | `game/track`, `hud/menus` | mode Track, menus, branchement du HUD sur les vraies valeurs, sauvegarde | le MVP de la spec fonctionnelle 10.4, sous la route du jeu et non plus du lab    |
-| 10+   | `editor`, `rally`, ... | dans l'ordre d'envie de la spec fonctionnelle 10.5                    | une vitrine par module, même règle                                               |
+| Ordre | Module                                  | Ce qu'il possède                                                         | Sa vitrine                                                                    |
+| ----- | --------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| 0     | squelette                               | workspace, app, Makefile, qualité, route `lab/`                          | page d'accueil du lab qui liste les vitrines                                  |
+| 1     | `inputs`                                | actions, sources manette / clavier / tactile, fusion, palonniers         | état des entrées en direct, palonniers sur mobile                             |
+| 2     | `hud/debug`                             | lil-gui enveloppé, avec courbes, persistance, export et tracé du POC     | un panneau de démonstration : dossiers, curseurs, relevés, courbes            |
+| 2 bis | `hud/game`, `hud/commons`, `hud/dialog` | tous les composants de la spec 7.5 qui ne dépendent d'aucun module       | `lab/hud` : une fausse course pilotée par le panneau debug                    |
+| 3     | `commons` + `engine`                    | EventBus, boucle à pas fixe, scènes, GameObject, rendu three, Jolt       | une scène vide avec un sol, une boîte qui tombe, le compteur d'images         |
+| 4     | `camera`                                | la caméra de la spec 3.9, hauteur selon la vitesse, visée                | la caméra suit un mobile factice qu'on pilote au stick                        |
+| 5     | `tile`                                  | `entity` du POC 2, `render` d'une tuile, `physics` de son collider       | une tuile dont on change chaque paramètre en direct, zones colorées           |
+| 6     | `track`                                 | format de fichier, validation, générateur, assemblage, fenêtre           | le POC 2 refait : charger ou générer, caméra libre, curseur joueur            |
+| 7     | `car`                                   | `entity`, `render`, `physics` du POC 1, sons, traces, particules         | le POC 1 refait : la voiture sur un sol plat multi-surfaces                   |
+| 8     | `game-commons`                          | machine à états d'une partie, compte à rebours, chrono, résultats        | la voiture sur une piste : le POC 3 que l'on n'a jamais fait, chrono au tour  |
+| 9     | `game/track`, `hud/menus`               | mode Track, menus, branchement du HUD sur les vraies valeurs, sauvegarde | le MVP de la spec fonctionnelle 10.4, sous la route du jeu et non plus du lab |
+| 10+   | `editor`, `rally`, ...                  | dans l'ordre d'envie de la spec fonctionnelle 10.5                       | une vitrine par module, même règle                                            |
 
 Les fiches qui suivent détaillent chaque étape. Elles sont écrites avant de coder et complétées
 après : ce qui a été décidé en cours de route y va, puis passe dans la spec technique.
@@ -159,13 +159,13 @@ compris une courbe et un tracé en temps réel. La vitrine `inputs` migre ses tr
 première demande, caché, et le bascule avec la touche `\``. `register(title, build, destroyRef)`
 construit un dossier, restaure ses valeurs depuis le stockage local (`DebugStore`, une clé par
 dossier, relevés et boutons exclus), les sauve à chaque changement, lui ajoute un « Reset folder »
-et le détruit avec son propriétaire. La racine porte le dossier Performance (`PerfMeter` : fps,
+et le détruit avec son propriétaire. La racine porte le dossier Performance (`PerfMeter`: fps,
 durée d'image, durée du pas physique que le moteur renseignera, tracé des fps, case pour le coin
-d'écran `PerfCorner`), « Copy values as JSON » (valeurs courantes contre valeurs initiales) et
-« Reset all ». Les ajouts du POC sont portés : `addCurveEditor` (découpé en mise en page, peinture et
-DOM pour tenir dans les tailles de fichier) et le nouveau `addPlot`, tracé glissant qui s'échantillonne
-lui-même et s'arrête quand son canvas quitte la page. `startFrameLoop` vit ici et sert à toutes les
-vitrines. La vitrine `inputs` a migré ses réglages dans un dossier Inputs. Vérifié dans Chrome :
+d'écran`PerfCorner`), « Copy values as JSON » (valeurs courantes contre valeurs initiales) et
+« Reset all ». Les ajouts du POC sont portés : `addCurveEditor`(découpé en mise en page, peinture et
+DOM pour tenir dans les tailles de fichier) et le nouveau`addPlot`, tracé glissant qui s'échantillonne
+lui-même et s'arrête quand son canvas quitte la page. `startFrameLoop`vit ici et sert à toutes les
+vitrines. La vitrine`inputs` a migré ses réglages dans un dossier Inputs. Vérifié dans Chrome :
 contrôles, courbe, tracés, persistance, reset, bascule clavier, coin fps, destruction du dossier au
 changement de page. Le dessin sur canvas se teste avec un faux contexte 2D (`canvas.mock.ts`).
 
@@ -222,6 +222,23 @@ temps de pas physique. C'est là qu'on mesure le poids du wasm et son temps de d
 rejouer et `fresh()` pour ce qui doit seulement avoir l'air aléatoire, sur le sfc32 du POC 2 ; et
 l'arithmétique partagée (`lerp`, `inverseLerp`, `ramp`, degrés, km/h). Pas de vitrine : rien à voir,
 la vitrine de l'étape est celle d'`engine`. Couverture et type-coverage à 100 %.
+
+**`engine` fait le 2026-09-13.** `GameLoop`, la boucle à accumulateur de rally-game (pas de 1/60 s,
+image plafonnée à 0,1 s, cinq pas au plus puis abandon du retard), qui expose `alpha`, `stepMs` et
+`frameMs` ; `Scenes.create()` fabrique une `Scene` avec son injecteur enfant (`createEnvironmentInjector`),
+dans lequel `instantiate` construit les composants pour que leurs `inject()` résolvent, et `destroy`
+emporte l'arbre et l'injecteur ; `GameObject` / `Component` sans paramètre de constructeur, les
+données par champs publics posés avant `add`. Deux services nommés pour ce qu'ils sont, sans
+interface ni jeton devant (décision du 2026-09-13) : `ThreeRenderer` (WebGL créé au premier rendu,
+canvas persistant, ratio de pixels plafonné à 2 ; les tests remplacent `WebGLRenderer` par `vi.mock`
+ou espionnent `render`) et `JoltPhysics` (wasm chargé à `load()`, deux couches, écouteur de contacts
+qui distribue `onCollisionEnter` ; les tests tournent sur le vrai Jolt). Quatre composants : `MeshComponent`, `BodyComponent` (interpole le
+maillage entre les deux derniers pas par `alpha`), `CameraComponent`, `LightComponent`. La vitrine
+`lab/engine` charge sa route paresseusement (three et le wasm restent hors du bundle initial :
+500 ko au départ, 4,5 Mo bruts pour le morceau engine),
+mesure le démarrage du wasm (`jolt-physics.wasm-compat`, 3,2 Mo en base64 dans le JS ; passer au
+`.wasm` séparé, 2 Mo, si le démarrage mobile le réclame) et fait tomber des caisses depuis le panneau.
+Le wasm se charge aussi sous Vitest, ce qui a décidé de l'absence de doublure.
 
 ### 2.4 `camera`
 

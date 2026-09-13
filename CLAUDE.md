@@ -1,20 +1,20 @@
 # HexRace - comment travailler dans ce dépôt
 
 Rally arcade sur tuiles hexagonales, dans le navigateur, manette et tactile. Ce fichier dit comment
-*coder* ici ; il ne raconte pas l'architecture et ne répète rien qu'un autre fichier dit déjà.
+_coder_ ici ; il ne raconte pas l'architecture et ne répète rien qu'un autre fichier dit déjà.
 
 ## Où regarder
 
-| Question | Où c'est répondu |
-| --- | --- |
-| Qu'est-ce que le jeu, pour le joueur ? | `docs/specs-fonctionnelles.md` |
-| Comment est-il construit, qui possède quoi ? | `docs/specs-techniques.md` |
-| Dans quel ordre, et quand un module est-il fini ? | `docs/plan-de-construction.md` |
-| Qu'est-ce que je peux lancer ? | `make`, qui liste chaque cible avec sa phrase |
-| À quoi sert ce module, que refuse-t-il ? | son `index.ts`, en cinq lignes |
-| Qui a le droit de lire qui ? | `.dependency-cruiser.js`, une règle par ligne avec son argument |
-| Quelles règles de lint, et pourquoi ? | `eslint.config.js`, et `quality/` pour la règle maison |
-| Seuils de couverture, plafond de duplication ? | 100 % partout : `packages/*/vitest.config.ts`, `angular.json` ; `.jscpd.json` |
+| Question                                          | Où c'est répondu                                                              |
+| ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Qu'est-ce que le jeu, pour le joueur ?            | `docs/specs-fonctionnelles.md`                                                |
+| Comment est-il construit, qui possède quoi ?      | `docs/specs-techniques.md`                                                    |
+| Dans quel ordre, et quand un module est-il fini ? | `docs/plan-de-construction.md`                                                |
+| Qu'est-ce que je peux lancer ?                    | `make`, qui liste chaque cible avec sa phrase                                 |
+| À quoi sert ce module, que refuse-t-il ?          | son `index.ts`, en cinq lignes                                                |
+| Qui a le droit de lire qui ?                      | `.dependency-cruiser.js`, une règle par ligne avec son argument               |
+| Quelles règles de lint, et pourquoi ?             | `eslint.config.js`, et `quality/` pour la règle maison                        |
+| Seuils de couverture, plafond de duplication ?    | 100 % partout : `packages/*/vitest.config.ts`, `angular.json` ; `.jscpd.json` |
 
 ## Commandes
 
@@ -30,7 +30,7 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
   constructeurs).
 - **Un module, une vitrine.** Un module n'est fini que quand sa page `lab/<module>` tourne. La liste
   est dans `apps/web/src/app/lab/showcases.ts` ; on y passe `ready: true` quand la route existe.
-- **Le mot est « tile », jamais « hex ».** En anglais, *hex* est aussi une malédiction.
+- **Le mot est « tile », jamais « hex ».** En anglais, _hex_ est aussi une malédiction.
 - **On se lit par son nom.** `@hexrace/<package>` pour un voisin, `@<package>/*` chez soi, `@ui/*` dans
   l'app. Jamais de chemin relatif : le lint refuse `./` et `../`.
 - **Anglais dans le code, les commentaires, les tests et ce que le joueur lit ; français dans les
@@ -53,6 +53,8 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 ```
 packages/commons/  @hexrace/commons - EventBus typé par augmentation, Random à graine, arithmétique.
 packages/inputs/   @hexrace/inputs - les entrées : actions, manette / clavier / tactile, fusion.
+packages/engine/   @hexrace/engine - boucle à pas fixe, scènes et injecteur enfant, GameObject,
+                                     ThreeRenderer et JoltPhysics, nommés pour ce qu'ils sont.
 packages/hud/      @hexrace/hud    - le seul package à composants : game/ (compte-tours, dégâts,
                                      chrono…), commons/ (cadre de canvas, cartes), dialog/, debug/
                                      (lil-gui). Testé par `ng test hud`, pas par Vitest seul.

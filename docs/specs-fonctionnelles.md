@@ -128,13 +128,13 @@ Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 
 Un obstacle est un **bloc** qui occupe **X unités de large** dans le modèle de données de la tuile, placé **le long du tracé de la piste**. Son modèle physique peut être plus petit que son emprise dans les données : une rambarde est plus étroite qu'un talus de neige, mais les deux réservent la même place.
 
-| Élément   | Où                                                              | Effet                                               |
-|-----------|-----------------------------------------------------------------|-----------------------------------------------------|
-| Barrière  | Sur l'unité qui borde la piste, optionnelle par côté            | Bloque, collision avec dégâts                       |
-| Rampe     | Sur la piste                                                    | Fait décoller                                       |
-| Dos d'âne | Sur la piste                                                    | Fait sauter légèrement, déstabilise à haute vitesse |
-| Hazard    | Sur la piste ou le bas-côté                                     | Obstacle à éviter, collision avec dégâts            |
-| Plaque    | Sur la piste                                                    | Zone d'un autre revêtement, change le grip, sans collision |
+| Élément   | Où                                                   | Effet                                                      |
+| --------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| Barrière  | Sur l'unité qui borde la piste, optionnelle par côté | Bloque, collision avec dégâts                              |
+| Rampe     | Sur la piste                                         | Fait décoller                                              |
+| Dos d'âne | Sur la piste                                         | Fait sauter légèrement, déstabilise à haute vitesse        |
+| Hazard    | Sur la piste ou le bas-côté                          | Obstacle à éviter, collision avec dégâts                   |
+| Plaque    | Sur la piste                                         | Zone d'un autre revêtement, change le grip, sans collision |
 
 Exemples de hazards : balle de foin, véhicule en panne, rocher, tas de troncs. Exemples de plaques : flaque de boue sur une piste en gravier, plaque de glace sur une piste en neige, gravillons sur une piste en asphalte. La plaque prend son revêtement dans la palette de l'environnement (voir 2.2), c'est un piège de grip là où on ne l'attend pas. L'environnement décide de l'apparence de chaque élément : une barrière est une rambarde en Europe, un talus de neige dans le Nord.
 
@@ -145,7 +145,7 @@ Exemples de hazards : balle de foin, véhicule en panne, rocher, tas de troncs. 
 
 Deux familles :
 
-- les **hazards**, objets rigides posés à une fraction et un décalage, orientés le long de la piste. Ils n'ont pas de nom dans les données mais une **taille** : *small* (1 × 1 unité), *medium* (2 unités le long, 1 en travers), *large* (2 × 2). L'environnement décide de l'aspect : une balle de foin, un rocher ou une épave sont trois habillages d'un même hazard ;
+- les **hazards**, objets rigides posés à une fraction et un décalage, orientés le long de la piste. Ils n'ont pas de nom dans les données mais une **taille** : _small_ (1 × 1 unité), _medium_ (2 unités le long, 1 en travers), _large_ (2 × 2). L'environnement décide de l'aspect : une balle de foin, un rocher ou une épave sont trois habillages d'un même hazard ;
 - les **objets suivis**, qui épousent la courbe de la piste entre deux fractions : la barrière (sur l'unité qui borde la piste du côté choisi, qu'il y ait un bas-côté ou non ; elle ne contraint pas le profil, ce qui garde les jonctions simples entre une tuile avec barrière et une sans), la rampe et le dos d'âne (toute la largeur de la piste), la plaque (un décalage, une largeur et un revêtement).
 
 Un obstacle doit tenir dans sa tuile. La longueur réelle d'un objet suivi se déduit de la fraction et de la longueur de l'axe : c'est l'éditeur ou le générateur qui fait la conversion, le fichier stocke la fraction.
@@ -226,28 +226,28 @@ Actions : accélérer, freiner / marche arrière, tourner, frein à main, reset 
 
 **Manette** (le mode de référence, analogique) :
 
-| Action                   | Commande        |
-|--------------------------|-----------------|
-| Accélérer                | Gâchette droite |
-| Freiner / marche arrière | Gâchette gauche |
-| Tourner                  | Stick droit     |
-| Frein à main             | A               |
-| Rapport supérieur / inférieur | R1 / L1    |
-| Reset                    | Y               |
-| Menus : naviguer         | Stick droit ou croix |
-| Menus : valider          | A               |
-| Menus : retour           | B               |
+| Action                        | Commande             |
+| ----------------------------- | -------------------- |
+| Accélérer                     | Gâchette droite      |
+| Freiner / marche arrière      | Gâchette gauche      |
+| Tourner                       | Stick droit          |
+| Frein à main                  | A                    |
+| Rapport supérieur / inférieur | R1 / L1              |
+| Reset                         | Y                    |
+| Menus : naviguer              | Stick droit ou croix |
+| Menus : valider               | A                    |
+| Menus : retour                | B                    |
 
 **Clavier** (PC, on accepte la perte de l'analogique) :
 
-| Action                      | Commande        |
-|-----------------------------|-----------------|
-| Accélérer, freiner, tourner | WASD ou flèches |
-| Frein à main                | Espace          |
-| Rapport supérieur / inférieur | E / Q         |
-| Reset                       | R               |
-| Menus : valider             | Entrée          |
-| Menus : retour              | Échap           |
+| Action                        | Commande        |
+| ----------------------------- | --------------- |
+| Accélérer, freiner, tourner   | WASD ou flèches |
+| Frein à main                  | Espace          |
+| Rapport supérieur / inférieur | E / Q           |
+| Reset                         | R               |
+| Menus : valider               | Entrée          |
+| Menus : retour                | Échap           |
 
 **Tactile** (mobile) :
 
@@ -292,7 +292,7 @@ Collisions contre les obstacles, les barrières et les paysages bloquants. Elles
 - **Dans la conduite** : l'élément abîmé dégrade le comportement.
 
 | Partie     | Effet quand elle est abîmée          |
-|------------|--------------------------------------|
+| ---------- | ------------------------------------ |
 | Moteur     | Perte de vitesse                     |
 | Suspension | Perte de stabilité                   |
 | Direction  | La voiture tire à gauche ou à droite |
@@ -479,18 +479,18 @@ suffisent ; seul ce qui est propre au jeu s'écrit.
 
 **Repris de Material, sans retouche.**
 
-| Composant | Où il sert |
-|---|---|
-| Boutons | partout ; un bouton primaire par écran, jamais plus |
-| Menu | choix de mode et d'environnement, actions secondaires |
-| Boîte de dialogue | résultats (4.5), confirmations (quitter une course, écraser une piste éditée) |
-| Snackbar | ce qui se dit en une ligne et disparaît seul : record battu, piste sauvegardée, manette branchée ou débranchée, source d'entrées qui change |
-| Onglets | garage (voiture, améliorations, réglages), options |
-| Cartes et listes | choix de piste, choix de voiture, pistes éditées |
-| Curseur | volume, réglages d'une option de garage (ABS, contrôle de traction, aileron) |
-| Interrupteur, liste déroulante | options ; activer une aide ; qualité graphique |
-| Barre de progression | chargement de la physique au premier lancement, chargement d'une piste |
-| Info-bulle | PC seulement, sur les caractéristiques et les prix du garage |
+| Composant                      | Où il sert                                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Boutons                        | partout ; un bouton primaire par écran, jamais plus                                                                                         |
+| Menu                           | choix de mode et d'environnement, actions secondaires                                                                                       |
+| Boîte de dialogue              | résultats (4.5), confirmations (quitter une course, écraser une piste éditée)                                                               |
+| Snackbar                       | ce qui se dit en une ligne et disparaît seul : record battu, piste sauvegardée, manette branchée ou débranchée, source d'entrées qui change |
+| Onglets                        | garage (voiture, améliorations, réglages), options                                                                                          |
+| Cartes et listes               | choix de piste, choix de voiture, pistes éditées                                                                                            |
+| Curseur                        | volume, réglages d'une option de garage (ABS, contrôle de traction, aileron)                                                                |
+| Interrupteur, liste déroulante | options ; activer une aide ; qualité graphique                                                                                              |
+| Barre de progression           | chargement de la physique au premier lancement, chargement d'une piste                                                                      |
+| Info-bulle                     | PC seulement, sur les caractéristiques et les prix du garage                                                                                |
 
 **Icônes (Material Symbols).** Étoile (record, favori), clé à molette (garage, réglages), manette,
 clavier, main (tactile), chrono, drapeau (départ, arrivée), avertissement (dégât, faux sens),
@@ -562,7 +562,7 @@ seule quand elle porte un sens que le joueur découvre.
 
 ### 8.1 Style visuel
 
-Low poly. Textures pixelisées ou flat shading, ou un rendu plus daté genre *Destruction Derby 2* sur PlayStation : polygones bruts, textures basses et tremblantes.
+Low poly. Textures pixelisées ou flat shading, ou un rendu plus daté genre _Destruction Derby 2_ sur PlayStation : polygones bruts, textures basses et tremblantes.
 
 **Le gameplay passe avant la beauté graphique.** Quel que soit le style retenu, il ne doit **jamais dégrader la lisibilité de la piste** : depuis la caméra de la spec (voir 3.9), à la vitesse de pointe, on doit distinguer la piste du bas-côté et du paysage, reconnaître le revêtement (voir 8.2), voir venir un obstacle, une plaque ou une rampe à temps pour réagir. Un post-traitement qui floute, tremble, assombrit ou noie la piste sous un effet est refusé, même s'il est beau. On juge un style d'abord à la lisibilité en course, sur mobile, ensuite à son cachet.
 
@@ -687,57 +687,57 @@ Par ordre d'envie :
 
 ### 11.1 Registre des décisions
 
-| Date       | Décision                                                                           | Raison                                                                      |
-|------------|------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| 2026-09-10 | TypeScript dans le navigateur, pas Godot                                           | Jouable sans installation, PC et mobile                                     |
-| 2026-09-10 | Trois piliers : fun, simple, court                                                 | Départager toute décision de conception                                     |
-| 2026-09-10 | Tuile définie par paramètres, jamais dessinée                                      | Assemblage garanti, génération procédurale possible                         |
-| 2026-09-10 | Unité = une largeur de voiture ; côté d'hexagone = 8 unités                        | Marge de bas-côté aux jonctions, au moins 1 unité de paysage de chaque côté |
-| 2026-09-10 | Côté plat vers l'avant                                                             | Une face devant, une derrière, cohérent avec une piste qui traverse         |
-| 2026-09-10 | Une piste est une liste ordonnée de tuiles, sans positions                         | Format simple, l'éditeur et le générateur travaillent pareil                |
-| 2026-09-10 | Changements de profil au milieu de la tuile                                        | Jonctions toujours identiques des deux côtés                                |
-| 2026-09-10 | Par environnement : 3 pistes, 3 bas-côtés, 2 paysages                              | Palette bornée, tuiles transposables                                        |
-| 2026-09-10 | Pas de checkpoint, pas de secteurs, pas de fantôme, pas de pause, pas de médailles | Parties courtes, écrans minimaux                                            |
-| 2026-09-10 | Dégâts visibles et pénalisants, remis à zéro à chaque course                       | Référence Wreckfest ; persistance réservée à une future Campagne            |
-| 2026-09-10 | Pas de contrôle en vol                                                             | Les sauts se préparent avant la rampe                                       |
-| 2026-09-10 | Caméra du dessus dont la hauteur suit la vitesse                                   | Voir plus loin quand on va vite                                             |
-| 2026-09-10 | Troisième mode nommé Collapse                                                      | Dit ce qui se passe, distinctif                                             |
-| 2026-09-10 | Score Collapse = temps tenu, pas nombre de tuiles                                  | Plus lisible pour le joueur                                                 |
-| 2026-09-10 | Pistes toutes ouvertes, progression par les voitures                               | Une seule dimension de progression                                          |
-| 2026-09-10 | Crédits illimités au départ                                                        | Calibrer en jouant                                                          |
-| 2026-09-10 | Pas de partage de pistes en v1                                                     | Stockage local seulement                                                    |
-| 2026-09-10 | MVP = 1 environnement, 1 voiture, 1 piste Track                                    | Le plus court chemin vers une partie complète                               |
-| 2026-09-10 | Anglais uniquement, texte minimaliste                                              | Un seul jeu de textes à maintenir                                           |
-| 2026-09-10 | Pas de musique                                                                     | Le son sert la conduite                                                     |
-| 2026-09-11 | Braquage dégressif avec la vitesse = caractéristique de la voiture                 | Différencier petite maniable et grosse stable sans toucher à la physique    |
-| 2026-09-11 | ABS et contrôle de traction = options achetables et réglables au garage            | Dépenser ses crédits ; coupées par défaut, la conduite brute prime          |
-| 2026-09-11 | Aileron = option garage à effet réel (appui aéro), pas seulement visuelle          | Une option qui se sent en conduite, pas un skin                             |
-| 2026-09-11 | Piste d'essai accessible depuis le garage, réglages modifiables en direct          | Sentir une option avant de sortir du garage                                 |
-| 2026-09-11 | Faces nommées par les heures d'horloge                                             | Se calculent comme des nombres, deux caractères                             |
-| 2026-09-11 | Voiture retournée : reste sur le toit jusqu'au reset manuel                        | Pas de magie ; le reset existe déjà                                         |
-| 2026-09-11 | Transmission (propulsion, traction, 4x4) = caractéristique de la voiture           | Trois caractères de conduite sans toucher à la physique                     |
-| 2026-09-11 | Plaques (boue, glace, gravillons) ajoutées aux obstacles                           | Un piège de grip, sans collision, dans la palette de l'environnement        |
-| 2026-09-11 | POC 2 = terrain seul ; POC 3 = voiture sur le terrain                              | Se concentrer sur la génération ; les surfaces sont réglées dans le POC 1   |
-| 2026-09-11 | Le gameplay passe avant la beauté graphique                                        | Aucun style ni post-traitement ne doit dégrader la lisibilité de la piste   |
-| 2026-09-11 | Obstacle posé par fraction de l'axe et décalage depuis le centre de la piste       | Indépendant de la longueur de la tuile, suit la piste quand elle se déplace |
-| 2026-09-11 | Hazards nommés par taille (small, medium, large), pas par aspect                   | L'aspect dépend de l'environnement, la taille du gameplay                   |
-| 2026-09-11 | La barrière se pose sur l'unité qui borde la piste, sans contrainte sur le bas-côté | Jonctions simples entre une tuile avec barrière et une sans                 |
-| 2026-09-11 | Aperçu des tuiles suivantes dans le HUD, carte complète toujours refusée           | Anticiper la piste ; réutilise la carte 2D du POC 2                         |
-| 2026-09-11 | Étendue de la transition dans une tuile = paramètre d'environnement                | Comme les grips ; toute la tuile lisse les courbes, à régler en roulant     |
-| 2026-09-11 | Surfaces nommées par rang dans la palette, ordonnées par adhérence, jamais par matière | Transposition entre environnements ; l'asphalte n'est qu'un habillage   |
-| 2026-09-11 | Marches acceptées dans le paysage entre tuiles voisines par le côté, jamais sur la piste ni les bas-côtés | Le modèle ne fixe la hauteur qu'aux faces d'entrée et de sortie ; c'est du relief |
-| 2026-09-11 | Hauteur le long de la piste = spline monotone par les faces, pente déduite des voisines       | Une montée régulière est une rampe, pas des paliers ; rien de plus dans le fichier |
-| 2026-09-12 | Recoupe = test d'occupation de la grille, pas une borne de virages serrés                     | Exact ; la borne devient un réglage de style du générateur                  |
-| 2026-09-12 | Pas de hauteur fixe de 20 cm, pente maximale par tuile 20 / 15 / 10 % selon la sortie, amplitude 200 m | Le relief se pense en mètres ; le bord intérieur d'un virage est plus raide que l'axe |
-| 2026-09-12 | Départ et arrivée à n'importe quelle altitude ; jupe visible sous chaque tuile même à 0        | Une piste peut descendre sous son départ ; le monde n'a pas de sol           |
-| 2026-09-12 | Tuiles de départ et d'arrivée jamais en épingle, ligne en damier au milieu                     | Une ligne lisible en travers de la piste                                    |
-| 2026-09-12 | Côté d'hexagone de 8 unités confirmé au POC 2                                                   | Le profil tient, les transitions restent lisibles, les virages ont des rayons jouables |
+| Date       | Décision                                                                                                  | Raison                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 2026-09-10 | TypeScript dans le navigateur, pas Godot                                                                  | Jouable sans installation, PC et mobile                                                |
+| 2026-09-10 | Trois piliers : fun, simple, court                                                                        | Départager toute décision de conception                                                |
+| 2026-09-10 | Tuile définie par paramètres, jamais dessinée                                                             | Assemblage garanti, génération procédurale possible                                    |
+| 2026-09-10 | Unité = une largeur de voiture ; côté d'hexagone = 8 unités                                               | Marge de bas-côté aux jonctions, au moins 1 unité de paysage de chaque côté            |
+| 2026-09-10 | Côté plat vers l'avant                                                                                    | Une face devant, une derrière, cohérent avec une piste qui traverse                    |
+| 2026-09-10 | Une piste est une liste ordonnée de tuiles, sans positions                                                | Format simple, l'éditeur et le générateur travaillent pareil                           |
+| 2026-09-10 | Changements de profil au milieu de la tuile                                                               | Jonctions toujours identiques des deux côtés                                           |
+| 2026-09-10 | Par environnement : 3 pistes, 3 bas-côtés, 2 paysages                                                     | Palette bornée, tuiles transposables                                                   |
+| 2026-09-10 | Pas de checkpoint, pas de secteurs, pas de fantôme, pas de pause, pas de médailles                        | Parties courtes, écrans minimaux                                                       |
+| 2026-09-10 | Dégâts visibles et pénalisants, remis à zéro à chaque course                                              | Référence Wreckfest ; persistance réservée à une future Campagne                       |
+| 2026-09-10 | Pas de contrôle en vol                                                                                    | Les sauts se préparent avant la rampe                                                  |
+| 2026-09-10 | Caméra du dessus dont la hauteur suit la vitesse                                                          | Voir plus loin quand on va vite                                                        |
+| 2026-09-10 | Troisième mode nommé Collapse                                                                             | Dit ce qui se passe, distinctif                                                        |
+| 2026-09-10 | Score Collapse = temps tenu, pas nombre de tuiles                                                         | Plus lisible pour le joueur                                                            |
+| 2026-09-10 | Pistes toutes ouvertes, progression par les voitures                                                      | Une seule dimension de progression                                                     |
+| 2026-09-10 | Crédits illimités au départ                                                                               | Calibrer en jouant                                                                     |
+| 2026-09-10 | Pas de partage de pistes en v1                                                                            | Stockage local seulement                                                               |
+| 2026-09-10 | MVP = 1 environnement, 1 voiture, 1 piste Track                                                           | Le plus court chemin vers une partie complète                                          |
+| 2026-09-10 | Anglais uniquement, texte minimaliste                                                                     | Un seul jeu de textes à maintenir                                                      |
+| 2026-09-10 | Pas de musique                                                                                            | Le son sert la conduite                                                                |
+| 2026-09-11 | Braquage dégressif avec la vitesse = caractéristique de la voiture                                        | Différencier petite maniable et grosse stable sans toucher à la physique               |
+| 2026-09-11 | ABS et contrôle de traction = options achetables et réglables au garage                                   | Dépenser ses crédits ; coupées par défaut, la conduite brute prime                     |
+| 2026-09-11 | Aileron = option garage à effet réel (appui aéro), pas seulement visuelle                                 | Une option qui se sent en conduite, pas un skin                                        |
+| 2026-09-11 | Piste d'essai accessible depuis le garage, réglages modifiables en direct                                 | Sentir une option avant de sortir du garage                                            |
+| 2026-09-11 | Faces nommées par les heures d'horloge                                                                    | Se calculent comme des nombres, deux caractères                                        |
+| 2026-09-11 | Voiture retournée : reste sur le toit jusqu'au reset manuel                                               | Pas de magie ; le reset existe déjà                                                    |
+| 2026-09-11 | Transmission (propulsion, traction, 4x4) = caractéristique de la voiture                                  | Trois caractères de conduite sans toucher à la physique                                |
+| 2026-09-11 | Plaques (boue, glace, gravillons) ajoutées aux obstacles                                                  | Un piège de grip, sans collision, dans la palette de l'environnement                   |
+| 2026-09-11 | POC 2 = terrain seul ; POC 3 = voiture sur le terrain                                                     | Se concentrer sur la génération ; les surfaces sont réglées dans le POC 1              |
+| 2026-09-11 | Le gameplay passe avant la beauté graphique                                                               | Aucun style ni post-traitement ne doit dégrader la lisibilité de la piste              |
+| 2026-09-11 | Obstacle posé par fraction de l'axe et décalage depuis le centre de la piste                              | Indépendant de la longueur de la tuile, suit la piste quand elle se déplace            |
+| 2026-09-11 | Hazards nommés par taille (small, medium, large), pas par aspect                                          | L'aspect dépend de l'environnement, la taille du gameplay                              |
+| 2026-09-11 | La barrière se pose sur l'unité qui borde la piste, sans contrainte sur le bas-côté                       | Jonctions simples entre une tuile avec barrière et une sans                            |
+| 2026-09-11 | Aperçu des tuiles suivantes dans le HUD, carte complète toujours refusée                                  | Anticiper la piste ; réutilise la carte 2D du POC 2                                    |
+| 2026-09-11 | Étendue de la transition dans une tuile = paramètre d'environnement                                       | Comme les grips ; toute la tuile lisse les courbes, à régler en roulant                |
+| 2026-09-11 | Surfaces nommées par rang dans la palette, ordonnées par adhérence, jamais par matière                    | Transposition entre environnements ; l'asphalte n'est qu'un habillage                  |
+| 2026-09-11 | Marches acceptées dans le paysage entre tuiles voisines par le côté, jamais sur la piste ni les bas-côtés | Le modèle ne fixe la hauteur qu'aux faces d'entrée et de sortie ; c'est du relief      |
+| 2026-09-11 | Hauteur le long de la piste = spline monotone par les faces, pente déduite des voisines                   | Une montée régulière est une rampe, pas des paliers ; rien de plus dans le fichier     |
+| 2026-09-12 | Recoupe = test d'occupation de la grille, pas une borne de virages serrés                                 | Exact ; la borne devient un réglage de style du générateur                             |
+| 2026-09-12 | Pas de hauteur fixe de 20 cm, pente maximale par tuile 20 / 15 / 10 % selon la sortie, amplitude 200 m    | Le relief se pense en mètres ; le bord intérieur d'un virage est plus raide que l'axe  |
+| 2026-09-12 | Départ et arrivée à n'importe quelle altitude ; jupe visible sous chaque tuile même à 0                   | Une piste peut descendre sous son départ ; le monde n'a pas de sol                     |
+| 2026-09-12 | Tuiles de départ et d'arrivée jamais en épingle, ligne en damier au milieu                                | Une ligne lisible en travers de la piste                                               |
+| 2026-09-12 | Côté d'hexagone de 8 unités confirmé au POC 2                                                             | Le profil tient, les transitions restent lisibles, les virages ont des rayons jouables |
 
 ### 11.2 Questions ouvertes
 
-| Réf. | Question                                                                                                                                                                                                                                                                                                                                    |
-|------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 8.1  | Flat shading, textures pixelisées avec post-traitement ou rendu à la PlayStation, à tester dans le POC 1 ; la lisibilité de la piste tranche                                                                                                                                                                                                 |
+| Réf. | Question                                                                                                                                     |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 8.1  | Flat shading, textures pixelisées avec post-traitement ou rendu à la PlayStation, à tester dans le POC 1 ; la lisibilité de la piste tranche |
 
 ---
 

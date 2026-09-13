@@ -9,6 +9,8 @@
     "paths": {
       "@hexrace/commons": ["../../packages/commons/src/index.ts"],
       "@commons/*": ["../../packages/commons/src/*"],
+      "@hexrace/engine": ["../../packages/engine/src/index.ts"],
+      "@engine/*": ["../../packages/engine/src/*"],
       "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
       "@inputs/*": ["../../packages/inputs/src/*"],
       "@hexrace/hud": ["../../packages/hud/src/index.ts"],
