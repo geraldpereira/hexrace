@@ -24,9 +24,8 @@ const FLASH: Keyframe[] = [{ color: '#ffaa00', transform: 'scale(1.25)' }, {}];
   `,
   styles: `
     :host {
-      display: inline-flex;
-      align-items: flex-start;
-      gap: 0.2rem;
+      position: relative;
+      display: inline-block;
       font-variant-numeric: tabular-nums;
     }
     .gear {
@@ -37,9 +36,11 @@ const FLASH: Keyframe[] = [{ color: '#ffaa00', transform: 'scale(1.25)' }, {}];
       text-align: center;
     }
     .hint {
+      position: absolute;
+      top: 0.2rem;
+      right: -0.6rem;
       width: 0.5rem;
       height: 0.5rem;
-      margin-top: 0.3rem;
       border-radius: 50%;
       background: #ffaa00;
     }

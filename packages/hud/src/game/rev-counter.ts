@@ -87,7 +87,7 @@ export class RevCounter {
     if (to <= from) return '';
     const a0 = ((START_DEG + from * SWEEP_DEG) * Math.PI) / 180;
     const a1 = ((START_DEG + to * SWEEP_DEG) * Math.PI) / 180;
-    const large = to - from > 0.5 ? 1 : 0;
+    const large = (to - from) * SWEEP_DEG > 180 ? 1 : 0;
     const p = (a: number): string =>
       `${(RADIUS * Math.sin(a)).toFixed(2)} ${(-RADIUS * Math.cos(a)).toFixed(2)}`;
     return `M ${p(a0)} A ${String(RADIUS)} ${String(RADIUS)} 0 ${String(large)} 1 ${p(a1)}`;

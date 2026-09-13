@@ -76,6 +76,8 @@ describe('game components', () => {
     expect(instance.arc(0, 0)).toBe('');
     expect(instance.arc(0, 1)).toMatch(/^M .* A 44 44 0 1 1 .*$/);
     expect(instance.arc(0, 0.25)).toMatch(/ 0 0 1 /);
+    expect(instance.arc(0, 0.6)).toMatch(/ 0 0 1 /);
+    expect(instance.arc(0, 0.7)).toMatch(/ 0 1 1 /);
     await set('rpm', 3800);
     await set('limiter', true);
     const svg = host.querySelector('svg')!;
