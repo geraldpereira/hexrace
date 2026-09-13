@@ -6,11 +6,16 @@ import { PerfMeter } from '@hud/debug/perf-meter';
 
 describe('DebugPanel', () => {
   let panel: DebugPanel;
+  let frames: FrameRequestCallback[];
 
   beforeEach(() => {
     localStorage.clear();
     document.body.replaceChildren();
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+    frames = [];
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      frames.push(cb);
+      return frames.length;
+    });
     TestBed.configureTestingModule({});
     panel = TestBed.inject(DebugPanel);
   });
@@ -86,6 +91,9 @@ describe('DebugPanel', () => {
     const perf = root.folders.find((f) => f._title === 'Performance')!;
     controller(perf, 'Corner overlay')?.setValue(true);
     expect(TestBed.inject(PerfMeter).cornerVisible()).toBe(true);
+    TestBed.inject(PerfMeter).fps = 42;
+    [...frames].forEach((cb) => cb(16));
+    expect(perf.$children.querySelector('canvas')).not.toBeNull();
 
     (controller(root, 'Copy values as JSON')?.getValue() as () => void)();
     expect(write).toHaveBeenCalledWith(expect.stringContaining('"current": 0.9'));

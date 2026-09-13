@@ -41,9 +41,9 @@ export class CurveEditor {
   private readonly onChange: (points: readonly CurvePoint[]) => void;
   private readonly title: string;
   private points: CurvePoint[];
-  private dragging: number | null = null;
-  private hover: number | null = null;
-  private overlay: { root: HTMLDivElement; onKey: (e: KeyboardEvent) => void } | null = null;
+  private dragging: CurvePoint | null = null;
+  private hover: CurvePoint | null = null;
+  private overlay: (() => void) | null = null;
 
   // eslint-disable-next-line no-restricted-syntax -- a DOM widget built from its options, not a service: there is nothing to inject.
   constructor(private readonly opts: CurveEditorOptions) {
@@ -123,35 +123,34 @@ export class CurveEditor {
     close.textContent = 'close';
     close.style.cssText =
       'font-size:12px;padding:4px 14px;background:#2c2c2c;color:#ddd;border:1px solid #444;cursor:pointer;';
-    close.addEventListener('click', () => this.closeOverlay());
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') closeOverlay();
+    };
+    const closeOverlay = (): void => {
+      root.remove();
+      window.removeEventListener('keydown', onKey);
+      this.overlay = null;
+    };
+    close.addEventListener('click', closeOverlay);
     footer.appendChild(close);
     panel.appendChild(footer);
     root.appendChild(panel);
     document.body.appendChild(root);
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') this.closeOverlay();
-    };
     window.addEventListener('keydown', onKey);
     root.addEventListener('click', (e) => {
-      if (e.target === root) this.closeOverlay();
+      if (e.target === root) closeOverlay();
     });
-    this.overlay = { root, onKey };
+    this.overlay = closeOverlay;
   }
 
-  private closeOverlay(): void {
-    if (!this.overlay) return;
-    this.overlay.root.remove();
-    window.removeEventListener('keydown', this.overlay.onKey);
-    this.overlay = null;
-  }
-
-  private pickPoint(px: number, py: number): number | null {
-    const index = this.points.findIndex((p) => {
-      const dx = this.layout.xToPx(p.x) - px;
-      const dy = this.layout.yToPx(p.y) - py;
-      return dx * dx + dy * dy <= HIT_RADIUS * HIT_RADIUS;
-    });
-    return index === -1 ? null : index;
+  private pickPoint(px: number, py: number): CurvePoint | null {
+    return (
+      this.points.find((p) => {
+        const dx = this.layout.xToPx(p.x) - px;
+        const dy = this.layout.yToPx(p.y) - py;
+        return dx * dx + dy * dy <= HIT_RADIUS * HIT_RADIUS;
+      }) ?? null
+    );
   }
 
   private local(e: MouseEvent): { x: number; y: number } {
@@ -161,13 +160,13 @@ export class CurveEditor {
 
   private readonly onPointerDown = (e: PointerEvent): void => {
     const { x, y } = this.local(e);
-    const index = this.pickPoint(x, y);
-    if (index === null) return;
+    const point = this.pickPoint(x, y);
+    if (point === null) return;
     if (e.shiftKey || e.button === 2) {
-      if (this.points.length > 2) this.commit(this.points.filter((_, i) => i !== index));
+      if (this.points.length > 2) this.commit(this.points.filter((p) => p !== point));
       return;
     }
-    this.dragging = index;
+    this.dragging = point;
     this.canvas.setPointerCapture(e.pointerId);
   };
 
@@ -182,10 +181,10 @@ export class CurveEditor {
       return;
     }
     const target = this.layout.pxToData(x, y);
-    const point = this.points[this.dragging];
-    if (!point) return;
-    const minX = this.points[this.dragging - 1]?.x ?? this.layout.xMin;
-    const maxX = this.points[this.dragging + 1]?.x ?? this.layout.xMax;
+    const point = this.dragging;
+    const index = this.points.indexOf(point);
+    const minX = this.points[index - 1]?.x ?? this.layout.xMin;
+    const maxX = this.points[index + 1]?.x ?? this.layout.xMax;
     point.x = Math.max(minX, Math.min(maxX, target.x));
     point.y = target.y;
     this.commit(this.points);
@@ -210,7 +209,9 @@ export class CurveEditor {
   };
 
   private draw(): void {
-    if (this.ctx) paintCurve(this.ctx, this.layout, this.points, this.dragging ?? this.hover);
+    if (!this.ctx) return;
+    const lit = this.dragging ?? this.hover;
+    paintCurve(this.ctx, this.layout, this.points, lit ? this.points.indexOf(lit) : null);
   }
 }
 

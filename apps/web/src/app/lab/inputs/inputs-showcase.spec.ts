@@ -83,5 +83,11 @@ describe('InputsShowcase', () => {
     expect(panel.textContent).toContain('Keyboard smoothing (s)');
     expect(panel.textContent).toContain('Paddle travel (px)');
     expect(TestBed.inject(GamepadSource).stickDeadzone).toBe(0.15);
+    const rows = [...panel.querySelectorAll('.lil-controller')];
+    const paddles = rows.find(
+      (r) => r.querySelector('.lil-name')?.textContent === 'Show touch paddles',
+    )!;
+    paddles.querySelector('input')!.click();
+    expect(TestBed.inject(TouchSource).acceptMouse).toBe(true);
   });
 });

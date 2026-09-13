@@ -6,7 +6,7 @@
  */
 export { type GUI as DebugFolder } from 'lil-gui';
 
-export { CanvasFrame } from '@hud/commons/canvas-frame';
+export { CanvasFrame, type FrameSize } from '@hud/commons/canvas-frame';
 export { CarCard, type CarSummary } from '@hud/commons/car-card';
 export { Credits } from '@hud/commons/credits';
 export { formatTime } from '@hud/commons/format-time';

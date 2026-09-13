@@ -39,7 +39,7 @@ export interface TimerReadout {
           }
         </ol>
       }
-      @case ('collapse') {
+      @default {
         <div class="line"><span>held</span></div>
       }
     }

@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { clamp } from 'lodash-es';
 
 import { InputActions } from '@inputs/entity/input-actions';
-import { INPUT_SOURCES, type InputSourceId } from '@inputs/entity/input-source';
+import { INPUT_SOURCES, type InputSource, type InputSourceId } from '@inputs/entity/input-source';
 
 /**
  * The sources merged into the one snapshot the game reads at the start of each step. Analogue
@@ -15,7 +15,8 @@ export class Inputs {
   readonly actions = new InputActions();
   activeSource: InputSourceId | null = null;
 
-  private readonly sources = inject(INPUT_SOURCES, { optional: true }) ?? [];
+  private readonly sources: readonly InputSource[] =
+    inject(INPUT_SOURCES, { optional: true }) ?? [];
 
   poll(dt: number): void {
     const a = this.actions;

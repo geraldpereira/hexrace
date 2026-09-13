@@ -18,8 +18,14 @@ describe('HudShowcase', () => {
     vi.stubGlobal(
       'ResizeObserver',
       class {
+        constructor(private readonly cb: ResizeObserverCallback) {}
         observe(): void {
-          // Nothing is laid out in jsdom.
+          queueMicrotask(() => {
+            this.cb(
+              [{ contentRect: { width: 320, height: 180 } } as ResizeObserverEntry],
+              this as unknown as ResizeObserver,
+            );
+          });
         }
         disconnect(): void {
           // Nothing to disconnect.
@@ -73,10 +79,12 @@ describe('HudShowcase', () => {
 
   it('follows the fake race every frame, timer running, and paints the fake canvas', async () => {
     const { page } = await render();
+    [...frames].forEach((cb) => cb(500));
     const fill = vi.fn();
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
       fillRect: fill,
     } as unknown as CanvasRenderingContext2D);
+    page.race.absOwned = false;
     page.race.rpm = 3000;
     page.race.gear = 4;
     page.race.kmh = 120;
@@ -87,8 +95,10 @@ describe('HudShowcase', () => {
     expect(page.gear()).toBe(4);
     expect(page.kmh()).toBe(120);
     expect(page.timer().currentMs).toBeGreaterThan(400);
-    expect(page.assists()).toEqual({ abs: false, tractionControl: false });
+    expect(page.assists()).toEqual({ abs: null, tractionControl: false });
     expect(fill).toHaveBeenCalled();
+    expect(page.canvas.width).toBe(320);
+    expect(page.canvas.height).toBe(180);
     page.race.running = false;
     const held = page.timer().currentMs;
     [...frames].forEach((cb) => cb(2000));
@@ -103,6 +113,12 @@ describe('HudShowcase', () => {
     expect(page.hit()).toBe('engine');
     panelButton('Hit!').click();
     expect(page.damage().engine).toBe(50);
+    const rows = [...document.querySelectorAll('.lil-controller')];
+    const gearbox = rows.find((r) => r.querySelector('.lil-name')?.textContent === 'gearbox')!;
+    const input = gearbox.querySelector('input')!;
+    input.value = '40';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(page.damage().gearbox).toBe(40);
   });
 
   it('runs the countdown from the folder', async () => {

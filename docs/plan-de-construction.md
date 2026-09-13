@@ -50,9 +50,10 @@ On change ce qui découle de la DI partout et de la 3D :
   complexité, `prefer-on-push`) et on décide règle par règle au moment du squelette. La règle sur
   les commentaires (`comment-ration`) est reprise telle quelle : un commentaire est rationné par ce
   qu'il documente.
-- **La couverture n'est pas 100 % partout.** Les sous-modules `entity` visent 100 %. Les sous-modules
-  `physics` et `render` s'écrivent pour être testés à travers leurs jetons (physique factice, rendu
-  factice), et leur seuil est fixé par package à ce qui se teste honnêtement sans navigateur.
+- **La couverture est à 100 % partout** (relevé le 2026-09-13, après un premier temps à seuils par
+  package). Les sous-modules `physics` et `render` s'écriront pour être testés à travers leurs
+  jetons (physique factice, rendu factice) et de faux contextes, comme le dessin du HUD l'est déjà ;
+  ce qui ne se teste pas sans navigateur se met derrière une interface qui, elle, se teste.
 - **La pureté est une propriété d'un sous-module, pas d'un package** : `entity` ne lit ni Jolt ni
   three.js, et c'est dependency-cruiser qui le tient. Un package entier n'est jamais « pur » au sens
   de hexact, il a Angular.
@@ -107,6 +108,9 @@ préfixe `hr`, et une règle propre à HexRace qui refuse tout paramètre de con
 100 % sur les packages tant qu'ils n'ont que de l'`entity`, 90 % sur l'application ; les seuils de
 `physics` et `render` se fixeront quand ils existeront. Angular Material : plus tard, avec les menus.
 Le rétrécissement de `make check` au diff, comme dans hexact, viendra quand la durée le justifiera.
+Ajoutés le 2026-09-13 : la porte `quality-types` (type-coverage à 100 %, aucun `any` même implicite)
+et la règle `directory-size` de hexact (avertissement au-delà de 20 fichiers par dossier, erreur
+au-delà de 30) ; couverture de tests à 100 % sur les trois projets.
 
 ### 2.1 `inputs`
 

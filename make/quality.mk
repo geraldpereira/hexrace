@@ -1,14 +1,15 @@
-.PHONY: check quality quality-typecheck quality-lint quality-lint-fix quality-layers \
+.PHONY: check quality quality-typecheck quality-lint quality-lint-fix quality-layers quality-types \
         quality-duplication quality-unused format
 
 DEPCRUISE := npx depcruise src --config $(CURDIR)/.dependency-cruiser.js --ts-config
+TYPE_COVERAGE := npx type-coverage --at-least 100 --project
 
 # Chaque projet qui a son tsconfig. Un package ajouté se déclare ici et dans eslint.config.js.
 PROJECTS := packages/inputs packages/hud $(WEB)
 ONLY ?= $(PROJECTS)
 FILES ?= .
 
-GATES := quality-typecheck quality-lint quality-layers quality-duplication quality-unused
+GATES := quality-typecheck quality-lint quality-layers quality-types quality-duplication quality-unused
 
 # Le quotidien : toutes les portes puis toutes les suites. Le rétrécissement au diff, comme dans
 # hexact, viendra quand la durée le justifiera.
@@ -36,6 +37,15 @@ quality-layers: ## Échoue si un module lit ce qu'il ne doit pas, ou si un cycle
 		echo "==> $$project"; \
 		( cd $$project && $(MAKE) -C $(CURDIR) _run-via-use-nvm \
 			CMD="cd $$project && $(DEPCRUISE) $$( [ -f tsconfig.app.json ] && echo tsconfig.app.json || echo tsconfig.json )" ) \
+			|| exit 1; \
+	done
+
+# Un `any`, même implicite, est une porte que le compilateur ne garde plus : aucun n'est accepté.
+quality-types: ## Échoue si un seul emplacement de ONLY est typé any
+	@for project in $(ONLY); do \
+		echo "==> $$project"; \
+		$(MAKE) _run-via-use-nvm \
+			CMD="$(TYPE_COVERAGE) $$project/$$( [ -f $$project/tsconfig.app.json ] && echo tsconfig.app.json || echo tsconfig.json )" \
 			|| exit 1; \
 	done
 

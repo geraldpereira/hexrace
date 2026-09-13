@@ -9,6 +9,7 @@ import {
   KeyboardSource,
   TouchSource,
   type InputActions,
+  type InputSource,
 } from '@hexrace/inputs';
 
 import { DebugPanel, TouchPaddles, startFrameLoop, type DebugFolder } from '@hexrace/hud';
@@ -72,7 +73,7 @@ export class InputsShowcase {
   private last = performance.now();
 
   constructor() {
-    this.panel.register('Inputs', (f) => this.buildFolder(f), inject(DestroyRef));
+    this.panel.register('Inputs', (f: DebugFolder) => this.buildFolder(f), inject(DestroyRef));
     this.panel.show();
     startFrameLoop(this.tick);
   }
@@ -98,8 +99,8 @@ export class InputsShowcase {
   }
 
   private prefersTouch(): boolean {
-    const view = this.document.defaultView;
-    return view?.matchMedia?.('(pointer: coarse)').matches ?? false;
+    const view = this.document.defaultView as Window;
+    return view.matchMedia('(pointer: coarse)').matches;
   }
 
   private readonly tick = (now: number): void => {
@@ -111,10 +112,10 @@ export class InputsShowcase {
         name,
         signed: SIGNED.has(name),
         merged: this.inputs.actions[name],
-        perSource: this.sources.map((s) => s.actions[name]),
+        perSource: this.sources.map((s: InputSource) => s.actions[name]),
       })),
     );
-    this.connected.set(this.sources.map((s) => s.connected));
+    this.connected.set(this.sources.map((s: InputSource) => s.connected));
     this.activeSource.set(this.inputs.activeSource ?? 'none');
   };
 }

@@ -99,12 +99,17 @@ describe('commons components', () => {
       bindings: [inputBinding('canvas', source)],
     });
     await fixture.whenStable();
-    expect((fixture.nativeElement as HTMLElement).querySelector('.host > canvas')).toBe(canvas);
+    expect((fixture.nativeElement as HTMLElement).firstElementChild).toBe(canvas);
+    const emitted: unknown[] = [];
+    fixture.componentInstance.resized.subscribe((s) => emitted.push(s));
     observers[0]?.(
       [{ contentRect: { width: 320.4, height: 180 } } as ResizeObserverEntry],
       {} as ResizeObserver,
     );
     expect(fixture.componentInstance.size()).toEqual({ width: 320, height: 180 });
+    observers[0]?.([], {} as ResizeObserver);
+    expect(fixture.componentInstance.size()).toEqual({ width: 320, height: 180 });
+    expect(emitted).toEqual([{ width: 320, height: 180 }]);
     fixture.destroy();
   });
 });

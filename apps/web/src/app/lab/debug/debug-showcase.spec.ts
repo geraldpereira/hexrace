@@ -65,6 +65,10 @@ describe('DebugShowcase', () => {
     }
     frames.forEach((cb) => cb(250));
     expect(fixture.componentInstance.wave()).not.toBe('0.00');
+    const curve = panel.querySelectorAll<HTMLCanvasElement>('canvas')[1]!;
+    curve.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
+    curve.dispatchEvent(new MouseEvent('dblclick', { clientX: 60, clientY: 60, bubbles: true }));
+    expect(fixture.componentInstance.subject.curve.length).toBe(4);
     fixture.destroy();
     expect(panel.textContent).not.toContain('Speed (rpm)');
   });

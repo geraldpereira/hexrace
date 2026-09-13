@@ -1,23 +1,24 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  type ElementRef,
+  ElementRef,
+  afterRenderEffect,
   computed,
-  effect,
+  inject,
   input,
-  viewChild,
 } from '@angular/core';
 
 const FLASH: Keyframe[] = [{ color: '#ffaa00', transform: 'scale(1.25)' }, {}];
 
 /**
  * The gear, big: R, N or 1 to 9, with a flash on every change and a dot when the manual box would
- * like a shift up. The flash is a Web Animation replayed from an effect, so the element stays.
+ * like a shift up. The flash is a Web Animation replayed from an effect run after render, so the
+ * element stays and exists when the effect looks for it.
  */
 @Component({
   selector: 'hr-gear-indicator',
   template: `
-    <span #gear class="gear">{{ text() }}</span>
+    <span class="gear">{{ text() }}</span>
     @if (shiftHint()) {
       <span class="hint" aria-label="Shift up"></span>
     }
@@ -53,12 +54,13 @@ export class GearIndicator {
   readonly shiftHint = input(false);
   readonly text = computed(() => gearText(this.gear()));
 
-  private readonly element = viewChild.required<ElementRef<HTMLElement>>('gear');
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
-    effect(() => {
+    afterRenderEffect(() => {
       this.gear();
-      this.element().nativeElement.animate?.(FLASH, { duration: 250, easing: 'ease-out' });
+      const gear = this.element.nativeElement.querySelector('.gear');
+      gear?.animate?.(FLASH, { duration: 250, easing: 'ease-out' });
     });
   }
 }

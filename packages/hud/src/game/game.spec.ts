@@ -127,6 +127,9 @@ describe('game components', () => {
     expect(host.querySelector('.best')?.textContent).toBe('best 1:11.234');
     expect(host.querySelector('.delta')?.textContent).toBe('+1.500');
     expect(host.querySelector('.delta')?.classList.contains('behind')).toBe(true);
+    await set('readout', { ...TIMER, deltaMs: -800 });
+    expect(host.querySelector('.delta')?.textContent).toBe('-0.800');
+    expect(host.querySelector('.delta')?.classList.contains('behind')).toBe(false);
     await set('readout', { ...TIMER, bestMs: null, deltaMs: null });
     expect(host.querySelector('.best')?.textContent).toBe('best --');
     expect(host.querySelector('.delta')).toBeNull();
@@ -172,5 +175,7 @@ describe('game components', () => {
     expect(host.querySelector('.lamp')?.classList.contains('on')).toBe(false);
     await set('assists', { abs: true, tractionControl: true });
     expect(host.querySelectorAll('.lamp.on').length).toBe(2);
+    await set('assists', { abs: null, tractionControl: null });
+    expect(host.querySelectorAll('.lamp').length).toBe(0);
   });
 });

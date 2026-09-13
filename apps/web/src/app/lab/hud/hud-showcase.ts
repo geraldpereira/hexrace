@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
@@ -33,6 +26,7 @@ import {
   type DamagePart,
   type DamageReadout,
   type DebugFolder,
+  type FrameSize,
   type RaceMode,
   type TimerReadout,
   type TrackSummary,
@@ -136,15 +130,20 @@ export class HudShowcase {
     transmission: 'FWD',
   };
 
-  private readonly frame = viewChild(CanvasFrame);
+  private frameSize: FrameSize = { width: 0, height: 0 };
   private readonly panel = inject(DebugPanel);
   private readonly results = inject(ResultsDialogs);
   private last = 0;
 
   constructor() {
-    this.panel.register('HUD', (f) => this.buildFolder(f), inject(DestroyRef));
+    this.panel.register('HUD', (f: DebugFolder) => this.buildFolder(f), inject(DestroyRef));
     this.panel.show();
-    startFrameLoop((now) => this.tick(now));
+    startFrameLoop((now: number) => this.tick(now));
+  }
+
+  /** The frame tells us its box; the canvas takes that resolution before the next paint. */
+  onResized(size: FrameSize): void {
+    this.frameSize = size;
   }
 
   private tick(now: number): void {
@@ -177,9 +176,8 @@ export class HudShowcase {
   }
 
   private paintFakeCanvas(now: number): void {
-    const size = this.frame()?.size();
+    const size = this.frameSize;
     if (
-      size &&
       size.width > 0 &&
       (this.canvas.width !== size.width || this.canvas.height !== size.height)
     ) {

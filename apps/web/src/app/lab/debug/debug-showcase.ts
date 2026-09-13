@@ -43,12 +43,10 @@ export class DemoSubject {
     if (!first || !last) return 0;
     if (x <= first.x) return first.y;
     if (x >= last.x) return last.y;
-    for (let i = 1; i < points.length; i++) {
-      const a = points[i - 1];
-      const b = points[i];
-      if (a && b && x <= b.x) return a.y + ((b.y - a.y) * (x - a.x)) / (b.x - a.x);
-    }
-    return last.y;
+    const i = points.findIndex((p) => x <= p.x);
+    const a = points[i - 1]!;
+    const b = points[i]!;
+    return a.y + ((b.y - a.y) * (x - a.x)) / (b.x - a.x);
   }
 }
 
@@ -114,9 +112,9 @@ export class DebugShowcase {
   private readonly panel = inject(DebugPanel);
 
   constructor() {
-    this.panel.register('Demo', (f) => this.buildFolder(f), inject(DestroyRef));
+    this.panel.register('Demo', (f: DebugFolder) => this.buildFolder(f), inject(DestroyRef));
     this.panel.show();
-    startFrameLoop((now) => {
+    startFrameLoop((now: number) => {
       this.subject.wave = this.subject.sample(now / 1000);
       this.wave.set(this.subject.wave.toFixed(2));
     });
@@ -136,7 +134,7 @@ export class DebugShowcase {
       xLabel: 'phase',
       yLabel: 'amplitude',
       initialPoints: s.curve,
-      onChange: (points) => {
+      onChange: (points: readonly CurvePoint[]) => {
         s.curve = [...points];
       },
     });

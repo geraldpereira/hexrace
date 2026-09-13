@@ -64,9 +64,43 @@ describe('CurveEditor', () => {
     expect(changes.length).toBeGreaterThan(0);
   });
 
+  it('drags the first and last points against the range edges, and swallows the context menu', () => {
+    const [x0, y0] = px(POINTS[0]!);
+    canvas.dispatchEvent(pointer('pointerdown', x0, y0));
+    canvas.dispatchEvent(pointer('pointermove', -100, y0));
+    canvas.dispatchEvent(pointer('pointerup', -100, y0));
+    expect(editor.getPoints()[0]!.x).toBe(0);
+    const [x2, y2] = px(POINTS[2]!);
+    canvas.dispatchEvent(pointer('pointerdown', x2, y2));
+    canvas.dispatchEvent(pointer('pointermove', 1000, y2));
+    canvas.dispatchEvent(pointer('pointerup', 1000, y2));
+    expect(editor.getPoints()[2]!.x).toBe(1);
+    const menu = new MouseEvent('contextmenu', { cancelable: true, bubbles: true });
+    canvas.dispatchEvent(menu);
+    expect(menu.defaultPrevented).toBe(true);
+  });
+
+  it('sizes its canvas for a device pixel ratio that reads as zero', () => {
+    const original = window.devicePixelRatio;
+    Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: 0 });
+    const zero = new CurveEditor({
+      xRange: [0, 1],
+      yRange: [0, 1],
+      initialPoints: POINTS,
+      onChange: () => undefined,
+    });
+    expect(zero.element.querySelector('canvas')!.width).toBe(240);
+    Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: original });
+  });
+
   it('adds a point on double-click and removes one on shift-click, never below two', () => {
     const [x, y] = px({ x: 0.25, y: 0.5 });
     canvas.dispatchEvent(pointer('dblclick', x, y));
+    expect(editor.getPoints().length).toBe(4);
+    canvas.dispatchEvent(pointer('dblclick', 1000, y));
+    expect(editor.getPoints().at(-1)!.x).toBe(1);
+    const [xr, yr] = px({ x: 1, y: 0.5 });
+    canvas.dispatchEvent(pointer('pointerdown', xr, yr, { shiftKey: true }));
     expect(editor.getPoints().length).toBe(4);
     canvas.dispatchEvent(pointer('pointerdown', x, y, { shiftKey: true }));
     expect(editor.getPoints().length).toBe(3);
@@ -98,9 +132,15 @@ describe('CurveEditor', () => {
   it('opens a full-screen copy that edits the same curve, and closes it', () => {
     editor.element.querySelector('button')!.click();
     const overlay = document.body.lastElementChild!;
-    expect(overlay.querySelector('canvas')).not.toBeNull();
+    const big = overlay.querySelector('canvas')!;
+    big.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
+    big.dispatchEvent(pointer('dblclick', 300, 200));
+    expect(editor.getPoints().length).toBe(4);
     editor.element.querySelector('button')!.click();
     expect(document.body.lastElementChild).toBe(overlay);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
+    overlay.firstElementChild!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(overlay.isConnected).toBe(true);
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(overlay.isConnected).toBe(false);
 
@@ -126,6 +166,12 @@ describe('CurveEditor', () => {
     c.dispatchEvent(pointer('pointermove', x, y));
     expect(fake.calls.length).toBeGreaterThan(before);
     expect(fake.calls.some((call) => call.startsWith('arc(') && call.includes(',5,0,'))).toBe(true);
+    c.setPointerCapture = () => undefined;
+    c.releasePointerCapture = () => undefined;
+    c.dispatchEvent(pointer('pointerdown', x, y));
+    c.dispatchEvent(pointer('pointermove', x + 5, y + 5));
+    c.dispatchEvent(pointer('pointerup', x + 5, y + 5));
+    expect(painted.getPoints()[1]!.y).toBeLessThan(1);
   });
 
   it('mounts as a row of a lil-gui folder', () => {

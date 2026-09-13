@@ -14,7 +14,7 @@ Rally arcade sur tuiles hexagonales, dans le navigateur, manette et tactile. Ce 
 | À quoi sert ce module, que refuse-t-il ? | son `index.ts`, en cinq lignes |
 | Qui a le droit de lire qui ? | `.dependency-cruiser.js`, une règle par ligne avec son argument |
 | Quelles règles de lint, et pourquoi ? | `eslint.config.js`, et `quality/` pour la règle maison |
-| Seuils de couverture, plafond de duplication ? | chaque `packages/*/vitest.config.ts`, `angular.json`, `.jscpd.json` |
+| Seuils de couverture, plafond de duplication ? | 100 % partout : `packages/*/vitest.config.ts`, `angular.json` ; `.jscpd.json` |
 
 ## Commandes
 
@@ -36,6 +36,10 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 - **Anglais dans le code, les commentaires, les tests et ce que le joueur lit ; français dans les
   docs et les commits.** La spec fonctionnelle 9.4 veut un jeu en anglais, texte minimaliste ;
   identifiants, noms de fichiers, commentaires et titres de specs suivent.
+- **Aucun `any`, même implicite** : `make quality-types` (type-coverage) exige 100 %. Un paramètre de
+  lambda que l'inférence laisse en `any` s'annote.
+- **Un dossier se lit d'un coup d'œil** (`hexrace/directory-size`, reprise de hexact) : plus de 20
+  fichiers avertit, plus de 30 refuse ; specs et mocks ne comptent pas.
 - **Les commentaires sont rationnés** (`hexrace/comment-ration`, reprise de hexact, arguée dans
   `quality/README.md`). Une classe ou une interface : 5 lignes ; une entité : 4 ; une méthode
   publique : 2 ; un champ public ou un alias de type : 1 ; un membre privé : rien ; un barrel : 5.

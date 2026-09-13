@@ -5,6 +5,7 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
 
 import { commentRation } from './quality/eslint-rules/comment-ration.js';
+import { directorySize } from './quality/eslint-rules/directory-size.js';
 
 /**
  * Ce que le lint tient, et pourquoi. Les règles maison de hexact (un export par fichier, pas de
@@ -19,7 +20,15 @@ export default tseslint.config(
 
   {
     files: ['**/*.ts'],
-    plugins: { hexrace: { rules: { 'comment-ration': commentRation } } },
+    plugins: {
+      hexrace: {
+        rules: {
+          'comment-ration': commentRation,
+          'directory-getting-big': directorySize({ over: 20, upTo: 30 }),
+          'directory-too-big': directorySize({ over: 30 }),
+        },
+      },
+    },
     extends: [
       eslint.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
@@ -38,6 +47,8 @@ export default tseslint.config(
     },
     rules: {
       'hexrace/comment-ration': 'error',
+      'hexrace/directory-getting-big': 'warn',
+      'hexrace/directory-too-big': 'error',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-module-boundary-types': 'error',
@@ -73,7 +84,7 @@ export default tseslint.config(
         {
           selector: "MethodDefinition[kind='constructor'] > FunctionExpression[params.length>0]",
           message:
-            "Pas de paramètre de constructeur : les dépendances viennent de inject(), et un test les remplace par TestBed.",
+            'Pas de paramètre de constructeur : les dépendances viennent de inject(), et un test les remplace par TestBed.',
         },
       ],
     },
@@ -113,6 +124,10 @@ export default tseslint.config(
   {
     files: ['eslint.config.js', '**/vitest.config.ts', '.dependency-cruiser.js', 'quality/**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],
-    rules: { 'hexrace/comment-ration': 'off' },
+    rules: {
+      'hexrace/comment-ration': 'off',
+      'hexrace/directory-getting-big': 'off',
+      'hexrace/directory-too-big': 'off',
+    },
   },
 );

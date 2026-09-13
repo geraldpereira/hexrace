@@ -7,7 +7,7 @@
 
   <section class="race">
     <div class="frame">
-      <hr-canvas-frame [canvas]="canvas" />
+      <hr-canvas-frame [canvas]="canvas" (resized)="onResized($event)" />
       <div class="overlay top-left dashboard">
         <hr-rev-counter
           [rpm]="rpm()"

@@ -1,11 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  type ElementRef,
+  ElementRef,
+  afterRenderEffect,
   computed,
-  effect,
+  inject,
   input,
-  viewChild,
 } from '@angular/core';
 
 const DROP: Keyframe[] = [
@@ -17,13 +17,14 @@ const DROP: Keyframe[] = [
 
 /**
  * Three, two, one, go, full screen; nothing when `step` is null. Each step replays the drop as a
- * Web Animation from an effect (functional spec 7.5). The sound is the audio module's business.
+ * Web Animation from an effect run after render, once the element exists (functional spec 7.5).
+ * The sound is the audio module's business.
  */
 @Component({
   selector: 'hr-countdown',
   template: `
     @if (step() !== null) {
-      <div #stepEl class="step" [class.go]="step() === 0">{{ text() }}</div>
+      <div class="step" [class.go]="step() === 0">{{ text() }}</div>
     }
   `,
   styles: `
@@ -52,12 +53,12 @@ export class Countdown {
   readonly step = input.required<number | null>();
   readonly text = computed(() => (this.step() === 0 ? 'GO' : String(this.step())));
 
-  private readonly element = viewChild<ElementRef<HTMLElement>>('stepEl');
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
-    effect(() => {
+    afterRenderEffect(() => {
       if (this.step() === null) return;
-      this.element()?.nativeElement.animate?.(DROP, {
+      this.element.nativeElement.querySelector('.step')?.animate?.(DROP, {
         duration: 900,
         easing: 'ease-out',
         fill: 'forwards',

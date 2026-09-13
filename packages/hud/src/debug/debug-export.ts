@@ -19,7 +19,7 @@ export function exportDebugValues(gui: GUI): string {
     if (controller instanceof FunctionController || controller._disabled) continue;
     const path = folderPath(controller, gui);
     const current: unknown = controller.getValue();
-    const initial: unknown = controller.initialValue;
+    const initial = (controller as { initialValue: unknown }).initialValue;
     const entries = payload[path] ?? [];
     payload[path] = entries;
     entries.push({

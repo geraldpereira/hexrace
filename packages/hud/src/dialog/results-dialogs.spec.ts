@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 
 import { ResultsDialogs } from '@hud/dialog/results-dialogs';
 
@@ -14,6 +15,14 @@ describe('ResultsDialogs', () => {
     expect(box.querySelector('.record')).not.toBeNull();
     box.querySelectorAll('button')[1]!.click();
     expect(await choice).toBe('retry');
+  });
+
+  it('reads Home when the box is closed any other way', async () => {
+    TestBed.configureTestingModule({});
+    const choice = TestBed.inject(ResultsDialogs).open({ mode: 'rally', timeMs: 1, record: false });
+    await new Promise((r) => setTimeout(r, 0));
+    TestBed.inject(MatDialog).closeAll();
+    expect(await choice).toBe('home');
   });
 
   it('titles a collapse differently, and reads Home from the first button', async () => {

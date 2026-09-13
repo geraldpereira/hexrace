@@ -51,7 +51,7 @@ export class DebugPlot {
   push(value: number): void {
     this.values.push(value);
     if (this.values.length > this.capacity) this.values.shift();
-    this.draw();
+    this.draw(value);
   }
 
   stop(): void {
@@ -70,7 +70,7 @@ export class DebugPlot {
     requestAnimationFrame(this.tick);
   };
 
-  private draw(): void {
+  private draw(latest: number): void {
     const ctx = this.ctx;
     if (!ctx) return;
     const { min, max } = this.options;
@@ -94,14 +94,11 @@ export class DebugPlot {
       else ctx.lineTo(x0 + i * step, y);
     });
     ctx.stroke();
-    const latest = this.values.at(-1);
-    if (latest !== undefined) {
-      ctx.fillStyle = '#ddd';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'top';
-      ctx.fillText(latest.toFixed(1), WIDTH - 4, 3);
-    }
+    ctx.fillStyle = '#ddd';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.fillText(latest.toFixed(1), WIDTH - 4, 3);
   }
 }
 

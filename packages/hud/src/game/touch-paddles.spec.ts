@@ -1,5 +1,5 @@
 import { inputBinding, signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
 
 import { TouchSource } from '@hexrace/inputs';
 
@@ -21,6 +21,7 @@ describe('TouchPaddles', () => {
     host: HTMLElement;
     paddles: TouchPaddles;
     source: TouchSource;
+    fixture: ComponentFixture<TouchPaddles>;
   }> {
     await TestBed.configureTestingModule({ imports: [TouchPaddles] }).compileComponents();
     const source = TestBed.inject(TouchSource);
@@ -32,6 +33,7 @@ describe('TouchPaddles', () => {
       host: fixture.nativeElement as HTMLElement,
       paddles: fixture.componentInstance,
       source,
+      fixture,
     };
   }
 
@@ -64,15 +66,20 @@ describe('TouchPaddles', () => {
     expect(paddles.knobY(steer)).toBe(300);
   });
 
-  it('copies the source paddles every frame and sizes the ring on the travel', async () => {
-    const { paddles, source } = await render();
+  it('copies the source paddles every frame, sizes the ring on the travel and draws them', async () => {
+    const { host, paddles, source, fixture } = await render();
     source.byZone.drive.active = true;
     source.byZone.drive.deflection = 0.3;
+    source.byZone.handBrake.active = true;
     source.travelPx = 50;
     frames[0]?.(0);
+    await fixture.whenStable();
     expect(paddles.ringPx()).toBe(156);
     expect(paddles.paddles()[0]).toEqual(source.byZone.drive);
     expect(paddles.paddles()[0]).not.toBe(source.byZone.drive);
+    expect(host.querySelectorAll('.knob').length).toBe(1);
+    expect(host.querySelector('.hand-brake')?.classList.contains('active')).toBe(true);
     source.byZone.drive.active = false;
+    source.byZone.handBrake.active = false;
   });
 });

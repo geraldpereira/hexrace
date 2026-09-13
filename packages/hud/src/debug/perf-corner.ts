@@ -37,7 +37,7 @@ export class PerfCorner {
   private nextRefresh = 0;
 
   constructor() {
-    startFrameLoop((now) => {
+    startFrameLoop((now: number) => {
       this.meter.frame(now);
       if (now < this.nextRefresh) return;
       this.nextRefresh = now + 250;

@@ -99,7 +99,7 @@ export class TouchPaddles {
   }
 
   private readonly tick = (): void => {
-    this.paddles.set(this.source().paddles.map((p) => ({ ...p })));
+    this.paddles.set(this.source().paddles.map((p: TouchPaddle) => ({ ...p })));
     this.ringPx.set(this.source().travelPx * 2 + KNOB_PX);
   };
 }
