@@ -43,8 +43,9 @@ const PLANNED: readonly Showcase[] = [
   {
     module: 'tile',
     path: 'lab/tile',
-    summary: 'One tile, every parameter live.',
-    ready: false,
+    summary:
+      'One tile, every parameter live, its mesh and collider rebuilt, the surface under the pointer.',
+    ready: true,
   },
   {
     module: 'track',

@@ -17,6 +17,7 @@ export {
   type JoltBody,
   type JoltBodyInterface,
   type JoltPhysicsSystem,
+  type JoltVec3,
 } from '@engine/physics/jolt-physics';
 export { ThreeRenderer } from '@engine/render/three-renderer';
 export { Component, GameObject } from '@engine/scene/game-object';

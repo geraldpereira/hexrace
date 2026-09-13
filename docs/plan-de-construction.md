@@ -270,6 +270,26 @@ d'une tuile pour Jolt, et le revêtement sous une position locale, ce que le POC
 **Sa vitrine.** Une seule tuile, chaque paramètre du modèle dans le panneau, la géométrie et le
 collider qui suivent.
 
+**Fait le 2026-09-13.** `entity/` reprend le modèle du POC 2 en unités, sans three ni Jolt, avec
+ses tests portés et complétés à 100 %. Les données restent des interfaces (`Profile`, `Tile`,
+`TileSweep`, `Obstacle`) et l'arithmétique sans état des fonctions (faces et heures, `Vec2`, axe
+local, Hermite et Steffen) ; tout ce qui est une capacité est un service `providedIn: 'root'`
+obtenu par `inject()`, avec ses réglages en champs : `TileSweeper` (bords des zones, centre de
+piste, hauteurs), `TileGeometry` (tranches, quadrilatères, polygones, contour ; `samples` par sortie
+et `apexRadius`), `TileObstacles` (emprises, erreurs), `TileLines` (damier), `TileSurfaces` (le
+revêtement sous un point, spec technique 4.2), `Environments` (la palette), `TileTriangles` (la liste
+de triangles **en mètres** partagée par le maillage et le collider, chaque triangle enroulé normale
+vers le haut ou l'extérieur parce que Jolt ne collisionne qu'avec la face avant d'un maillage).
+`render/` : `TileMeshes`, le maillage three à couleur par sommet (plat ou lissé) et le contour ;
+`physics/` : `TileBodies`, qui injecte `JoltPhysics` et fait le corps statique en `MeshShape`. Un
+premier pas : si le style convient, les faces, l'axe et l'arithmétique passeront aussi en services. Ce qui
+reste à la piste (`track`) : le profil d'entrée, les pentes aux faces, le placement, les marques de
+départ et d'arrivée, la validation, le fichier, le générateur et la fenêtre. La vitrine `lab/tile`
+édite chaque champ dans le panneau, reconstruit maillage et collider à chaque changement, affiche
+les erreurs du modèle, lit le revêtement sous le pointeur et fait tomber des caisses sur le collider.
+Les rampes et dos d'âne restent plats : leur volume viendra avec la voiture. Le type de paysage
+bascule au milieu de la tuile comme les autres types (spec 2.1) ; le POC gardait celui de l'entrée.
+
 ### 2.6 `track`
 
 **Ce qu'il possède.** Le format de fichier acté (spec technique 3.3), la validation (5.5), le

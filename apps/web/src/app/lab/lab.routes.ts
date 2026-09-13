@@ -26,4 +26,11 @@ export const LAB_ROUTES: Routes = [
         (m: { CameraShowcase: Type<unknown> }) => m.CameraShowcase,
       ),
   },
+  {
+    path: 'lab/tile',
+    loadComponent: () =>
+      import('@ui/lab/tile/tile-showcase').then(
+        (m: { TileShowcase: Type<unknown> }) => m.TileShowcase,
+      ),
+  },
 ];

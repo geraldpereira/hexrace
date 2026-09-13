@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import * as THREE from 'three';
 
@@ -17,7 +17,6 @@ import {
 import { Inputs, TouchSource } from '@hexrace/inputs';
 import {
   CanvasFrame,
-  DebugPanel,
   PerfMeter,
   TouchPaddles,
   type DebugFolder,
@@ -25,6 +24,7 @@ import {
 } from '@hexrace/hud';
 
 import { Dummy } from '@ui/lab/camera/dummy';
+import { labPanel } from '@ui/lab/lab-scene';
 
 const GROUND_SIZE = 400;
 
@@ -114,16 +114,14 @@ export class CameraShowcase {
     this.camera.setAspect(this.renderer.width, this.renderer.height);
     this.scene.start();
 
-    inject(DebugPanel).register(
+    labPanel(
       'Camera',
       (f: DebugFolder) => this.buildFolder(f),
-      inject(DestroyRef),
+      () => {
+        this.loop.stop();
+        this.scene.destroy();
+      },
     );
-    inject(DebugPanel).show();
-    inject(DestroyRef).onDestroy(() => {
-      this.loop.stop();
-      this.scene.destroy();
-    });
     this.loop.start({
       fixedUpdate: () => {
         this.inputs.poll(FIXED_TIMESTEP);

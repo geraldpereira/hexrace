@@ -57,6 +57,9 @@ packages/engine/   @hexrace/engine - boucle à pas fixe, scènes et injecteur en
                                      ThreeRenderer et JoltPhysics, nommés pour ce qu'ils sont.
 packages/camera/   @hexrace/camera - la caméra de suivi : gréement pur (entity/), FollowCamera
                                      qui pilote un CameraComponent d'après une CameraTarget.
+packages/tile/     @hexrace/tile   - la tuile : modèle du POC 2 en unités (entity/, sans three ni
+                                     Jolt) en services par capacité (TileSweeper, TileGeometry,
+                                     TileSurfaces…), TileMeshes (render/), TileBodies (physics/).
 packages/hud/      @hexrace/hud    - le seul package à composants : game/ (compte-tours, dégâts,
                                      chrono…), commons/ (cadre de canvas, cartes), dialog/, debug/
                                      (lil-gui). Testé par `ng test hud`, pas par Vitest seul.

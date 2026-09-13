@@ -194,6 +194,8 @@ compilateur JIT d'Angular chargé dans `test-setup.ts`, pour que les `@Injectabl
 
   Référence : `poc/tile/src/model/trackFile.ts`.
 
+  **Le modèle de tuile, écrit (2026-09-13, `packages/tile`).** Le POC 2 repris dans `entity/`, en unités, ses capacités en services (`TileSweeper`, `TileGeometry`, `TileObstacles`, `TileSurfaces`, `TileLines`, `TileTriangles`, `Environments`) et ses données en interfaces ; la piste n'y est pas : une tuile reçoit un `TileSweep` déjà résolu (centre, cap, profils d'entrée et de sortie, transition, pentes aux faces). `tileTriangles` rend les triangles en mètres (1 unité = 1,7 m, `toWorld` pose y sur la hauteur et z sur -nord), la même liste pour three.js (`render/`, `TileMeshes`, couleur par sommet, plat ou lissé) et pour Jolt (`physics/`, `TileBodies`, `MeshShape` statique). Chaque triangle est enroulé normale vers le haut ou l'extérieur : Jolt ne collisionne qu'avec la face avant d'un maillage.
+
 - 3.4 Validation
   _Implémentation des règles [F 2.6] et [F 5.5] : jonctions, départ et arrivée, auto-intersection, fermeture en Track. Où elle s'exécute (éditeur, générateur, chargement)._
 - 3.5 Géométrie d'une tuile
@@ -223,6 +225,8 @@ Ce contrôleur fait lui-même **un lancer par roue** à chaque pas (rally-game u
 ### 4.2 Surfaces et friction
 
 Grâce au contact par roue fourni par le contrôleur (4.1), **chaque roue connaît sa surface**. À partir du point de contact, on retrouve la tuile et, en coordonnées locales de la tuile, la zone (piste, bas-côté, paysage) et donc le type de surface ; c'est un calcul pur sur le modèle de données, sans découper le maillage physique par zone. Les paramètres de friction longitudinale et latérale de la roue sont mis à jour à chaque pas selon la surface trouvée.
+
+**Écrit (2026-09-13).** `TileSurfaces.at(sweep, point, obstacles)` dans `packages/tile` : le point de l'axe le plus proche donne `s`, la distance signée au centre de la piste le long de la droite du conducteur dit piste, bas-côté ou paysage, et une plaque qui couvre le point remplace le type de piste ; null hors de l'hexagone, une autre tuile possède le point.
 
 <TODO> Table type de surface vers paramètres de friction [F 3.4], et comment on lisse le passage d'une zone à l'autre.
 
@@ -457,6 +461,7 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 | 2026-09-12 | Deux packages de plus que 2.1 : `commons` (vocabulaire, EventBus, RNG) et `engine` (boucle, scènes, GameObject, services three et Jolt)                                                       | La spec les sous-entendait sans les nommer                                                                                                                                                        |
 | 2026-09-13 | Une scène = un injecteur enfant Angular ; les composants de jeu sont construits dedans (`Scene.instantiate`) et obtiennent leurs dépendances par `inject()`, leurs données par champs publics | Pas de constructeur à paramètres, ménage des corps et maillages avec la scène (2.2)                                                                                                               |
 | 2026-09-13 | La caméra suit un cap mêlé entre la voiture et la tuile suivante par un facteur réglable et plafonné, plutôt qu'une visée séparée                                                             | Un seul réglage à sentir, la voiture reste centrée quand le facteur est nul (3.9)                                                                                                                 |
+| 2026-09-13 | Le modèle de tuile compte en unités, le monde 3D en mètres ; la conversion se fait en sortie de `tileTriangles`, une seule liste de triangles pour le maillage et le collider                 | Le POC 2 reste vrai mot pour mot, three et Jolt reçoivent des mètres, et le collider ne peut pas diverger du visuel (3.5)                                                                         |
 | 2026-09-13 | Pas d'interface ni de jeton devant three.js et Jolt : `ThreeRenderer` et `JoltPhysics` sont injectés par leur nom                                                                             | Une interface `Physics` qui expose `Jolt`, `bodyInterface` et des `Body` n'abstrait rien ; Jolt n'est pas remplaçable (contrainte véhicule, formes, raycasts) et le vrai tourne sous Vitest (2.2) |
 | 2026-09-13 | Jolt par `jolt-physics.wasm-compat` (wasm en base64 dans le JS), chargé paresseusement avec la route qui en a besoin                                                                          | Se charge aussi sous Vitest, donc les tests de physique tournent sur le vrai Jolt ; le `.wasm` séparé reste l'option si le démarrage mobile pèse                                                  |
 | 2026-09-12 | Code, commentaires et tests en anglais ; docs et commits en français ; règle `comment-ration` de hexact reprise                                                                               | Demande de Gérald ; un commentaire rationné par ce qu'il documente                                                                                                                                |

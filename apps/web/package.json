@@ -23,6 +23,7 @@
     "@hexrace/engine": "*",
     "@hexrace/hud": "*",
     "@hexrace/inputs": "*",
+    "@hexrace/tile": "*",
     "lodash-es": "^4.17.21",
     "material-symbols": "^0.35.0",
     "rxjs": "~7.8.0",

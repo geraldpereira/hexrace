@@ -20,12 +20,13 @@ describe('CameraShowcase', () => {
   let frames: FrameRequestCallback[];
   let rendered: THREE.PerspectiveCamera[];
   let source: ScriptedSource;
-  let now: number;
+  let clock: number;
 
   beforeEach(() => {
     frames = [];
     rendered = [];
-    now = 1000;
+    clock = performance.now();
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
     source = new ScriptedSource();
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
       frames.push(cb);
@@ -61,9 +62,9 @@ describe('CameraShowcase', () => {
 
   function tick(count: number): void {
     for (let i = 0; i < count; i++) {
-      now += 20;
+      clock += 20;
       const pending = frames.splice(0);
-      for (const cb of pending) cb(now);
+      for (const cb of pending) cb(clock);
     }
   }
 

@@ -8,6 +8,7 @@ export type JoltApi = typeof Jolt;
 export type JoltBody = Jolt.Body;
 export type JoltBodyInterface = Jolt.BodyInterface;
 export type JoltPhysicsSystem = Jolt.PhysicsSystem;
+export type JoltVec3 = Jolt.Vec3;
 
 /** Two object layers, static ground and moving bodies, shared by every body the game creates. */
 export const LAYER_NON_MOVING = 0;
