@@ -6,13 +6,13 @@ const RADIUS = 44;
 
 /**
  * The rev counter: an arc from the start angle over 270°, red from the shift-up rpm, blinking on
- * the limiter, and the revs as a number (functional spec 7.5). Everything is a function of its
- * inputs; the car's module feeds it.
+ * the limiter, and the revs as a number (functional spec 7.5). The box stops just under the arc's
+ * ends, so the counter sits on the same baseline as its neighbours. The car's module feeds it.
  */
 @Component({
   selector: 'hr-rev-counter',
   template: `
-    <svg viewBox="-50 -50 100 100" [class.limiter]="limiter()" [class.redline]="inRed()">
+    <svg viewBox="-50 -50 100 86" [class.limiter]="limiter()" [class.redline]="inRed()">
       <path class="track" [attr.d]="arc(0, 1)" />
       <path class="red" [attr.d]="arc(redShare(), 1)" />
       <path class="fill" [attr.d]="arc(0, share())" />
@@ -24,7 +24,7 @@ const RADIUS = 44;
     :host {
       display: block;
       width: 8rem;
-      aspect-ratio: 1;
+      aspect-ratio: 100 / 86;
     }
     svg {
       width: 100%;
