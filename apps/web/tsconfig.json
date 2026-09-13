@@ -11,6 +11,8 @@
       "@commons/*": ["../../packages/commons/src/*"],
       "@hexrace/engine": ["../../packages/engine/src/index.ts"],
       "@engine/*": ["../../packages/engine/src/*"],
+      "@hexrace/camera": ["../../packages/camera/src/index.ts"],
+      "@camera/*": ["../../packages/camera/src/*"],
       "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
       "@inputs/*": ["../../packages/inputs/src/*"],
       "@hexrace/hud": ["../../packages/hud/src/index.ts"],

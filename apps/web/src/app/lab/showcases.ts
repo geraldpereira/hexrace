@@ -37,8 +37,8 @@ const PLANNED: readonly Showcase[] = [
   {
     module: 'camera',
     path: 'lab/camera',
-    summary: 'The camera follows a dummy driven with the stick.',
-    ready: false,
+    summary: 'The camera follows a dummy driven with the stick, leaning towards a fake next tile.',
+    ready: true,
   },
   {
     module: 'tile',

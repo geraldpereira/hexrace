@@ -248,6 +248,19 @@ du joueur, hauteur qui monte avec la vitesse, visée vers la prochaine tuile qua
 **Sa vitrine.** Un mobile factice qu'on pilote au stick sur le sol de la vitrine `engine`, la caméra
 qui le suit, les réglages dans le panneau debug.
 
+**Fait le 2026-09-13.** `CameraTarget`, ce que la caméra lit de ce qu'elle suit (position, cap,
+vitesse, tuile suivante ou null) ; `solveRig`, le calcul pur dans `entity/` : la caméra se place
+derrière la cible le long d'un cap mêlé entre celui de la cible et la direction de la tuile suivante
+par le facteur `anticipation` (plafonné par `anticipationMaxDeg`), à une hauteur qui monte avec la
+vitesse entre `heightAtRest` et `heightAtSpeed`, et vise `lookAhead` mètres devant sur le même cap ;
+`FollowCamera`, le composant qui pilote le `CameraComponent` voisin avec un lissage exponentiel et un
+`snap` pour les téléportations ; `CameraTuning`, les réglages en service unique. La vitrine
+`lab/camera` fait rouler un mobile cinématique au stick ou au clavier (palonniers sur tactile) sur
+un sol quadrillé, avec un anneau au sol pour tuile suivante factice dont le relèvement et la
+distance se règlent, pour juger l'inclinaison. Question ouverte : une caméra fixe pour le garage se
+fera avec le seul `CameraComponent` de l'engine posé à la main, rien à ajouter ici tant que le
+garage n'existe pas.
+
 ### 2.5 `tile`
 
 **Ce qu'il possède.** `entity` : le modèle du POC 2 (`poc/tile/src/model`), déjà testé, repris avec

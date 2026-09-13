@@ -19,4 +19,11 @@ export const LAB_ROUTES: Routes = [
         (m: { EngineShowcase: Type<unknown> }) => m.EngineShowcase,
       ),
   },
+  {
+    path: 'lab/camera',
+    loadComponent: () =>
+      import('@ui/lab/camera/camera-showcase').then(
+        (m: { CameraShowcase: Type<unknown> }) => m.CameraShowcase,
+      ),
+  },
 ];

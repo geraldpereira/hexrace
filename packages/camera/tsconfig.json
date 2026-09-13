@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": [],
+    "paths": {
+      "@camera/*": ["./src/*"],
+      "@hexrace/commons": ["../commons/src/index.ts"],
+      "@commons/*": ["../commons/src/*"],
+      "@hexrace/engine": ["../engine/src/index.ts"],
+      "@engine/*": ["../engine/src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts"]
+}
