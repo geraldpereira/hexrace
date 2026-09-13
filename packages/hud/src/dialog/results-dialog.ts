@@ -43,9 +43,10 @@ export type ResultsChoice = 'retry' | 'home';
   styles: `
     .time {
       font-size: 2rem;
+      line-height: 1.3;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
-      margin: 0;
+      margin: 0.2rem 0;
     }
     .record {
       display: flex;
