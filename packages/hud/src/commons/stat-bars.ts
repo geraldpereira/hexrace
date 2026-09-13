@@ -35,12 +35,12 @@ export interface Stat {
     .track {
       height: 0.5rem;
       border-radius: 0.25rem;
-      background: rgba(255, 255, 255, 0.12);
+      background: var(--hr-track, rgba(255, 255, 255, 0.12));
       overflow: hidden;
     }
     .fill {
       height: 100%;
-      background: #ffaa00;
+      background: var(--hr-accent, #ffaa00);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

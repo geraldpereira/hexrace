@@ -42,7 +42,7 @@ export interface CarSummary {
       width: 13rem;
       padding: 0.6rem;
       border-radius: 0.6rem;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--hr-card, rgba(255, 255, 255, 0.06));
     }
     article.locked {
       opacity: 0.55;
@@ -53,7 +53,7 @@ export interface CarSummary {
       place-items: center;
       height: 4.5rem;
       border-radius: 0.4rem;
-      background: #1e262f;
+      background: var(--hr-surface, #1e262f);
     }
     .silhouette > mat-icon {
       font-size: 3rem;

@@ -15,7 +15,7 @@ import { MatIcon } from '@angular/material/icon';
       font-weight: 600;
     }
     mat-icon {
-      color: #ffaa00;
+      color: var(--hr-accent, #ffaa00);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

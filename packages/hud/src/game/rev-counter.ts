@@ -36,16 +36,16 @@ const RADIUS = 44;
       stroke-linecap: butt;
     }
     .track {
-      stroke: rgba(255, 255, 255, 0.12);
+      stroke: var(--hr-track, rgba(255, 255, 255, 0.12));
     }
     .red {
-      stroke: rgba(255, 59, 59, 0.45);
+      stroke: color-mix(in srgb, var(--hr-danger, var(--hr-danger, #ff3b3b)) 45%, transparent);
     }
     .fill {
-      stroke: #ffaa00;
+      stroke: var(--hr-accent, #ffaa00);
     }
     .redline .fill {
-      stroke: #ff3b3b;
+      stroke: var(--hr-danger, #ff3b3b);
     }
     .limiter .fill {
       animation: blink 0.12s steps(2, end) infinite;
@@ -56,7 +56,7 @@ const RADIUS = 44;
       }
     }
     text {
-      fill: #e8edf2;
+      fill: var(--hr-text, #e8edf2);
       text-anchor: middle;
       font-variant-numeric: tabular-nums;
     }

@@ -66,10 +66,10 @@ export interface TimerReadout {
     .delta {
       font-size: 1rem;
       font-weight: 600;
-      color: #4cd964;
+      color: var(--hr-ok, #4cd964);
     }
     .delta.behind {
-      color: #ff3b3b;
+      color: var(--hr-danger, #ff3b3b);
     }
     .splits {
       margin: 0.2rem 0 0;

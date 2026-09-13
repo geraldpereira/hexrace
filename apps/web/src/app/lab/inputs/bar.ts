@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       position: relative;
       flex: 1;
       height: 0.6rem;
-      background: #1e262f;
+      background: var(--hr-surface, #1e262f);
       border-radius: 0.3rem;
       overflow: hidden;
     }
@@ -30,13 +30,13 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       top: 0;
       bottom: 0;
       width: 1px;
-      background: #4a5560;
+      background: var(--hr-border, #4a5560);
     }
     .fill {
       position: absolute;
       top: 0;
       bottom: 0;
-      background: #ffaa00;
+      background: var(--hr-accent, #ffaa00);
     }
     span {
       width: 3rem;

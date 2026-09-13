@@ -38,11 +38,11 @@ const DROP: Keyframe[] = [
       font-size: 22vh;
       font-weight: 800;
       line-height: 1;
-      color: #e8edf2;
-      text-shadow: 0 0 2vh rgba(0, 0, 0, 0.6);
+      color: var(--hr-text, #e8edf2);
+      text-shadow: 0 0 2vh var(--hr-glass, rgba(0, 0, 0, 0.6));
     }
     .step.go {
-      color: #4cd964;
+      color: var(--hr-ok, #4cd964);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

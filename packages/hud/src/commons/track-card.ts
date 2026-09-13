@@ -40,7 +40,7 @@ export interface TrackSummary {
       width: 12rem;
       padding: 0.6rem;
       border-radius: 0.6rem;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--hr-card, rgba(255, 255, 255, 0.06));
     }
     article.locked {
       opacity: 0.55;
@@ -49,7 +49,7 @@ export interface TrackSummary {
       position: relative;
       aspect-ratio: 4 / 3;
       border-radius: 0.4rem;
-      background: #1e262f;
+      background: var(--hr-surface, #1e262f);
       overflow: hidden;
     }
     .thumb img {
@@ -81,7 +81,7 @@ export interface TrackSummary {
       font-size: 1rem;
       width: 1rem;
       height: 1rem;
-      color: #ffaa00;
+      color: var(--hr-accent, #ffaa00);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

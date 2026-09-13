@@ -17,17 +17,32 @@ html {
   );
 }
 
+// The palette every HUD component reads, with a fallback to the same value in each component.
+:root {
+  --hr-bg: #0b0f14;
+  --hr-text: #e8edf2;
+  --hr-accent: #ffaa00;
+  --hr-danger: #ff3b3b;
+  --hr-ok: #4cd964;
+  --hr-surface: #1e262f;
+  --hr-border: #4a5560;
+  --hr-track: rgba(255, 255, 255, 0.12);
+  --hr-card: rgba(255, 255, 255, 0.06);
+  --hr-outline: rgba(255, 255, 255, 0.35);
+  --hr-glass: rgba(0, 0, 0, 0.6);
+}
+
 html,
 body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: #0b0f14;
-  color: #e8edf2;
+  background: var(--hr-bg);
+  color: var(--hr-text);
   font-family: system-ui, sans-serif;
   touch-action: none;
 }
 
 a {
-  color: #ffaa00;
+  color: var(--hr-accent);
 }

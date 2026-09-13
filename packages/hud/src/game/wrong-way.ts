@@ -19,7 +19,7 @@ import { MatIcon } from '@angular/material/icon';
       gap: 0.4rem;
       padding: 0.3rem 0.8rem;
       border-radius: 0.4rem;
-      background: #ff3b3b;
+      background: var(--hr-danger, #ff3b3b);
       color: #fff;
       font-weight: 700;
       text-transform: uppercase;

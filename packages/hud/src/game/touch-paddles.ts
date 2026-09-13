@@ -38,7 +38,7 @@ const KNOB_PX = 56;
     }
     .zone {
       position: absolute;
-      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border: 1px dashed var(--hr-track, rgba(255, 255, 255, 0.15));
     }
     .drive {
       left: 0;
@@ -58,10 +58,10 @@ const KNOB_PX = 56;
       top: 55%;
       bottom: 0;
       border-radius: 1rem 1rem 0 0;
-      background: rgba(255, 170, 0, 0.08);
+      background: color-mix(in srgb, var(--hr-accent, var(--hr-accent, #ffaa00)) 8%, transparent);
     }
     .hand-brake.active {
-      background: rgba(255, 170, 0, 0.35);
+      background: color-mix(in srgb, var(--hr-accent, var(--hr-accent, #ffaa00)) 35%, transparent);
     }
     .ring,
     .knob {
@@ -70,12 +70,12 @@ const KNOB_PX = 56;
       border-radius: 50%;
     }
     .ring {
-      border: 2px solid rgba(255, 255, 255, 0.4);
+      border: 2px solid var(--hr-outline, rgba(255, 255, 255, 0.4));
     }
     .knob {
       width: 56px;
       height: 56px;
-      background: rgba(255, 170, 0, 0.8);
+      background: color-mix(in srgb, var(--hr-accent, var(--hr-accent, #ffaa00)) 80%, transparent);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

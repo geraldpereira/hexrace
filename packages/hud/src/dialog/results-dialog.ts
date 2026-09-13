@@ -51,7 +51,7 @@ export type ResultsChoice = 'retry' | 'home';
       display: flex;
       align-items: center;
       gap: 0.3rem;
-      color: #ffaa00;
+      color: var(--hr-accent, #ffaa00);
       font-weight: 600;
     }
   `,

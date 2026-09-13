@@ -42,8 +42,8 @@ export interface AssistReadout {
     }
     .lamp.on {
       opacity: 1;
-      color: #ffaa00;
-      filter: drop-shadow(0 0 4px #ffaa00);
+      color: var(--hr-accent, #ffaa00);
+      filter: drop-shadow(0 0 4px var(--hr-accent, #ffaa00));
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

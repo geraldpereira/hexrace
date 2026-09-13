@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
@@ -129,6 +136,7 @@ export class HudShowcase {
     transmission: 'FWD',
   };
 
+  private readonly frame = viewChild(CanvasFrame);
   private readonly panel = inject(DebugPanel);
   private readonly results = inject(ResultsDialogs);
   private last = 0;
@@ -169,14 +177,27 @@ export class HudShowcase {
   }
 
   private paintFakeCanvas(now: number): void {
+    const size = this.frame()?.size();
+    if (
+      size &&
+      size.width > 0 &&
+      (this.canvas.width !== size.width || this.canvas.height !== size.height)
+    ) {
+      this.canvas.width = size.width;
+      this.canvas.height = size.height;
+    }
     const ctx = this.canvas.getContext('2d');
     if (!ctx) return;
     const { width, height } = this.canvas;
     ctx.fillStyle = '#243447';
     ctx.fillRect(0, 0, width, height);
+    const half = 12;
     ctx.fillStyle = '#ffaa00';
-    const x = (width / 2) * (1 + Math.sin(now / 800));
-    ctx.fillRect(x - 10, height / 2 - 10, 20, 20);
+    const x = half + ((width - 2 * half) / 2) * (1 + Math.sin(now / 800));
+    ctx.fillRect(x - half, height / 2 - half, 2 * half, 2 * half);
+    ctx.fillStyle = '#4cd964';
+    const y = half + ((height - 2 * half) / 2) * (1 + Math.sin(now / 1100));
+    ctx.fillRect(width / 2 - half, y - half, 2 * half, 2 * half);
   }
 
   private buildFolder(folder: DebugFolder): void {

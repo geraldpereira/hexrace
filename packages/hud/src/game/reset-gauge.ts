@@ -35,14 +35,14 @@ const RADIUS = 20;
       stroke-width: 4;
     }
     .track {
-      stroke: rgba(255, 255, 255, 0.15);
+      stroke: var(--hr-track, rgba(255, 255, 255, 0.15));
     }
     .fill {
-      stroke: #ffaa00;
+      stroke: var(--hr-accent, #ffaa00);
       stroke-linecap: round;
     }
     text {
-      fill: #e8edf2;
+      fill: var(--hr-text, #e8edf2);
       font-size: 7px;
       text-anchor: middle;
       transform: rotate(90deg);

@@ -14,7 +14,7 @@ import {
 export class DemoSubject {
   speed = 40;
   enabled = true;
-  colour = '#ffaa00';
+  colour = 'var(--hr-accent, #ffaa00)';
   mode: 'sine' | 'square' | 'noise' = 'sine';
   label = 'demo';
   /** The curve maps the wave's phase (0..1) to an amplitude. */
@@ -101,7 +101,7 @@ export class DemoSubject {
     }
     kbd {
       padding: 0 0.3rem;
-      border: 1px solid #4a5560;
+      border: 1px solid var(--hr-border, #4a5560);
       border-radius: 0.2rem;
     }
   `,

@@ -16,14 +16,14 @@
         <hr-damage-indicator [damage]="damage()" [hit]="hit()" />
       </div>
       <div class="overlay bottom-right dashboard">
+        <hr-speed-indicator [kmh]="kmh()" />
+        <hr-gear-indicator [gear]="gear()" [shiftHint]="race.shiftHint" />
         <hr-rev-counter
           [rpm]="rpm()"
           [maxRpm]="race.maxRpm"
           [redlineRpm]="race.redlineRpm"
           [limiter]="race.limiter"
         />
-        <hr-gear-indicator [gear]="gear()" [shiftHint]="race.shiftHint" />
-        <hr-speed-indicator [kmh]="kmh()" />
       </div>
       <div class="overlay bottom-left">
         <hr-reset-gauge [progress]="race.resetProgress" />

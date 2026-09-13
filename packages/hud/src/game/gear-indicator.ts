@@ -42,7 +42,7 @@ const FLASH: Keyframe[] = [{ color: '#ffaa00', transform: 'scale(1.25)' }, {}];
       width: 0.5rem;
       height: 0.5rem;
       border-radius: 50%;
-      background: #ffaa00;
+      background: var(--hr-accent, #ffaa00);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
