@@ -1,13 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignoreDependencies": [
-    "dependency-cruiser"
+    "dependency-cruiser",
+    "material-symbols"
   ],
   "workspaces": {
     ".": {
-      "entry": [
-        "eslint.config.js"
-      ],
+      "entry": [],
       "project": [
         "quality/**/*.js"
       ]
@@ -36,8 +35,5 @@
         "src/**/*.ts"
       ]
     }
-  },
-  "ignore": [
-    "poc/**"
-  ]
+  }
 }

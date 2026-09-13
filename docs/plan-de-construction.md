@@ -79,13 +79,14 @@ squelette.
 | 0     | squelette              | workspace, app, Makefile, qualité, route `lab/`                       | page d'accueil du lab qui liste les vitrines                                     |
 | 1     | `inputs`               | actions, sources manette / clavier / tactile, fusion, palonniers      | état des entrées en direct, palonniers sur mobile                                |
 | 2     | `hud/debug`            | lil-gui enveloppé, avec courbes, persistance, export et tracé du POC  | un panneau de démonstration : dossiers, curseurs, relevés, courbes               |
+| 2 bis | `hud/game`, `hud/commons`, `hud/dialog` | tous les composants de la spec 7.5 qui ne dépendent d'aucun module | `lab/hud` : une fausse course pilotée par le panneau debug                 |
 | 3     | `commons` + `engine`   | EventBus, boucle à pas fixe, scènes, GameObject, rendu three, Jolt    | une scène vide avec un sol, une boîte qui tombe, le compteur d'images            |
 | 4     | `camera`               | la caméra de la spec 3.9, hauteur selon la vitesse, visée             | la caméra suit un mobile factice qu'on pilote au stick                           |
 | 5     | `tile`                 | `entity` du POC 2, `render` d'une tuile, `physics` de son collider    | une tuile dont on change chaque paramètre en direct, zones colorées              |
 | 6     | `track`                | format de fichier, validation, générateur, assemblage, fenêtre        | le POC 2 refait : charger ou générer, caméra libre, curseur joueur               |
 | 7     | `car`                  | `entity`, `render`, `physics` du POC 1, sons, traces, particules      | le POC 1 refait : la voiture sur un sol plat multi-surfaces                      |
 | 8     | `game-commons`         | machine à états d'une partie, compte à rebours, chrono, résultats     | la voiture sur une piste : le POC 3 que l'on n'a jamais fait, chrono au tour     |
-| 9     | `game/track`, `hud`    | mode Track, menus, HUD de course, écran de résultats, sauvegarde      | le MVP de la spec fonctionnelle 10.4, sous la route du jeu et non plus du lab    |
+| 9     | `game/track`, `hud/menus` | mode Track, menus, branchement du HUD sur les vraies valeurs, sauvegarde | le MVP de la spec fonctionnelle 10.4, sous la route du jeu et non plus du lab    |
 | 10+   | `editor`, `rally`, ... | dans l'ordre d'envie de la spec fonctionnelle 10.5                    | une vitrine par module, même règle                                               |
 
 Les fiches qui suivent détaillent chaque étape. Elles sont écrites avant de coder et complétées
@@ -168,6 +169,35 @@ changement de page. Le dessin sur canvas se teste avec un faux contexte 2D (`can
 arrive module par module quand le module qui produit la donnée existe : le compte-tours avec `car`, le
 chrono avec `game-commons`, les cartes avec `game/track`. L'inventaire complet est en spec
 fonctionnelle 7.5.
+
+### 2.2 bis `hud/game`, `hud/commons`, `hud/dialog`
+
+**Ce qu'il possède.** Les composants propres au jeu de la spec fonctionnelle 7.5, écrits avant les
+modules qui produiront leurs valeurs : chaque composant est une fonction de ses entrées et ne connaît
+ni voiture ni piste. `game/` : compte-tours (arc SVG, zone rouge, clignotement au rupteur), rapport
+(flash au changement), vitesse, dégâts (voiture vue du dessus en SVG, douze éléments à pourcentage,
+couleur continue, pulsation au coup), chrono (tour, meilleur, écart ; temps de passage en Rally ;
+temps tenu en Collapse), compte à rebours, jauge de reset, faux sens, témoins d'assistance, palonniers
+tactiles (déplacés depuis la vitrine des entrées). `commons/` : conteneur de canvas (adopte un canvas
+et remonte sa taille par ResizeObserver), barres de caractéristiques, solde de crédits, cartes de piste
+et de voiture, format des temps. `dialog/` : la boîte de résultats sur Material Dialog et le service
+qui l'ouvre et rend le choix. Angular Material et Material Symbols entrent ici : thème sombre unique
+dans `styles.scss`, police d'icônes servie en local par le paquet `material-symbols` pour rester
+utilisable hors ligne.
+
+**Sa vitrine.** `lab/hud` : une fausse course dans le dossier HUD du panneau debug (régime, rapport,
+vitesse, mode et chrono qui tourne, dégâts par élément et bouton « Hit! », compte à rebours, jauge,
+faux sens, témoins, crédits, boîte de résultats), tous les composants posés sur un cadre 16/9 comme
+en course, et les composants de menus en dessous.
+
+**Fait le 2026-09-13.** Décisions prises en route : les animations rejouées (flash, pulsation,
+chute) passent par l'API Web Animations depuis un `effect`, Angular signalant la recréation
+d'éléments par `@for` comme coûteuse ; le package `hud` est testé par le builder de tests Angular
+(`ng test hud`, déclaré dans `angular.json`), parce que les entrées `input()` par signal ne sont pas
+reconnues par le compilateur JIT brut de Vitest ; le contrat d'affichage des dégâts (`DamageReadout`,
+douze éléments en pourcentage) vit dans le `hud` et `car` le produira. Reste au `hud` : l'aperçu des
+tuiles suivantes (avec `track`), le front de disparition (avec Collapse), les menus et options (avec
+les écrans du jeu).
 
 ### 2.3 `commons` et `engine`
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 
-import { startFrameLoop } from '@hexrace/hud';
+import { startFrameLoop } from '@hud/debug/frame-loop';
 import { type TouchPaddle, type TouchSource } from '@hexrace/inputs';
 
 const KNOB_PX = 56;

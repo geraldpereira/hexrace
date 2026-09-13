@@ -2,9 +2,13 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
-    "types": ["vitest/globals", "node"],
+    "types": ["vitest/globals"],
     "noEmit": true,
-    "paths": { "@hud/*": ["./src/*"] }
+    "paths": {
+      "@hud/*": ["./src/*"],
+      "@hexrace/inputs": ["../inputs/src/index.ts"],
+      "@inputs/*": ["../inputs/src/*"]
+    }
   },
-  "include": ["src", "test-setup.ts", "vitest.config.ts"]
+  "include": ["src", "test-setup.ts"]
 }

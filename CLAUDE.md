@@ -48,8 +48,9 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 
 ```
 packages/inputs/   @hexrace/inputs - les entrées : actions, manette / clavier / tactile, fusion.
-packages/hud/      @hexrace/hud    - le seul package à composants ; debug/ enveloppe lil-gui,
-                                     startFrameLoop y sert à toute vitrine qui se rafraîchit.
+packages/hud/      @hexrace/hud    - le seul package à composants : game/ (compte-tours, dégâts,
+                                     chrono…), commons/ (cadre de canvas, cartes), dialog/, debug/
+                                     (lil-gui). Testé par `ng test hud`, pas par Vitest seul.
 apps/web/          @hexrace/web    - l'application Angular 22 : le lab des vitrines, puis le jeu.
 ```
 

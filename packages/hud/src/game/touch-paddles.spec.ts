@@ -1,8 +1,9 @@
+import { inputBinding, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { TouchSource } from '@hexrace/inputs';
 
-import { TouchPaddles } from '@ui/lab/inputs/touch-paddles';
+import { TouchPaddles } from '@hud/game/touch-paddles';
 
 describe('TouchPaddles', () => {
   let frames: FrameRequestCallback[];
@@ -23,8 +24,9 @@ describe('TouchPaddles', () => {
   }> {
     await TestBed.configureTestingModule({ imports: [TouchPaddles] }).compileComponents();
     const source = TestBed.inject(TouchSource);
-    const fixture = TestBed.createComponent(TouchPaddles);
-    fixture.componentRef.setInput('source', source);
+    const fixture = TestBed.createComponent(TouchPaddles, {
+      bindings: [inputBinding('source', signal(source))],
+    });
     await fixture.whenStable();
     return {
       host: fixture.nativeElement as HTMLElement,
@@ -62,7 +64,7 @@ describe('TouchPaddles', () => {
     expect(paddles.knobY(steer)).toBe(300);
   });
 
-  it('copies the source paddles every frame', async () => {
+  it('copies the source paddles every frame and sizes the ring on the travel', async () => {
     const { paddles, source } = await render();
     source.byZone.drive.active = true;
     source.byZone.drive.deflection = 0.3;

@@ -1,5 +1,22 @@
-// Le fond du jeu : sombre, sans marge, pas de défilement de page. Les écrans Angular vivent
-// par-dessus le canvas et prennent tout l'écran.
+@use '@angular/material' as mat;
+@use 'material-symbols/outlined';
+
+// The one dark theme of the game (functional spec 7.5), with the amber the HUD uses everywhere.
+html {
+  color-scheme: dark;
+  @include mat.theme(
+    (
+      color: (
+        theme-type: dark,
+        primary: mat.$orange-palette,
+        tertiary: mat.$yellow-palette,
+      ),
+      typography: system-ui,
+      density: 0,
+    )
+  );
+}
+
 html,
 body {
   margin: 0;

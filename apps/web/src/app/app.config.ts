@@ -1,4 +1,10 @@
-import { provideBrowserGlobalErrorListeners, type ApplicationConfig } from '@angular/core';
+import {
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+  type ApplicationConfig,
+} from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
 import { provideRouter } from '@angular/router';
 
 import { provideInputSources } from '@hexrace/inputs';
@@ -11,5 +17,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(ROUTES),
     ...provideInputSources(),
+    provideAppInitializer(() => {
+      inject(MatIconRegistry).setDefaultFontSetClass('material-symbols-outlined');
+    }),
   ],
 };

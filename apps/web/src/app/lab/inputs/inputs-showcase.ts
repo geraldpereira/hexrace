@@ -11,10 +11,9 @@ import {
   type InputActions,
 } from '@hexrace/inputs';
 
-import { DebugPanel, startFrameLoop, type DebugFolder } from '@hexrace/hud';
+import { DebugPanel, TouchPaddles, startFrameLoop, type DebugFolder } from '@hexrace/hud';
 
 import { Bar } from '@ui/lab/inputs/bar';
-import { TouchPaddles } from '@ui/lab/inputs/touch-paddles';
 
 const ACTION_NAMES = [
   'throttle',

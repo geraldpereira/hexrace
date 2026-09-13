@@ -1,0 +1,54 @@
+<main>
+  <header>
+    <a routerLink="/lab">← lab</a>
+    <h1>hud</h1>
+    <p>Every HUD component, fed by the HUD folder of the debug panel. Nothing here knows a car.</p>
+  </header>
+
+  <section class="race">
+    <div class="frame">
+      <hr-canvas-frame [canvas]="canvas" />
+      <div class="overlay top-left">
+        <hr-race-timer [readout]="timer()" />
+      </div>
+      <div class="overlay top-right">
+        <hr-damage-indicator [damage]="damage()" [hit]="hit()" />
+        <hr-assist-lamps [assists]="assists()" />
+      </div>
+      <div class="overlay bottom-right dashboard">
+        <hr-rev-counter
+          [rpm]="rpm()"
+          [maxRpm]="race.maxRpm"
+          [redlineRpm]="race.redlineRpm"
+          [limiter]="race.limiter"
+        />
+        <hr-gear-indicator [gear]="gear()" [shiftHint]="race.shiftHint" />
+        <hr-speed-indicator [kmh]="kmh()" />
+      </div>
+      <div class="overlay bottom-left">
+        <hr-reset-gauge [progress]="race.resetProgress" />
+      </div>
+      <div class="overlay top-center">
+        <hr-wrong-way [active]="race.wrongWay" />
+      </div>
+    </div>
+  </section>
+
+  <section class="menus">
+    <h2>Out of the race</h2>
+    <div class="row">
+      <hr-credits [amount]="race.credits" />
+    </div>
+    <div class="row cards">
+      <hr-track-card [track]="track" />
+      <hr-track-card [track]="lockedTrack" />
+      <hr-car-card [car]="car" />
+      <hr-car-card [car]="ownedCar" />
+    </div>
+    <div class="row">
+      <hr-stat-bars [stats]="car.stats" />
+    </div>
+  </section>
+</main>
+
+<hr-countdown [step]="countdownStep()" />
