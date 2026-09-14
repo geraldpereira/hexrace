@@ -1,0 +1,30 @@
+{
+  "name": "@hexrace/track",
+  "version": "0.0.0",
+  "private": true,
+  "description": "La piste : l'assemblage des tuiles sur la grille, le format de fichier, la validation, le générateur à graine, la fenêtre de tuiles, son maillage et ses colliders.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@angular/core": "^22.0.0",
+    "@hexrace/commons": "*",
+    "@hexrace/engine": "*",
+    "@hexrace/tile": "*",
+    "lodash-es": "^4.17.21",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^24.0.0",
+    "@types/three": "^0.184.0"
+  }
+}

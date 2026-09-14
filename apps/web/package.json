@@ -24,6 +24,7 @@
     "@hexrace/hud": "*",
     "@hexrace/inputs": "*",
     "@hexrace/tile": "*",
+    "@hexrace/track": "*",
     "lodash-es": "^4.17.21",
     "material-symbols": "^0.35.0",
     "rxjs": "~7.8.0",

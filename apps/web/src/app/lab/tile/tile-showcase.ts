@@ -2,15 +2,8 @@ import { ChangeDetectionStrategy, Component, type OnInit, inject, signal } from 
 import { RouterLink } from '@angular/router';
 import { Vec2 } from '@hexrace/commons';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-import {
-  BodyComponent,
-  CameraComponent,
-  LightComponent,
-  MeshComponent,
-  type GameObject,
-} from '@hexrace/engine';
+import { LightComponent, type GameObject } from '@hexrace/engine';
 import { CanvasFrame, type DebugFolder } from '@hexrace/hud';
 import {
   EnvironmentCatalog,
@@ -24,7 +17,8 @@ import {
   Units,
 } from '@hexrace/tile';
 
-import { PhysicsLab, labPanel } from '@ui/lab/lab-scene';
+import { labPanel } from '@ui/lab/lab-scene';
+import { OrbitLab } from '@ui/lab/orbit-lab';
 import { type ProbeReadout, TileDraft, probeReadout } from '@ui/lab/tile/tile-draft';
 
 const HEADINGS = {
@@ -96,7 +90,7 @@ const EXITS = {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TileShowcase extends PhysicsLab implements OnInit {
+export class TileShowcase extends OrbitLab implements OnInit {
   readonly draft = new TileDraft();
   readonly errors = signal<string[]>([]);
   readonly status = signal('Loading the physics…');
@@ -111,14 +105,11 @@ export class TileShowcase extends PhysicsLab implements OnInit {
   private readonly meshes = inject(TileMeshes);
   private readonly tileBodies = inject(TileBodies);
 
-  private readonly eye = this.scene.spawn('camera', CameraComponent).getOrThrow(CameraComponent);
-  private readonly controls = new OrbitControls(this.eye.camera, this.canvas);
   private tile: GameObject | null = null;
   private tileMesh: THREE.Mesh | null = null;
 
   constructor() {
     super();
-    this.camera = this.eye;
     this.eye.camera.position.set(0, 22, 32);
     this.controls.target.set(0, 2, 0);
     this.scene.spawn('sun', LightComponent);
@@ -128,7 +119,6 @@ export class TileShowcase extends PhysicsLab implements OnInit {
       (f: DebugFolder) => this.buildFolder(f),
       () => {
         this.canvas.removeEventListener('pointermove', this.onPointerMove);
-        this.controls.dispose();
         this.leave();
       },
     );
@@ -149,14 +139,7 @@ export class TileShowcase extends PhysicsLab implements OnInit {
     const group = new THREE.Group();
     group.add(mesh);
     if (this.draft.outline) group.add(this.meshes.outline(build.sweep));
-    const meshComponent = this.scene.instantiate(MeshComponent);
-    meshComponent.object = group;
-    const bodyComponent = this.scene.instantiate(BodyComponent);
-    bodyComponent.body = this.tileBodies.create(triangles);
-    this.tile = this.scene
-      .spawn('tile')
-      .add(meshComponent)
-      .gameObject.add(bodyComponent).gameObject;
+    this.tile = this.solid('tile', group, this.tileBodies.create(triangles));
     this.tileMesh = mesh;
   }
 
@@ -166,12 +149,6 @@ export class TileShowcase extends PhysicsLab implements OnInit {
 
   protected start(): void {
     this.rebuild();
-  }
-
-  protected render(dt: number): void {
-    this.frame(dt);
-    this.controls.update();
-    this.renderer.render(this.eye.camera);
   }
 
   private readonly onPointerMove = (event: PointerEvent): void => {

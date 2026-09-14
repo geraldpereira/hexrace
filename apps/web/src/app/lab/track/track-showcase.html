@@ -1,0 +1,32 @@
+<main>
+  <header>
+    <a routerLink="/lab">← lab</a>
+    <h1>track</h1>
+    <p [class.error]="issues().length > 0">{{ status() }}</p>
+  </header>
+  <div class="stage">
+    <div class="frame">
+      <hr-canvas-frame [canvas]="canvas" (resized)="onResized($event)" />
+    </div>
+    <aside>
+      <div class="map">
+        <hr-canvas-frame [canvas]="mapCanvas" (resized)="onMapResized($event)" />
+      </div>
+      <label for="track-text">Track file</label>
+      <textarea
+        id="track-text"
+        spellcheck="false"
+        [value]="text()"
+        (input)="onText($any($event.target).value)"
+      ></textarea>
+      <button type="button" (click)="loadText()">Load this text</button>
+      @if (issues().length > 0) {
+        <ul class="issues">
+          @for (issue of issues(); track $index) {
+            <li>{{ issue }}</li>
+          }
+        </ul>
+      }
+    </aside>
+  </div>
+</main>

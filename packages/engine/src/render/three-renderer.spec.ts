@@ -2,30 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import * as THREE from 'three';
 
 import { ThreeRenderer } from '@engine/render/three-renderer';
-
-const calls: string[] = [];
+import { webGlCalls as calls } from '@engine/render/web-gl-renderer.mock';
 
 vi.mock('three', async (importOriginal) => {
   const actual = await importOriginal<typeof THREE>();
-  class WebGLRenderer {
-    readonly shadowMap = { enabled: false };
-    constructor(readonly parameters: { canvas: HTMLCanvasElement }) {
-      calls.push('create');
-    }
-    setPixelRatio(ratio: number): void {
-      calls.push(`ratio ${ratio}`);
-    }
-    setSize(w: number, h: number, updateStyle: boolean): void {
-      calls.push(`size ${w}x${h} ${updateStyle}`);
-    }
-    render(): void {
-      calls.push('render');
-    }
-    dispose(): void {
-      calls.push('dispose');
-    }
-  }
-  return { ...actual, WebGLRenderer };
+  const { FakeWebGLRenderer } = await import('@engine/render/web-gl-renderer.mock');
+  return { ...actual, WebGLRenderer: FakeWebGLRenderer };
 });
 
 describe('ThreeRenderer', () => {

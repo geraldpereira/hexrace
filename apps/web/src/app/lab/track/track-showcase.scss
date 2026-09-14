@@ -1,0 +1,82 @@
+main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  gap: 0.5rem;
+  /* The debug panel is fixed at the top right: the page keeps out of its way. */
+  padding: 1rem 17rem 1rem 1rem;
+}
+
+header a {
+  font-size: 0.9rem;
+}
+
+h1 {
+  margin: 0.2rem 0;
+}
+
+header p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+header p.error {
+  color: var(--hr-danger, #ff5a5a);
+  opacity: 1;
+}
+
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.frame {
+  flex: 1;
+  min-width: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+aside {
+  width: 22rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow: auto;
+}
+
+.map {
+  height: 18rem;
+  flex: none;
+  background: #0c0a09;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+label {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+textarea {
+  min-height: 12rem;
+  resize: vertical;
+  font-family: ui-monospace, monospace;
+  font-size: 0.72rem;
+  background: #14100e;
+  color: #e7e5e4;
+  border: 1px solid #292524;
+  border-radius: 0.4rem;
+  padding: 0.4rem;
+}
+
+.issues {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.78rem;
+  color: var(--hr-danger, #ff5a5a);
+}

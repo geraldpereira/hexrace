@@ -3,11 +3,14 @@ import * as THREE from 'three';
 
 import { Random } from '@hexrace/commons';
 import {
+  BodyComponent,
   type CameraComponent,
   FIXED_TIMESTEP,
   GameLoop,
   type GameObject,
+  type JoltBody,
   JoltPhysics,
+  MeshComponent,
   Scenes,
   ThreeRenderer,
 } from '@hexrace/engine';
@@ -79,20 +82,29 @@ export abstract class PhysicsLab {
   }
 
   /** A crate of a random colour, dropped from above within `spread` metres of the centre. */
-  protected dropCrate(spread: number): void {
+  protected dropCrate(spread: number, over = new THREE.Vector3()): void {
     if (!this.physics.ready) return;
     const half = new THREE.Vector3(CRATE_HALF, CRATE_HALF, CRATE_HALF).multiplyScalar(
       0.6 + this.random.next(),
     );
     const position = new THREE.Vector3(
-      (this.random.next() - 0.5) * spread,
-      DROP_HEIGHT,
-      (this.random.next() - 0.5) * spread,
+      over.x + (this.random.next() - 0.5) * spread,
+      over.y + DROP_HEIGHT,
+      over.z + (this.random.next() - 0.5) * spread,
     );
     const colour = new THREE.Color().setHSL(this.random.next(), 0.7, 0.55).getHex();
     this.crates.push(
       this.bodies.spawn(this.scene, 'crate', { half, position, moving: true }, colour),
     );
+  }
+
+  /** A scene object carrying a mesh and a body: what every solid of a showcase is made of. */
+  protected solid(name: string, object: THREE.Object3D, body: JoltBody): GameObject {
+    const mesh = this.scene.instantiate(MeshComponent);
+    mesh.object = object;
+    const attached = this.scene.instantiate(BodyComponent);
+    attached.body = body;
+    return this.scene.spawn(name).add(mesh).gameObject.add(attached).gameObject;
   }
 
   protected clearCrates(): void {

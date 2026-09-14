@@ -41,6 +41,7 @@ export {
   MIN_ROAD_WIDTH,
 } from '@tile/entity/profile';
 export { type SPoint, type Slice } from '@tile/entity/slice';
+export { GENERATOR_SLOPE_FACTOR, MAX_SLOPE } from '@tile/entity/slope';
 export { type Surface } from '@tile/entity/surface';
 export { type Boundaries, type TileSweep } from '@tile/entity/sweep';
 export { type Tile, type TileProfiles } from '@tile/entity/tile';

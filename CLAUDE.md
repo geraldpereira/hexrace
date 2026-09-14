@@ -77,6 +77,9 @@ packages/tile/     @hexrace/tile   - la tuile : la donnée (entity/), la logique
                                      par capacité (geometry/ : TileSweeper, TileGeometry,
                                      TileSurfaces, TileValidation…), TileMeshes (render/),
                                      TileBodies (physics/).
+packages/track/    @hexrace/track  - la piste : placement sur la grille, pentes aux faces, marques de
+                                     départ, validation (geometry/), fichier .track (format/),
+                                     générateur à graine (generation/), TrackMeshes, TrackBodies.
 packages/hud/      @hexrace/hud    - le seul package à composants et pipes : game/ (compte-tours,
                                      dégâts, chrono…), commons/ (cadre de canvas, cartes, pipe time),
                                      dialog/, debug/ (les services autour de lil-gui). Testé par

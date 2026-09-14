@@ -307,6 +307,36 @@ joueur.
 une depuis une graine, caméra libre, curseur « position du joueur », tuiles fautives surlignées. La
 carte 2D du POC 2 y revient, candidate à l'aperçu du HUD.
 
+**Fait le 2026-09-14.** `entity/` porte la donnée seule (`Track`, `TrackMode`, `PlacedTile`,
+`Placement`, `Overlap`, `LineMark`, `Cursor`, `PlayerPose`, `TrackIssue`, `TrackReview`,
+`TrackFileError`, `Dials`, `GeneratorConfig`) et les neuf pistes d'exemple, gardées comme **textes
+de fichier `.track`** dans `entity/examples/` : une donnée, et la garantie que le format tient
+puisque réécrire ce qu'on a lu redonne le fichier octet pour octet. `geometry/` en sept services :
+`TrackProfiles` (piste fermée ou non, profil d'entrée d'une tuile, les deux profils),
+`TrackPlacement` (pose sur la grille depuis `ORIGIN`, fermeture de la boucle, recouvrements, préfixe
+valide), `TrackSlopes` (pente à chaque face par Steffen, en boucle la face 0 et la face n sont la
+même), `TrackSweeps` (le `TileSweep` d'une tuile posée, la transition de l'environnement, le plancher
+de jupe commun, le `TileBuild` de chaque tuile), `TrackMarks` (départ et arrivée selon le mode, pas
+d'épingle sous une ligne), `TrackWindow` (curseur continu, indices devant et derrière, pose du
+joueur), `TrackValidation` (tout 5.5 en `TrackIssue` à code : en-tête, profils, obstacles, fermeture,
+auto-intersection, pente par sorte de sortie, amplitude, épingle sous une ligne). `format/` :
+`ObstacleText`, `TileText` et `TrackFiles` pour la grammaire 3.3, chaque problème avec son numéro de
+ligne, colonnes alignées à l'écriture ; `TrackExamples` sert les exemples lus. `generation/` :
+`GeneratorConfigs` (la chaîne `europe:hexrace:t5s3r4v4o3:n30`), `ExitChoices`, `ProfileSteps`,
+`ObstacleSeeder` et `TrackGenerator`, retour arrière borné compris ; toute piste générée passe la
+validation, vérifié sur quatre jeux de cadrans et cent graines. `render/TrackMeshes` fait un groupe
+par tuile pour que la fenêtre les pose et les retire une à une, contour rouge sur une tuile fautive ;
+`physics/TrackBodies` fait le corps statique de chaque tuile sur les mêmes triangles.
+
+Décidé en route : le générateur construit ses tuiles avec la transition de l'environnement, sinon un
+obstacle accepté à la génération déborde à la validation ; `GENERATOR_SLOPE_FACTOR` et `MAX_SLOPE`
+sortent du barrel de `tile` (deux exports ajoutés, seule retouche à `tile`). La vitrine `lab/track`
+charge un exemple, un texte collé dans la page ou une piste tirée d'une graine, montre la carte 2D à
+côté du cadre 3D, promène un curseur « position du joueur » qui charge et décharge maillages et
+colliders, liste ce que la validation refuse et laisse tomber une caisse sur la route. Ce qui reste :
+le mode Collapse et son front de disparition (avec `game/collapse`), l'aperçu des tuiles suivantes
+dans le HUD (la carte 2D est le brouillon), et l'éditeur qui prolongera une piste tuile à tuile.
+
 ### 2.7 `car`
 
 **Ce qu'il possède.** `entity` : le modèle d'une voiture, ses caractéristiques (masse, centre de

@@ -15,6 +15,8 @@
       "@camera/*": ["../../packages/camera/src/*"],
       "@hexrace/tile": ["../../packages/tile/src/index.ts"],
       "@tile/*": ["../../packages/tile/src/*"],
+      "@hexrace/track": ["../../packages/track/src/index.ts"],
+      "@track/*": ["../../packages/track/src/*"],
       "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
       "@inputs/*": ["../../packages/inputs/src/*"],
       "@hexrace/hud": ["../../packages/hud/src/index.ts"],

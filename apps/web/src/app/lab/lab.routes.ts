@@ -33,4 +33,11 @@ export const LAB_ROUTES: Routes = [
         (m: { TileShowcase: Type<unknown> }) => m.TileShowcase,
       ),
   },
+  {
+    path: 'lab/track',
+    loadComponent: () =>
+      import('@ui/lab/track/track-showcase').then(
+        (m: { TrackShowcase: Type<unknown> }) => m.TrackShowcase,
+      ),
+  },
 ];

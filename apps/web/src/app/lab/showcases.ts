@@ -50,8 +50,9 @@ const PLANNED: readonly Showcase[] = [
   {
     module: 'track',
     path: 'lab/track',
-    summary: 'Load or generate a track, free camera.',
-    ready: false,
+    summary:
+      'Load or generate a track, the tile window around a player cursor, the 2D map and the issues.',
+    ready: true,
   },
   {
     module: 'car',

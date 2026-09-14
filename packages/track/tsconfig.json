@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": [],
+    "paths": {
+      "@track/*": ["./src/*"],
+      "@hexrace/commons": ["../commons/src/index.ts"],
+      "@commons/*": ["../commons/src/*"],
+      "@hexrace/engine": ["../engine/src/index.ts"],
+      "@engine/*": ["../engine/src/*"],
+      "@hexrace/tile": ["../tile/src/index.ts"],
+      "@tile/*": ["../tile/src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts", "src/**/*.mock.ts"]
+}
