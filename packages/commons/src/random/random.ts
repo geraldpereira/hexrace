@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
-import { createRng, type Rng } from '@commons/random/rng';
+import { type Rng } from '@commons/random/rng';
+import { RngFactory } from '@commons/random/rng-factory';
 
 /**
  * Where randomness comes from, so a test can replace it. `seeded` is for what must replay (a
@@ -9,12 +10,14 @@ import { createRng, type Rng } from '@commons/random/rng';
  */
 @Injectable({ providedIn: 'root' })
 export class Random {
+  private readonly factory = inject(RngFactory);
+
   seeded(seed: string): Rng {
-    return createRng(seed);
+    return this.factory.create(seed);
   }
 
   fresh(): Rng {
     // eslint-disable-next-line sonarjs/pseudo-random -- a seed for effects, nothing secure about it.
-    return createRng(`${String(Date.now())}:${String(Math.random())}`);
+    return this.factory.create(`${String(Date.now())}:${String(Math.random())}`);
   }
 }

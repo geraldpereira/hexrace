@@ -18,6 +18,7 @@ export interface Rng {
     shuffle<T>(items: readonly T[]): T[];
 }
 
+
 export function createRng(seed: string): Rng {
     let [a, b, c, d] = cyrb128(seed);
     const next = (): number => {

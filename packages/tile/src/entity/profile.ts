@@ -13,9 +13,6 @@ export type ShoulderType = 1 | 2 | 3;
 export type LandscapeType = 1 | 2;
 export type ShoulderWidth = 0 | 1;
 
-/** What lies at a unit of a face, left to right. */
-export type Zone = 'landscape' | 'shoulder' | 'road';
-
 /**
  * The profile of a face (functional spec 2.1): left to right, landscape, maybe a shoulder, the
  * road, maybe a shoulder, landscape. Everything counts in units, one unit being a car width, and

@@ -1,6 +1,6 @@
-import { type Component } from '@engine/scene/component';
+import { type GameComponent } from '@engine/scene/game-component';
 
-type ComponentClass<T extends Component> = abstract new () => T;
+type ComponentClass<T extends GameComponent> = abstract new () => T;
 
 let nextId = 0;
 
@@ -15,7 +15,7 @@ export class GameObject {
   name = '';
   parent: GameObject | null = null;
   readonly children: GameObject[] = [];
-  private readonly components: Component[] = [];
+  private readonly components: GameComponent[] = [];
   private destroyed = false;
 
   static named(name: string): GameObject {
@@ -25,18 +25,18 @@ export class GameObject {
   }
 
   /** Attaches a component and wakes it; the object may not be in a scene yet. */
-  add<T extends Component>(component: T): T {
+  add<T extends GameComponent>(component: T): T {
     component.gameObject = this;
     this.components.push(component);
     component.awake?.();
     return component;
   }
 
-  get<T extends Component>(ctor: ComponentClass<T>): T | undefined {
+  get<T extends GameComponent>(ctor: ComponentClass<T>): T | undefined {
     return this.components.find((c): c is T => c instanceof ctor);
   }
 
-  getOrThrow<T extends Component>(ctor: ComponentClass<T>): T {
+  getOrThrow<T extends GameComponent>(ctor: ComponentClass<T>): T {
     const c = this.get(ctor);
     if (!c) throw new Error(`GameObject "${this.name}": missing ${ctor.name}`);
     return c;
@@ -54,7 +54,7 @@ export class GameObject {
   }
 
   /** The first component of that class in this subtree, depth first. */
-  findInChildren<T extends Component>(ctor: ComponentClass<T>): T | undefined {
+  findInChildren<T extends GameComponent>(ctor: ComponentClass<T>): T | undefined {
     const here = this.get(ctor);
     if (here) return here;
     for (const child of this.children) {
@@ -64,17 +64,17 @@ export class GameObject {
     return undefined;
   }
 
-  findAllInChildren<T extends Component>(ctor: ComponentClass<T>, out: T[] = []): T[] {
+  findAllInChildren<T extends GameComponent>(ctor: ComponentClass<T>, out: T[] = []): T[] {
     for (const c of this.components) if (c instanceof ctor) out.push(c);
     for (const child of this.children) child.findAllInChildren(ctor, out);
     return out;
   }
 
-  findInScene<T extends Component>(ctor: ComponentClass<T>): T | undefined {
+  findInScene<T extends GameComponent>(ctor: ComponentClass<T>): T | undefined {
     return this.root().findInChildren(ctor);
   }
 
-  findAllInScene<T extends Component>(ctor: ComponentClass<T>): T[] {
+  findAllInScene<T extends GameComponent>(ctor: ComponentClass<T>): T[] {
     return this.root().findAllInChildren(ctor);
   }
 

@@ -1,16 +1,12 @@
 import { Injectable } from '@angular/core';
 
-import {
-  type Environment,
-  type EnvironmentId,
-  ENVIRONMENTS,
-  ENVIRONMENT_IDS,
-} from '@tile/entity/environment';
-import { type Zone } from '@tile/entity/profile';
+import { type Environment, type EnvironmentId } from '@tile/entity/environment';
+import { ENVIRONMENTS, ENVIRONMENT_IDS } from '@tile/entity/environments';
+import { type Zone } from '@tile/entity/zone';
 
 /** The catalogue of environments (functional spec 2.2), looked up by id, and a zone's colour. */
 @Injectable({ providedIn: 'root' })
-export class Environments {
+export class EnvironmentCatalog {
   readonly ids = ENVIRONMENT_IDS;
 
   of(id: EnvironmentId): Environment {

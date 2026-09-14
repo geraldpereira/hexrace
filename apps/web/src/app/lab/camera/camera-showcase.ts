@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import * as THREE from 'three';
 
 import { CameraTuning, FollowCamera } from '@hexrace/camera';
-import { mpsToKmh, radToDeg } from '@hexrace/commons';
+import { Maths } from '@hexrace/commons';
 import {
   CameraComponent,
   FIXED_TIMESTEP,
@@ -93,6 +93,7 @@ export class CameraShowcase {
   readonly showPaddles = signal(this.prefersTouch());
 
   private readonly inputs = inject(Inputs);
+  private readonly maths = inject(Maths);
   private readonly loop = inject(GameLoop);
   private readonly meter = inject(PerfMeter);
   private readonly tuning = inject(CameraTuning);
@@ -139,8 +140,8 @@ export class CameraShowcase {
     this.scene.render(dt);
     this.meter.step(this.loop.stepMs);
     this.meter.frame(performance.now());
-    this.speedKmh.set(Math.round(mpsToKmh(this.dummy.speed)));
-    this.headingDeg.set(Math.round(radToDeg(this.dummy.heading)));
+    this.speedKmh.set(Math.round(this.maths.mpsToKmh(this.dummy.speed)));
+    this.headingDeg.set(Math.round(this.maths.radToDeg(this.dummy.heading)));
     this.renderer.render(this.camera.camera);
   }
 

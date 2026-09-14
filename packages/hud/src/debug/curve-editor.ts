@@ -1,8 +1,9 @@
-import { type GUI } from 'lil-gui';
+import { EnvironmentInjector, inject, runInInjectionContext } from '@angular/core';
 
-import { buildCurveCanvas, buildCurveHeader } from '@hud/debug/curve-dom';
-import { CurveLayout, paintCurve } from '@hud/debug/curve-layout';
+import { CurveLayout } from '@hud/debug/curve-layout';
+import { CurvePainter } from '@hud/debug/curve-painter';
 import { type CurvePoint } from '@hud/debug/curve-point';
+import { CurveWidgets } from '@hud/debug/curve-widgets';
 
 export { type CurvePoint } from '@hud/debug/curve-point';
 
@@ -29,11 +30,14 @@ const HIT_RADIUS = 8;
  * A piecewise-linear curve the developer shapes by hand: drag a point, double-click to add one,
  * shift-click or right-click to remove one, `expand` for a full-screen copy. Points stay ordered
  * along X. Every change calls `onChange`; the host mounts `element`. Drawing is skipped where
- * there is no 2D context, so the arithmetic is testable without a canvas.
+ * there is no 2D context. Built by `CurveEditors` inside the injection context, for `inject()`.
  */
 export class CurveEditor {
   readonly element: HTMLDivElement;
 
+  private readonly widgets = inject(CurveWidgets);
+  private readonly painter = inject(CurvePainter);
+  private readonly injector = inject(EnvironmentInjector);
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D | null;
   private readonly layout: CurveLayout;
@@ -61,8 +65,8 @@ export class CurveEditor {
     this.element = document.createElement('div');
     this.element.style.cssText = 'display:flex;flex-direction:column;gap:2px;padding:4px 0;';
     const expand = opts.expandable === false ? null : () => this.openOverlay();
-    this.element.appendChild(buildCurveHeader(this.title, expand, () => this.reset()));
-    const built = buildCurveCanvas(this.layout.width, this.layout.height);
+    this.element.appendChild(this.widgets.header(this.title, expand, () => this.reset()));
+    const built = this.widgets.canvas(this.layout.width, this.layout.height);
     this.canvas = built.canvas;
     this.ctx = built.ctx;
     this.element.appendChild(this.canvas);
@@ -107,14 +111,19 @@ export class CurveEditor {
     const panel = document.createElement('div');
     panel.style.cssText =
       'background:#1a1a1a;padding:18px;border:1px solid #444;color:#ddd;font-family:system-ui,sans-serif;';
-    const editor = new CurveEditor({
-      ...this.opts,
-      width: OVERLAY_W,
-      height: OVERLAY_H,
-      initialPoints: this.initial,
-      expandable: false,
-      onChange: (pts) => this.commit(pts.map((p) => ({ ...p }))),
-    });
+    const editor = runInInjectionContext(
+      this.injector,
+      () =>
+        new CurveEditor({
+          ...this.opts,
+          width: OVERLAY_W,
+          height: OVERLAY_H,
+          initialPoints: this.initial,
+          expandable: false,
+          onChange: (pts: readonly CurvePoint[]) =>
+            this.commit(pts.map((p: CurvePoint) => ({ ...p }))),
+        }),
+    );
     editor.setPoints(this.points);
     panel.appendChild(editor.element);
     const footer = document.createElement('div');
@@ -211,13 +220,6 @@ export class CurveEditor {
   private draw(): void {
     if (!this.ctx) return;
     const lit = this.dragging ?? this.hover;
-    paintCurve(this.ctx, this.layout, this.points, lit ? this.points.indexOf(lit) : null);
+    this.painter.paint(this.ctx, this.layout, this.points, lit ? this.points.indexOf(lit) : null);
   }
-}
-
-/** Mounts a curve editor as a row of a lil-gui folder. */
-export function addCurveEditor(gui: GUI, opts: CurveEditorOptions): CurveEditor {
-  const editor = new CurveEditor(opts);
-  gui.$children.appendChild(editor.element);
-  return editor;
 }

@@ -2,10 +2,10 @@ import { DOCUMENT } from '@angular/common';
 import { type DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { GUI } from 'lil-gui';
 
-import { exportDebugValues } from '@hud/debug/debug-export';
+import { DebugExports } from '@hud/debug/debug-exports';
+import { DebugPlots } from '@hud/debug/debug-plots';
 import { DebugStore } from '@hud/debug/debug-store';
 import { PerfMeter } from '@hud/debug/perf-meter';
-import { addPlot } from '@hud/debug/debug-plot';
 
 const TOGGLE_CODE = 'Backquote';
 const WIDTH = 280;
@@ -24,6 +24,8 @@ export class DebugPanel {
   private readonly document = inject(DOCUMENT);
   private readonly store = inject(DebugStore);
   private readonly meter = inject(PerfMeter);
+  private readonly plots = inject(DebugPlots);
+  private readonly exports = inject(DebugExports);
   private gui: GUI | null = null;
 
   /** Builds a folder, restores its values, keeps them; destroyed with `destroyRef` when given. */
@@ -88,13 +90,13 @@ export class DebugPanel {
       .onChange((v: boolean) => {
         this.meter.cornerVisible.set(v);
       });
-    addPlot(perf, { label: 'fps', min: 0, max: 120, sample: () => this.meter.fps });
+    this.plots.add(perf, { label: 'fps', min: 0, max: 120, sample: () => this.meter.fps });
     gui.add({ copy: () => this.copyValues(gui) }, 'copy').name('Copy values as JSON');
     gui.add({ reset: () => this.resetAll(gui) }, 'reset').name('Reset all');
   }
 
   private copyValues(gui: GUI): void {
-    const json = exportDebugValues(gui);
+    const json = this.exports.values(gui);
     console.log(json);
     void this.document.defaultView?.navigator.clipboard.writeText(json);
   }

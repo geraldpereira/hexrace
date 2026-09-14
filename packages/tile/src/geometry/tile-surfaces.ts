@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { type Vec2, insideConvex } from '@hexrace/commons';
+import { Polygons, type Vec2 } from '@hexrace/commons';
 
 import { SIDE } from '@tile/entity/layout';
-import { type Obstacle } from '@tile/entity/obstacle';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type Surface } from '@tile/entity/surface';
 import { type TileSweep } from '@tile/entity/sweep';
 import { Layout } from '@tile/geometry/layout';
@@ -19,17 +19,18 @@ import { TileSweeper } from '@tile/geometry/tile-sweeper';
 export class TileSurfaces {
   private readonly layout = inject(Layout);
   private readonly paths = inject(TilePaths);
+  private readonly polygons = inject(Polygons);
   private readonly sweeper = inject(TileSweeper);
 
   at(sweep: TileSweep, p: Vec2, obstacles: readonly Obstacle[] = []): Surface | null {
-    if (!insideConvex(p, this.layout.corners(sweep.center), SIDE * 1e-6)) return null;
+    if (!this.polygons.insideConvex(p, this.layout.corners(sweep.center), SIDE * 1e-6)) return null;
     const s = this.paths.axisParameter(sweep.center, sweep.heading, sweep.exit, p);
     const b = this.sweeper.boundariesAt(sweep, s);
     const offset = p.sub(b.center).dot(b.right);
     const halfRoad = b.roadRight.distanceTo(b.center);
     const profile = this.sweeper.profileAt(sweep, s);
     if (Math.abs(offset) <= halfRoad) {
-      const patch = obstacles.find((o) => coversPatch(o, s, offset));
+      const patch = obstacles.find((o: Obstacle) => this.coversPatch(o, s, offset));
       const type = patch?.kind === 'patch' ? patch.road : profile.road;
       return { zone: 'road', type, s, offset };
     }
@@ -39,10 +40,10 @@ export class TileSurfaces {
     }
     return { zone: 'landscape', type: profile.landscape, s, offset };
   }
-}
 
-function coversPatch(obstacle: Obstacle, s: number, offset: number): boolean {
-  if (obstacle.kind !== 'patch') return false;
-  const across = Math.abs(offset - obstacle.offset) <= obstacle.width / 2;
-  return across && s >= obstacle.from && s <= obstacle.to;
+  private coversPatch(obstacle: Obstacle, s: number, offset: number): boolean {
+    if (obstacle.kind !== 'patch') return false;
+    const across = Math.abs(offset - obstacle.offset) <= obstacle.width / 2;
+    return across && s >= obstacle.from && s <= obstacle.to;
+  }
 }

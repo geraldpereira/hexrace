@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { clamp } from 'lodash-es';
 
 const START_DEG = -135;
 const SWEEP_DEG = 270;
@@ -77,8 +78,8 @@ export class RevCounter {
   readonly redlineRpm = input.required<number>();
   readonly limiter = input(false);
 
-  readonly share = computed(() => clamp01(this.rpm() / this.maxRpm()));
-  readonly redShare = computed(() => clamp01(this.redlineRpm() / this.maxRpm()));
+  readonly share = computed(() => clamp(this.rpm() / this.maxRpm(), 0, 1));
+  readonly redShare = computed(() => clamp(this.redlineRpm() / this.maxRpm(), 0, 1));
   readonly inRed = computed(() => this.rpm() >= this.redlineRpm());
   readonly rpmText = computed(() => String(Math.round(this.rpm() / 10) * 10));
 
@@ -92,8 +93,4 @@ export class RevCounter {
       `${(RADIUS * Math.sin(a)).toFixed(2)} ${(-RADIUS * Math.cos(a)).toFixed(2)}`;
     return `M ${p(a0)} A ${String(RADIUS)} ${String(RADIUS)} 0 ${String(large)} 1 ${p(a1)}`;
   }
-}
-
-function clamp01(v: number): number {
-  return Math.max(0, Math.min(1, v));
 }

@@ -19,8 +19,8 @@ import {
   StatBars,
   TrackCard,
   WrongWay,
-  intactDamage,
-  startFrameLoop,
+  FrameLoop,
+  INTACT_DAMAGE,
   type AssistReadout,
   type CarSummary,
   type DamagePart,
@@ -56,7 +56,7 @@ class FakeRace {
   tcOn = false;
   credits = 12_500;
   hitPart: DamagePart = 'wheelFL';
-  readonly damage: Record<DamagePart, number> = { ...intactDamage() };
+  readonly damage: Record<DamagePart, number> = { ...INTACT_DAMAGE };
 }
 
 /**
@@ -138,7 +138,7 @@ export class HudShowcase {
   constructor() {
     this.panel.register('HUD', (f: DebugFolder) => this.buildFolder(f), inject(DestroyRef));
     this.panel.show();
-    startFrameLoop((now: number) => this.tick(now));
+    inject(FrameLoop).start((now: number) => this.tick(now));
   }
 
   /** The frame tells us its box; the canvas takes that resolution before the next paint. */

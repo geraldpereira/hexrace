@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Vec2, Vec3 } from '@hexrace/commons';
+import { Polygons, Vec3 } from '@hexrace/commons';
 
-import { type Obstacle } from '@tile/entity/obstacle';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type SPoint } from '@tile/entity/slice';
 import { type TileSweep } from '@tile/entity/sweep';
 import { type Paint, type TileBuild, type Triangle3 } from '@tile/entity/triangle';
@@ -28,6 +28,7 @@ export class TileTriangles {
   private readonly geometry = inject(TileGeometry);
   private readonly obstacles = inject(TileObstacles);
   private readonly lines = inject(TileLines);
+  private readonly polygons = inject(Polygons);
   private readonly units = inject(Units);
 
   build(build: TileBuild): Triangle3[] {
@@ -69,14 +70,14 @@ export class TileTriangles {
   ): void {
     const body = this.obstacles.footprint(sweep, obstacle).body;
     const raised = this.raisedBy(obstacle);
-    const top = obstaclePaint(obstacle, 'top');
-    const pieces = obstacle.kind === 'hazard' ? [body] : bandQuads(body);
+    const top = this.obstaclePaint(obstacle, 'top');
+    const pieces = obstacle.kind === 'hazard' ? [body] : this.bandQuads(body);
     for (const piece of pieces)
       this.fan(piece, heightAt, top, out, raised > 0 ? raised : this.flatLift);
     if (raised === 0) return;
-    const side = obstaclePaint(obstacle, 'side');
-    const outline = dedupe(body);
-    const inside = this.units.toWorld(centroid(outline), 0);
+    const side = this.obstaclePaint(obstacle, 'side');
+    const outline = this.dedupe(body);
+    const inside = this.units.toWorld(this.polygons.centroid(outline.map((p: SPoint) => p.at)), 0);
     for (let i = 0; i < outline.length; i++) {
       const a = outline[i]!;
       const b = outline[(i + 1) % outline.length]!;
@@ -96,12 +97,12 @@ export class TileTriangles {
     out: Triangle3[],
     lift = 0,
   ): void {
-    const contour = dedupe(points);
+    const contour = this.dedupe(points);
     if (contour.length < 3) return;
     const lifted = (p: SPoint): Vec3 => this.units.toWorld(p.at, heightAt(p) + lift);
     const a = lifted(contour[0]!);
     for (let i = 1; i + 1 < contour.length; i++) {
-      out.push(oriented(a, lifted(contour[i]!), lifted(contour[i + 1]!), paint, Vec3.UP));
+      out.push(this.oriented(a, lifted(contour[i]!), lifted(contour[i + 1]!), paint, Vec3.UP));
     }
   }
 
@@ -124,40 +125,36 @@ export class TileTriangles {
     const middle = q[0]!.add(q[1]!).scale(0.5);
     const outward = new Vec3(middle.x - inside.x, 0, middle.z - inside.z);
     out.push(
-      oriented(q[0]!, q[1]!, q[2]!, paint, outward),
-      oriented(q[0]!, q[2]!, q[3]!, paint, outward),
+      this.oriented(q[0]!, q[1]!, q[2]!, paint, outward),
+      this.oriented(q[0]!, q[2]!, q[3]!, paint, outward),
     );
   }
-}
 
-function oriented(a: Vec3, b: Vec3, c: Vec3, paint: Paint, outward: Vec3): Triangle3 {
-  const normal = b.sub(a).cross(c.sub(a));
-  return normal.dot(outward) < 0 ? { a, b: c, c: b, paint } : { a, b, c, paint };
-}
-
-function bandQuads(points: readonly SPoint[]): SPoint[][] {
-  const n = points.length / 2;
-  const quads: SPoint[][] = [];
-  for (let i = 0; i + 1 < n; i++) {
-    quads.push([points[i]!, points[i + 1]!, points[2 * n - 2 - i]!, points[2 * n - 1 - i]!]);
+  private oriented(a: Vec3, b: Vec3, c: Vec3, paint: Paint, outward: Vec3): Triangle3 {
+    const normal = b.sub(a).cross(c.sub(a));
+    return normal.dot(outward) < 0 ? { a, b: c, c: b, paint } : { a, b, c, paint };
   }
-  return quads;
-}
 
-function obstaclePaint(obstacle: Obstacle, face: 'top' | 'side'): Paint {
-  const paint: Paint = { kind: 'obstacle', obstacle: obstacle.kind, face };
-  return obstacle.kind === 'patch' ? { ...paint, road: obstacle.road } : paint;
-}
-
-function centroid(points: readonly SPoint[]): Vec2 {
-  return points.reduce((acc, p) => acc.add(p.at), Vec2.ZERO).scale(1 / points.length);
-}
-
-function dedupe(points: readonly SPoint[]): SPoint[] {
-  const result: SPoint[] = [];
-  for (const p of points) {
-    const last = result.at(-1);
-    if (!last || p.at.distanceTo(last.at) > 1e-6) result.push(p);
+  private bandQuads(points: readonly SPoint[]): SPoint[][] {
+    const n = points.length / 2;
+    const quads: SPoint[][] = [];
+    for (let i = 0; i + 1 < n; i++) {
+      quads.push([points[i]!, points[i + 1]!, points[2 * n - 2 - i]!, points[2 * n - 1 - i]!]);
+    }
+    return quads;
   }
-  return result;
+
+  private obstaclePaint(obstacle: Obstacle, face: 'top' | 'side'): Paint {
+    const paint: Paint = { kind: 'obstacle', obstacle: obstacle.kind, face };
+    return obstacle.kind === 'patch' ? { ...paint, road: obstacle.road } : paint;
+  }
+
+  private dedupe(points: readonly SPoint[]): SPoint[] {
+    const result: SPoint[] = [];
+    for (const p of points) {
+      const last = result.at(-1);
+      if (!last || p.at.distanceTo(last.at) > 1e-6) result.push(p);
+    }
+    return result;
+  }
 }

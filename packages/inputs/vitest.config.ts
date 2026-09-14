@@ -13,7 +13,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text-summary', 'html'],
       include: ['src/**/*.ts'],
-      exclude: ['src/**/index.ts', 'src/**/*.spec.ts'],
+      exclude: ['src/**/index.ts', 'src/**/*.spec.ts', 'src/**/*.mock.ts'],
       thresholds: { statements: 100, branches: 100, functions: 100, lines: 100 },
     },
   },

@@ -12,7 +12,7 @@ import {
   type InputSource,
 } from '@hexrace/inputs';
 
-import { DebugPanel, TouchPaddles, startFrameLoop, type DebugFolder } from '@hexrace/hud';
+import { DebugPanel, FrameLoop, TouchPaddles, type DebugFolder } from '@hexrace/hud';
 
 import { Bar } from '@ui/lab/inputs/bar';
 
@@ -75,7 +75,7 @@ export class InputsShowcase {
   constructor() {
     this.panel.register('Inputs', (f: DebugFolder) => this.buildFolder(f), inject(DestroyRef));
     this.panel.show();
-    startFrameLoop(this.tick);
+    inject(FrameLoop).start(this.tick);
   }
 
   /** Shows or hides the paddles; while shown, the mouse stands in for a finger. */

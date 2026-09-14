@@ -3,20 +3,17 @@ import * as THREE from 'three';
 
 import { Random } from '@hexrace/commons';
 import {
-  BodyComponent,
   type CameraComponent,
   FIXED_TIMESTEP,
   GameLoop,
   type GameObject,
   JoltPhysics,
-  MeshComponent,
-  type Scene,
   Scenes,
   ThreeRenderer,
 } from '@hexrace/engine';
 import { DebugPanel, type DebugFolder, type FrameSize, PerfMeter } from '@hexrace/hud';
 
-import { type BoxSpec, boxBody } from '@ui/lab/engine/box-body';
+import { LabBodies } from '@ui/lab/lab-bodies';
 
 const CRATE_HALF = 0.4;
 const DROP_HEIGHT = 8;
@@ -31,27 +28,6 @@ export function labPanel(
   panel.register(title, build, inject(DestroyRef));
   panel.show();
   inject(DestroyRef).onDestroy(cleanup);
-}
-
-/** A box with a mesh and a Jolt body in one object of the scene: a ground when static, a crate when moving. */
-export function spawnBox(
-  scene: Scene,
-  physics: JoltPhysics,
-  name: string,
-  spec: BoxSpec,
-  colour: number,
-): GameObject {
-  const go = scene.spawn(name);
-  const mesh = scene.instantiate(MeshComponent);
-  const geometry = new THREE.BoxGeometry(spec.half.x * 2, spec.half.y * 2, spec.half.z * 2);
-  mesh.object = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: colour }));
-  mesh.object.castShadow = spec.moving;
-  mesh.object.receiveShadow = true;
-  go.add(mesh);
-  const body = scene.instantiate(BodyComponent);
-  body.body = boxBody(physics, spec);
-  go.add(body);
-  return go;
 }
 
 /**
@@ -70,6 +46,7 @@ export abstract class PhysicsLab {
   protected readonly meter = inject(PerfMeter);
   protected readonly random = inject(Random).fresh();
   protected readonly scene = inject(Scenes).create();
+  protected readonly bodies = inject(LabBodies);
   protected readonly crates: GameObject[] = [];
   protected camera: CameraComponent | null = null;
   private alive = true;
@@ -114,7 +91,7 @@ export abstract class PhysicsLab {
     );
     const colour = new THREE.Color().setHSL(this.random.next(), 0.7, 0.55).getHex();
     this.crates.push(
-      spawnBox(this.scene, this.physics, 'crate', { half, position, moving: true }, colour),
+      this.bodies.spawn(this.scene, 'crate', { half, position, moving: true }, colour),
     );
   }
 

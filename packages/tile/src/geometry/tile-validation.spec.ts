@@ -1,32 +1,21 @@
 import { TestBed } from '@angular/core/testing';
-import { Vec2 } from '@hexrace/commons';
 
 import { type TileIssue } from '@tile/entity/issue';
-import { type Obstacle } from '@tile/entity/obstacle';
+import {
+  BUMP,
+  LEFT_BARRIER,
+  MEDIUM_HAZARD,
+  PATCH,
+  RAMP,
+  RIGHT_BARRIER,
+} from '@tile/entity/obstacle.mock';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type Profile } from '@tile/entity/profile';
-import { type TileSweep } from '@tile/entity/sweep';
+import { STANDARD_PROFILE } from '@tile/entity/profile.mock';
+import { SHARP_TURN_SWEEP, STRAIGHT_SWEEP, sweepOf } from '@tile/entity/sweep.mock';
 import { TileValidation } from '@tile/geometry/tile-validation';
 
-const sketch: Profile = {
-  position: 2,
-  roadWidth: 3,
-  leftShoulder: 1,
-  rightShoulder: 1,
-  height: 5,
-  road: 1,
-  shoulder: 1,
-  landscape: 1,
-};
-const straight: TileSweep = {
-  center: Vec2.ZERO,
-  heading: 0,
-  exit: 12,
-  entry: sketch,
-  exitProfile: sketch,
-};
-const sharp: TileSweep = { ...straight, exit: 4 };
-
-const codes = (issues: TileIssue[]): string[] => issues.map((i) => i.code);
+const codes = (issues: TileIssue[]): string[] => issues.map((i: TileIssue) => i.code);
 
 describe('TileValidation', () => {
   let validation: TileValidation;
@@ -37,11 +26,10 @@ describe('TileValidation', () => {
   });
 
   describe('profile', () => {
-    it('accepts the sketch, and a road of five with one shoulder', () => {
-      expect(validation.profile(sketch)).toEqual([]);
-      expect(validation.profile({ ...sketch, position: 1, roadWidth: 5, leftShoulder: 0 })).toEqual(
-        [],
-      );
+    it('accepts the standard profile, and a road of five with one shoulder', () => {
+      expect(validation.profile(STANDARD_PROFILE)).toEqual([]);
+      const fiveWide: Profile = { ...STANDARD_PROFILE, position: 1, roadWidth: 5, leftShoulder: 0 };
+      expect(validation.profile(fiveWide)).toEqual([]);
     });
 
     it.each<[string, Partial<Profile>, string[], string]>([
@@ -89,18 +77,21 @@ describe('TileValidation', () => {
         'height 2.5, expected a whole number from 0 to 1000',
       ],
     ])('refuses %s', (_name, change, expected, message) => {
-      const issues = validation.profile({ ...sketch, ...change });
+      const issues = validation.profile({ ...STANDARD_PROFILE, ...change });
       expect(codes(issues)).toEqual(expected);
       expect(issues[0]?.message).toBe(message);
-      expect(issues.every((i) => i.subject === 'profile')).toBe(true);
+      expect(issues.every((i: TileIssue) => i.subject === 'profile')).toBe(true);
     });
   });
 
   describe('obstacle', () => {
+    const onTheRight: Profile = { ...STANDARD_PROFILE, position: 5 };
+    const roadOnTheRight = sweepOf({ entry: onTheRight });
+
     it.each<[string, Obstacle, TileIssue]>([
       [
         'a hazard outside the tile',
-        { kind: 'hazard', size: 'small', at: 1.2, offset: 0 },
+        { ...MEDIUM_HAZARD, size: 'small', at: 1.2 },
         {
           code: 'obstacle-position',
           subject: 'hazard small at 1.2',
@@ -109,17 +100,17 @@ describe('TileValidation', () => {
       ],
       [
         'a span outside the tile',
-        { kind: 'ramp', from: -0.1, to: 0.5 },
+        { ...RAMP, from: -0.1, to: 0.5 },
         { code: 'obstacle-span', subject: 'ramp', message: 'span -0.1 to 0.5 outside 0 to 1' },
       ],
       [
         'an empty span',
-        { kind: 'ramp', from: 0.6, to: 0.4 },
+        { ...RAMP, from: 0.6, to: 0.4 },
         { code: 'obstacle-empty-span', subject: 'ramp', message: 'span 0.6 to 0.4 is empty' },
       ],
       [
         'a hazard spilling out',
-        { kind: 'hazard', size: 'large', at: 0.02, offset: 3 },
+        { ...MEDIUM_HAZARD, size: 'large', at: 0.02, offset: 3 },
         {
           code: 'obstacle-spills',
           subject: 'hazard large at 0.02',
@@ -128,54 +119,40 @@ describe('TileValidation', () => {
       ],
       [
         'a barrier spilling out',
-        { kind: 'barrier', side: 'right', from: 0, to: 1 },
+        RIGHT_BARRIER,
         { code: 'obstacle-spills', subject: 'right barrier', message: 'spills out of the tile' },
       ],
     ])('refuses %s', (_name, obstacle, expected) => {
-      const sweep =
-        obstacle.kind === 'barrier'
-          ? {
-              ...straight,
-              entry: { ...sketch, position: 5 },
-              exitProfile: { ...sketch, position: 5 },
-            }
-          : straight;
+      const sweep = obstacle.kind === 'barrier' ? roadOnTheRight : STRAIGHT_SWEEP;
       expect(validation.obstacle(sweep, obstacle)).toEqual([expected]);
     });
 
-    it('accepts what fits: a large hazard mid-tile, a left barrier round a sharp turn, a patch', () => {
-      expect(
-        validation.obstacle(straight, { kind: 'hazard', size: 'large', at: 0.5, offset: 3 }),
-      ).toEqual([]);
-      expect(validation.obstacle(sharp, { kind: 'barrier', side: 'left', from: 0, to: 1 })).toEqual(
-        [],
-      );
-      expect(
-        validation.obstacle(straight, {
-          kind: 'patch',
-          from: 0.2,
-          to: 0.4,
-          offset: 0,
-          width: 1,
-          road: 2,
-        }),
-      ).toEqual([]);
-      expect(validation.obstacle(straight, { kind: 'bump', from: 0.2, to: 0.4 })).toEqual([]);
+    it('accepts what fits: a large hazard mid-tile, a left barrier round a sharp turn, a patch, a bump', () => {
+      const large: Obstacle = { ...MEDIUM_HAZARD, size: 'large', offset: 3 };
+      expect(validation.obstacle(STRAIGHT_SWEEP, large)).toEqual([]);
+      expect(validation.obstacle(SHARP_TURN_SWEEP, LEFT_BARRIER)).toEqual([]);
+      expect(validation.obstacle(STRAIGHT_SWEEP, PATCH)).toEqual([]);
+      expect(validation.obstacle(STRAIGHT_SWEEP, BUMP)).toEqual([]);
+    });
+
+    it('describes an obstacle in words, the subject of its issues', () => {
+      expect(validation.describe(MEDIUM_HAZARD)).toBe('hazard medium at 0.5');
+      expect(validation.describe(LEFT_BARRIER)).toBe('left barrier');
+      expect(validation.describe(RAMP)).toBe('ramp');
+      expect(validation.describe(PATCH)).toBe('patch');
     });
   });
 
   it('gathers a tile’s issues, both profiles named, then its obstacles', () => {
-    const sweep: TileSweep = {
-      ...straight,
-      entry: { ...sketch, roadWidth: 0 },
-      exitProfile: { ...sketch, height: -1 },
-    };
-    const issues = validation.tile(sweep, [{ kind: 'ramp', from: 0.6, to: 0.4 }]);
-    expect(issues.map((i) => [i.subject, i.code])).toEqual([
+    const noRoad: Profile = { ...STANDARD_PROFILE, roadWidth: 0 };
+    const belowGround: Profile = { ...STANDARD_PROFILE, height: -1 };
+    const sweep = sweepOf({ entry: noRoad, exitProfile: belowGround });
+    const issues = validation.tile(sweep, [{ ...RAMP, from: 0.6, to: 0.4 }]);
+    expect(issues.map((i: TileIssue) => [i.subject, i.code])).toEqual([
       ['entry profile', 'road-width'],
       ['exit profile', 'height-out-of-range'],
       ['ramp', 'obstacle-empty-span'],
     ]);
-    expect(validation.tile(straight)).toEqual([]);
+    expect(validation.tile(STRAIGHT_SWEEP)).toEqual([]);
   });
 });

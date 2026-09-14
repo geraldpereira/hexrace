@@ -1,47 +1,28 @@
 import { TestBed } from '@angular/core/testing';
-import { Vec2, Vec3 } from '@hexrace/commons';
+import { Vec3 } from '@hexrace/commons';
 
-import { type Obstacle } from '@tile/entity/obstacle';
-import { type Profile } from '@tile/entity/profile';
-import { type TileSweep } from '@tile/entity/sweep';
+import { MEDIUM_HAZARD, PATCH, RAMP, RIGHT_BARRIER } from '@tile/entity/obstacle.mock';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
+import { TEN_STEPS_HIGH } from '@tile/entity/profile.mock';
+import { sweepOf } from '@tile/entity/sweep.mock';
 import { type Triangle3 } from '@tile/entity/triangle';
 import { UNIT_METERS } from '@tile/entity/units';
 import { TileTriangles } from '@tile/geometry/tile-triangles';
 
-const profile: Profile = {
-  position: 2,
-  roadWidth: 3,
-  leftShoulder: 1,
-  rightShoulder: 1,
-  height: 10,
-  road: 1,
-  shoulder: 1,
-  landscape: 1,
-};
-const sweep: TileSweep = {
-  center: new Vec2(0, 0),
-  heading: 0,
-  exit: 2,
-  entry: profile,
-  exitProfile: profile,
-};
+const sweep = sweepOf({ exit: 2, entry: TEN_STEPS_HIGH });
 const obstacles: Obstacle[] = [
-  { kind: 'hazard', size: 'medium', at: 0.75, offset: -0.6 },
-  { kind: 'barrier', side: 'right', from: 0, to: 1 },
-  { kind: 'ramp', from: 0.3, to: 0.45 },
-  { kind: 'patch', from: 0.5, to: 0.65, offset: 0.4, width: 1, road: 3 },
+  { ...MEDIUM_HAZARD, at: 0.75, offset: -0.6 },
+  RIGHT_BARRIER,
+  { ...RAMP, from: 0.3, to: 0.45 },
+  { ...PATCH, from: 0.5, to: 0.65, offset: 0.4 },
 ];
 
-function normal(t: Triangle3): Vec3 {
-  return t.b.sub(t.a).cross(t.c.sub(t.a));
-}
-
-function centre(t: Triangle3): Vec3 {
-  return t.a
+const normal = (t: Triangle3): Vec3 => t.b.sub(t.a).cross(t.c.sub(t.a));
+const centre = (t: Triangle3): Vec3 =>
+  t.a
     .add(t.b)
     .add(t.c)
     .scale(1 / 3);
-}
 
 describe('TileTriangles', () => {
   let triangles: TileTriangles;
@@ -96,11 +77,11 @@ describe('TileTriangles', () => {
     const hazardTop = of('hazard', 'top')[0]!;
     const groundY = 10 * 0.2;
     expect(hazardTop.a.y).toBeCloseTo(groundY + 1 * UNIT_METERS, 6);
+    const hazardPoints = of('hazard', 'top').flatMap((tri: Triangle3) => [tri.a, tri.b, tri.c]);
+    const cx = hazardPoints.reduce((s: number, v: Vec3) => s + v.x, 0) / hazardPoints.length;
+    const cz = hazardPoints.reduce((s: number, v: Vec3) => s + v.z, 0) / hazardPoints.length;
     for (const t of of('hazard', 'side')) {
       const c = centre(t);
-      const hazardCentre = of('hazard', 'top').flatMap((tri: Triangle3) => [tri.a, tri.b, tri.c]);
-      const cx = hazardCentre.reduce((s: number, v: Vec3) => s + v.x, 0) / hazardCentre.length;
-      const cz = hazardCentre.reduce((s: number, v: Vec3) => s + v.z, 0) / hazardCentre.length;
       expect(normal(t).dot(new Vec3(c.x - cx, 0, c.z - cz))).toBeGreaterThan(0);
     }
     const line = list.filter((t: Triangle3) => t.paint.kind === 'line');
@@ -127,18 +108,14 @@ describe('TileTriangles', () => {
   });
 
   it('emits nothing for a patch of no length, whose quads collapse to two points', () => {
-    const flat: Obstacle = { kind: 'patch', from: 0.5, to: 0.5, offset: 0, width: 1, road: 2 };
+    const flat: Obstacle = { ...PATCH, from: 0.5, to: 0.5, offset: 0 };
     const list = triangles.build({ sweep, obstacles: [flat], skirtBase: -2 });
     expect(list.filter((t: Triangle3) => t.paint.kind === 'obstacle')).toHaveLength(0);
   });
 
   it('skips a degenerate face and drops repeated points', () => {
-    const thin: TileSweep = { ...sweep, exit: 4 };
-    const list = triangles.build({
-      sweep: thin,
-      obstacles: [{ kind: 'barrier', side: 'right', from: 0, to: 1 }],
-      skirtBase: -2,
-    });
+    const thin = sweepOf({ exit: 4, entry: TEN_STEPS_HIGH });
+    const list = triangles.build({ sweep: thin, obstacles: [RIGHT_BARRIER], skirtBase: -2 });
     expect(list.length).toBeGreaterThan(0);
     const tiny = list.filter((t: Triangle3) => normal(t).length() < 1e-12);
     expect(tiny).toHaveLength(0);

@@ -1,7 +1,8 @@
 import { type Vec3 } from '@hexrace/commons';
 
-import { type Obstacle } from '@tile/entity/obstacle';
-import { type RoadType, type Zone } from '@tile/entity/profile';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
+import { type RoadType } from '@tile/entity/profile';
+import { type Zone } from '@tile/entity/zone';
 import { type TileSweep } from '@tile/entity/sweep';
 
 /** What a triangle is made of, for the renderer to colour and the physics to know. */

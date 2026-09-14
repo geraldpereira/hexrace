@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { DebugPanel } from '@hexrace/hud';
 
 import { DebugShowcase, DemoSubject } from '@ui/lab/debug/debug-showcase';
+import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
 
 describe('DemoSubject', () => {
   it('reads the curve piecewise, clamped at both ends', () => {
@@ -30,16 +31,11 @@ describe('DemoSubject', () => {
 });
 
 describe('DebugShowcase', () => {
-  let frames: FrameRequestCallback[];
+  let capture: FrameCapture;
 
   beforeEach(() => {
-    frames = [];
+    capture = captureFrames();
     localStorage.clear();
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
-      frames.push(cb);
-      return frames.length;
-    });
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
   });
 
   it('registers a Demo folder with every kind of control, shows the panel and follows the wave', async () => {
@@ -63,7 +59,7 @@ describe('DebugShowcase', () => {
     ]) {
       expect(panel.textContent).toContain(label);
     }
-    frames.forEach((cb) => cb(250));
+    capture.frames.forEach((cb) => cb(250));
     expect(fixture.componentInstance.wave()).not.toBe('0.00');
     const curve = panel.querySelectorAll<HTMLCanvasElement>('canvas')[1]!;
     curve.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;

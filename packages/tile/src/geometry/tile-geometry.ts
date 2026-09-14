@@ -3,14 +3,9 @@ import { type Vec2 } from '@hexrace/commons';
 
 import { type TurnKind } from '@tile/entity/face';
 import { SIDE } from '@tile/entity/layout';
-import { type Zone } from '@tile/entity/profile';
-import {
-  type SPoint,
-  type Slice,
-  type ZonePolygon,
-  type ZoneQuad,
-  type ZoneSide,
-} from '@tile/entity/slice';
+import { type Zone } from '@tile/entity/zone';
+import { type SPoint, type Slice } from '@tile/entity/slice';
+import { type ZonePolygon, type ZoneQuad, type ZoneSide } from '@tile/entity/zone';
 import { type TileSweep } from '@tile/entity/sweep';
 import { Faces } from '@tile/geometry/faces';
 import { Layout } from '@tile/geometry/layout';

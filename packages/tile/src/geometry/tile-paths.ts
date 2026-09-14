@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Vec2 } from '@hexrace/commons';
+import { clamp } from 'lodash-es';
 
 import { type ExitFace } from '@tile/entity/face';
 import { type Heading } from '@tile/entity/grid';
@@ -96,7 +97,7 @@ export class TilePaths {
   /** The `s` of the axis point nearest to a local point; 0.5 at the apex of a sharp turn. */
   localAxisParameter(exit: ExitFace, p: Vec2): number {
     const turn = this.faces.turnOf(exit);
-    if (turn === 0) return clamp01((p.y + APOTHEM) / (2 * APOTHEM));
+    if (turn === 0) return clamp((p.y + APOTHEM) / (2 * APOTHEM), 0, 1);
     const sweep = (Math.abs(turn) * Math.PI) / 3;
     const radius = Math.abs(turn) === 1 ? WIDE_TURN_RADIUS : SHARP_TURN_RADIUS;
     const side = Math.sign(turn);
@@ -108,14 +109,10 @@ export class TilePaths {
     let s = ((start - Math.atan2(dy, dx)) * side) / sweep;
     s = ((s % period) + period) % period;
     if (s > 1 + (period - 1) / 2) s -= period;
-    return clamp01(s);
+    return clamp(s, 0, 1);
   }
 
   axisParameter(center: Vec2, heading: Heading, exit: ExitFace, p: Vec2): number {
     return this.localAxisParameter(exit, this.unrotate(p.sub(center), heading));
   }
-}
-
-function clamp01(value: number): number {
-  return Math.min(1, Math.max(0, value));
 }

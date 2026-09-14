@@ -5,26 +5,14 @@ import { EXIT_FACES } from '@tile/entity/face';
 import { type Heading } from '@tile/entity/grid';
 import { APOTHEM } from '@tile/entity/layout';
 import { type Profile } from '@tile/entity/profile';
-import { type TileSweep } from '@tile/entity/sweep';
+import { HIGH, NARROW_LEFT, NARROW_RIGHT, WIDE } from '@tile/entity/profile.mock';
+import { sweepOf } from '@tile/entity/sweep.mock';
 import { HEIGHT_UNIT } from '@tile/entity/units';
 import { Grid } from '@tile/geometry/grid';
 import { Layout } from '@tile/geometry/layout';
 import { TilePaths } from '@tile/geometry/tile-paths';
 import { TileSweeper } from '@tile/geometry/tile-sweeper';
 
-const narrowLeft: Profile = {
-  position: 2,
-  roadWidth: 1,
-  leftShoulder: 1,
-  rightShoulder: 1,
-  height: 3,
-  road: 1,
-  shoulder: 1,
-  landscape: 1,
-};
-const narrowRight: Profile = { ...narrowLeft, position: 5 };
-const wide: Profile = { ...narrowLeft, position: 1, roadWidth: 5, rightShoulder: 0 };
-const high: Profile = { ...narrowLeft, height: 7, position: 3, roadWidth: 2 };
 const HEADINGS: Heading[] = [0, 1, 2, 3, 4, 5];
 
 describe('TileSweeper', () => {
@@ -43,13 +31,7 @@ describe('TileSweeper', () => {
 
   it('keeps the road and block widths constant while the road shifts, in every turn', () => {
     for (const exit of EXIT_FACES) {
-      const sweep: TileSweep = {
-        center: Vec2.ZERO,
-        heading: 0,
-        exit,
-        entry: narrowLeft,
-        exitProfile: narrowRight,
-      };
+      const sweep = sweepOf({ exit, entry: NARROW_LEFT, exitProfile: NARROW_RIGHT });
       for (let i = 0; i <= 40; i++) {
         const b = sweeper.boundariesAt(sweep, i / 40);
         expect(b.roadLeft.distanceTo(b.roadRight)).toBeCloseTo(1, 6);
@@ -64,7 +46,7 @@ describe('TileSweeper', () => {
     for (const heading of HEADINGS) {
       const center = layout.cellToWorld({ q: -1, r: 2 });
       for (const exit of EXIT_FACES) {
-        const sweep: TileSweep = { center, heading, exit, entry: wide, exitProfile: narrowRight };
+        const sweep = sweepOf({ center, heading, exit, entry: WIDE, exitProfile: NARROW_RIGHT });
         const inn = layout.entryFrame(center, heading);
         const out = layout.exitFrame(center, grid.exitHeading(heading, exit));
         const start = sweeper.boundariesAt(sweep, 0);
@@ -81,40 +63,30 @@ describe('TileSweeper', () => {
   });
 
   it('puts the road centre on the axis shifted by the profile, with a custom transition span', () => {
-    const sweep: TileSweep = {
-      center: Vec2.ZERO,
-      heading: 0,
-      exit: 12,
-      entry: narrowLeft,
-      exitProfile: narrowRight,
+    const spanned = sweepOf({
+      entry: NARROW_LEFT,
+      exitProfile: NARROW_RIGHT,
       transition: { start: 0, end: 1 },
-    };
-    expect(sweeper.roadCenter(sweep, 0).equals(new Vec2(2.5 - 4, -APOTHEM))).toBe(true);
-    expect(sweeper.roadCenter(sweep, 1).equals(new Vec2(5.5 - 4, APOTHEM))).toBe(true);
-    expect(sweeper.roadCenter(sweep, 0.5).x).toBeCloseTo(0, 9);
-    const { transition: _spanned, ...defaulted } = sweep;
-    expect(_spanned).toBeDefined();
+    });
+    expect(sweeper.roadCenter(spanned, 0).equals(new Vec2(2.5 - 4, -APOTHEM))).toBe(true);
+    expect(sweeper.roadCenter(spanned, 1).equals(new Vec2(5.5 - 4, APOTHEM))).toBe(true);
+    expect(sweeper.roadCenter(spanned, 0.5).x).toBeCloseTo(0, 9);
+    const defaulted = sweepOf({ entry: NARROW_LEFT, exitProfile: NARROW_RIGHT });
     expect(sweeper.roadCenter(defaulted, 0.2).x).toBeCloseTo(-1.5, 9);
     expect(sweeper.roadCenter(defaulted, 0.8).x).toBeCloseTo(1.5, 9);
   });
 
   it('takes the entry types before the middle and the exit types after', () => {
-    const sweep: TileSweep = {
-      center: Vec2.ZERO,
-      heading: 0,
-      exit: 2,
-      entry: narrowLeft,
-      exitProfile: high,
-    };
-    expect(sweeper.profileAt(sweep, 0.49)).toBe(narrowLeft);
-    expect(sweeper.profileAt(sweep, 0.5)).toBe(high);
+    const sweep = sweepOf({ exit: 2, entry: NARROW_LEFT, exitProfile: HIGH });
+    expect(sweeper.profileAt(sweep, 0.49)).toBe(NARROW_LEFT);
+    expect(sweeper.profileAt(sweep, 0.5)).toBe(HIGH);
   });
 
   it('gives the profile height over the whole face, for every heading and exit', () => {
     for (const heading of HEADINGS) {
       const center = layout.cellToWorld({ q: 3, r: -1 });
       for (const exit of EXIT_FACES) {
-        const sweep: TileSweep = { center, heading, exit, entry: narrowLeft, exitProfile: high };
+        const sweep = sweepOf({ center, heading, exit, entry: NARROW_LEFT, exitProfile: HIGH });
         const inn = layout.entryFrame(center, heading);
         const out = layout.exitFrame(center, grid.exitHeading(heading, exit));
         for (const u of [0.01, 2, 5.5, 7.99]) {
@@ -126,14 +98,11 @@ describe('TileSweeper', () => {
   });
 
   it('climbs without a step, flat at both ends when the slopes are zero', () => {
-    const sweep: TileSweep = {
-      center: Vec2.ZERO,
-      heading: 0,
-      exit: 12,
-      entry: narrowLeft,
-      exitProfile: high,
+    const sweep = sweepOf({
+      entry: NARROW_LEFT,
+      exitProfile: HIGH,
       transition: { start: 0, end: 1 },
-    };
+    });
     let previous = -Infinity;
     for (let i = 0; i <= 40; i++) {
       const y = -APOTHEM + (2 * APOTHEM * i) / 40;
@@ -152,17 +121,15 @@ describe('TileSweeper', () => {
   });
 
   it('follows the slopes the neighbours dictate: a steady climb is a straight ramp', () => {
-    const length = paths.length(12);
-    const slope = 1 / length;
-    const sweep: TileSweep = {
-      center: Vec2.ZERO,
-      heading: 0,
-      exit: 12,
-      entry: { ...narrowLeft, height: 4 },
-      exitProfile: { ...narrowLeft, height: 5 },
+    const slope = 1 / paths.length(12);
+    const four: Profile = { ...NARROW_LEFT, height: 4 };
+    const five: Profile = { ...NARROW_LEFT, height: 5 };
+    const sweep = sweepOf({
+      entry: four,
+      exitProfile: five,
       entrySlope: slope,
       exitSlope: slope,
-    };
+    });
     for (let i = 0; i <= 10; i++) {
       const s = i / 10;
       expect(sweeper.heightOfS(sweep, s)).toBeCloseTo((4 + s) * HEIGHT_UNIT, 9);

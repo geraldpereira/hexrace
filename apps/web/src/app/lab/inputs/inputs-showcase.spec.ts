@@ -4,17 +4,13 @@ import { provideRouter } from '@angular/router';
 import { GamepadSource, KeyboardSource, TouchSource, provideInputSources } from '@hexrace/inputs';
 
 import { InputsShowcase } from '@ui/lab/inputs/inputs-showcase';
+import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
 
 describe('InputsShowcase', () => {
-  let frames: FrameRequestCallback[];
+  let capture: FrameCapture;
 
   beforeEach(() => {
-    frames = [];
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
-      frames.push(cb);
-      return frames.length;
-    });
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+    capture = captureFrames();
   });
 
   afterEach(() => {
@@ -35,7 +31,7 @@ describe('InputsShowcase', () => {
     const { host, page } = await render();
     expect(host.querySelectorAll('thead th').length).toBe(2 + 3);
     expect(page.rows()).toEqual([]);
-    [...frames].forEach((cb) => cb(16));
+    [...capture.frames].forEach((cb) => cb(16));
     expect(page.rows().length).toBe(11);
     expect(page.rows()[0]?.name).toBe('throttle');
     expect(page.activeSource()).toBe('none');
@@ -45,8 +41,8 @@ describe('InputsShowcase', () => {
     const { page } = await render();
     TestBed.inject(KeyboardSource).smoothingTime = 0;
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW', cancelable: true }));
-    [...frames].forEach((cb) => cb(16));
-    [...frames].forEach((cb) => cb(32));
+    [...capture.frames].forEach((cb) => cb(16));
+    [...capture.frames].forEach((cb) => cb(32));
     expect(page.rows()[0]?.merged).toBe(1);
     expect(page.activeSource()).toBe('keyboard');
     expect(page.connected()[1]).toBe(true);

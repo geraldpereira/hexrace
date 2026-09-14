@@ -29,7 +29,7 @@ export default {
         'Le sous-module `entity` d’un package est le modèle de données : il ne lit que lui-même et ' +
         '`commons` (spec technique 2.1, docs/remise-d-aplomb-tile.md).',
       severity: 'error',
-      from: { path: '^src/entity/' },
+      from: { path: '^src/entity/', pathNot: '\\.(spec|mock)\\.ts$' },
       to: { pathNot: '^src/entity/|/commons/src/', dependencyTypesNot: ['type-only'] },
     },
     {
@@ -38,7 +38,7 @@ export default {
         'Les sous-modules `entity` et `geometry` ne lisent ni three.js ni Jolt : la logique en ' +
         'unités reste testable seule (spec technique 2.1).',
       severity: 'error',
-      from: { path: '^src/(entity|geometry)/' },
+      from: { path: '^src/(entity|geometry)/', pathNot: '\\.(spec|mock)\\.ts$' },
       to: { path: 'node_modules/(three|jolt-physics)/' },
     },
     {

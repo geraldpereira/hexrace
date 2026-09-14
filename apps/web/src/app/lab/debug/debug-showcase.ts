@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { RouterLink } from '@angular/router';
 
 import {
+  CurveEditors,
   DebugPanel,
-  addCurveEditor,
-  addPlot,
-  startFrameLoop,
+  DebugPlots,
+  FrameLoop,
   type CurvePoint,
   type DebugFolder,
 } from '@hexrace/hud';
@@ -110,11 +110,13 @@ export class DebugShowcase {
   readonly wave = signal('0.00');
 
   private readonly panel = inject(DebugPanel);
+  private readonly curves = inject(CurveEditors);
+  private readonly plots = inject(DebugPlots);
 
   constructor() {
     this.panel.register('Demo', (f: DebugFolder) => this.buildFolder(f), inject(DestroyRef));
     this.panel.show();
-    startFrameLoop((now: number) => {
+    inject(FrameLoop).start((now: number) => {
       this.subject.wave = this.subject.sample(now / 1000);
       this.wave.set(this.subject.wave.toFixed(2));
     });
@@ -128,7 +130,7 @@ export class DebugShowcase {
     folder.add(s, 'mode', ['sine', 'square', 'noise']).name('Mode');
     folder.add(s, 'label').name('Label');
     folder.add(s, 'wave', -1, 1, 0.01).name('Wave').listen().disable();
-    addCurveEditor(folder, {
+    this.curves.add(folder, {
       xRange: [0, 1],
       yRange: [0, 1],
       xLabel: 'phase',
@@ -138,6 +140,6 @@ export class DebugShowcase {
         s.curve = [...points];
       },
     });
-    addPlot(folder, { label: 'wave', min: -1, max: 1, sample: () => s.wave });
+    this.plots.add(folder, { label: 'wave', min: -1, max: 1, sample: () => s.wave });
   }
 }

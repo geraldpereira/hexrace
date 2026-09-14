@@ -1,4 +1,4 @@
-import { type Zone } from '@tile/entity/profile';
+import { type Zone } from '@tile/entity/zone';
 
 /** What lies under a point: the zone and its rank in the palette, a patch's road type included. */
 export interface Surface {

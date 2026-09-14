@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 
-import { Component } from '@engine/scene/component';
+import { GameComponent } from '@engine/scene/game-component';
 
 const FOV = 60;
 const NEAR = 0.1;
 const FAR = 500;
 
 /** The camera the scene renders through; the camera module will drive its transform. */
-export class CameraComponent extends Component {
+export class CameraComponent extends GameComponent {
   readonly camera = new THREE.PerspectiveCamera(FOV, 1, NEAR, FAR);
 
   /** Keeps the projection right when the canvas changes shape. */

@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { AssistLamps } from '@hud/game/assist-lamps';
 import { Countdown } from '@hud/game/countdown';
 import { DamageIndicator } from '@hud/game/damage-indicator';
-import { intactDamage } from '@hud/game/damage-readout';
+import { INTACT_DAMAGE } from '@hud/game/damage-readout';
 import { GearIndicator } from '@hud/game/gear-indicator';
 import { RaceTimer, type TimerReadout } from '@hud/game/race-timer';
 import { ResetGauge } from '@hud/game/reset-gauge';
@@ -109,7 +109,7 @@ describe('game components', () => {
   });
 
   it('damage indicator: a colour per state and a pulse on the hit part', async () => {
-    const damage = { ...intactDamage(), engine: 0, wheelFL: 50 };
+    const damage = { ...INTACT_DAMAGE, engine: 0, wheelFL: 50 };
     const { host, instance, set } = await render(DamageIndicator, { damage, hit: null });
     expect(instance.colour('chassis')).toBe('hsl(120 80% 45%)');
     expect(instance.colour('engine')).toBe('hsl(0 80% 45%)');

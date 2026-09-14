@@ -1,8 +1,9 @@
+import { TestBed } from '@angular/core/testing';
 import { GUI } from 'lil-gui';
 
-import { exportDebugValues } from '@hud/debug/debug-export';
+import { DebugExports } from '@hud/debug/debug-exports';
 
-describe('exportDebugValues', () => {
+describe('DebugExports', () => {
   it('lists every tweakable value by folder, against what the code started with', () => {
     const gui = new GUI({ autoPlace: false });
     const subject = { a: 1, deep: { b: 'x' }, readout: 3 };
@@ -14,7 +15,11 @@ describe('exportDebugValues', () => {
     subject.a = 4;
     gui.controllersRecursive().forEach((c) => c.updateDisplay());
 
-    const payload = JSON.parse(exportDebugValues(gui)) as Record<string, unknown[]>;
+    TestBed.configureTestingModule({});
+    const payload = JSON.parse(TestBed.inject(DebugExports).values(gui)) as Record<
+      string,
+      unknown[]
+    >;
     expect(payload['(root)']).toEqual([
       { property: 'a', name: 'A', current: 4, default: 1, changed: true },
     ]);

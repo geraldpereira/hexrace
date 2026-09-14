@@ -1,7 +1,9 @@
+import { TestBed } from '@angular/core/testing';
 import { GUI } from 'lil-gui';
 
 import { fakeContext, mockCanvasContext } from '@hud/debug/canvas.mock';
-import { CurveEditor, addCurveEditor, type CurvePoint } from '@hud/debug/curve-editor';
+import { type CurveEditor, type CurvePoint } from '@hud/debug/curve-editor';
+import { CurveEditors } from '@hud/debug/curve-editors';
 
 const POINTS: CurvePoint[] = [
   { x: 0, y: 0 },
@@ -16,14 +18,17 @@ function pointer(type: string, x: number, y: number, extra: MouseEventInit = {})
 }
 
 describe('CurveEditor', () => {
+  let editors: CurveEditors;
   let changes: CurvePoint[][];
   let editor: CurveEditor;
   let canvas: HTMLCanvasElement;
 
   beforeEach(() => {
+    TestBed.configureTestingModule({});
+    editors = TestBed.inject(CurveEditors);
     changes = [];
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
-    editor = new CurveEditor({
+    editor = editors.create({
       xRange: [0, 1],
       yRange: [0, 1],
       initialPoints: POINTS,
@@ -83,7 +88,7 @@ describe('CurveEditor', () => {
   it('sizes its canvas for a device pixel ratio that reads as zero', () => {
     const original = window.devicePixelRatio;
     Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: 0 });
-    const zero = new CurveEditor({
+    const zero = editors.create({
       xRange: [0, 1],
       yRange: [0, 1],
       initialPoints: POINTS,
@@ -153,7 +158,7 @@ describe('CurveEditor', () => {
   it('paints when it has a context, lighting the point under the pointer', () => {
     const fake = fakeContext();
     mockCanvasContext(fake);
-    const painted = new CurveEditor({
+    const painted = editors.create({
       xRange: [0, 1],
       yRange: [0, 1],
       initialPoints: POINTS,
@@ -176,7 +181,7 @@ describe('CurveEditor', () => {
 
   it('mounts as a row of a lil-gui folder', () => {
     const gui = new GUI({ autoPlace: false });
-    const mounted = addCurveEditor(gui, {
+    const mounted = editors.add(gui, {
       xRange: [0, 1],
       yRange: [0, 2],
       initialPoints: POINTS,

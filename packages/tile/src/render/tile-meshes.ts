@@ -5,10 +5,10 @@ import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { type Vec2 } from '@hexrace/commons';
 
 import { type Environment } from '@tile/entity/environment';
-import { type Obstacle } from '@tile/entity/obstacle';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type TileSweep } from '@tile/entity/sweep';
 import { type Paint, type TileBuild, type Triangle3 } from '@tile/entity/triangle';
-import { Environments } from '@tile/geometry/environments';
+import { EnvironmentCatalog } from '@tile/geometry/environment-catalog';
 import { Layout } from '@tile/geometry/layout';
 import { TileSweeper } from '@tile/geometry/tile-sweeper';
 import { TileTriangles } from '@tile/geometry/tile-triangles';
@@ -39,7 +39,7 @@ export type TileMesh = THREE.Mesh<THREE.BufferGeometry, THREE.MeshLambertMateria
  */
 @Injectable({ providedIn: 'root' })
 export class TileMeshes {
-  private readonly environments = inject(Environments);
+  private readonly environments = inject(EnvironmentCatalog);
   private readonly layout = inject(Layout);
   private readonly sweeper = inject(TileSweeper);
   private readonly triangles = inject(TileTriangles);

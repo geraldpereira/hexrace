@@ -1,28 +1,8 @@
-import { InjectionToken, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { Component } from '@engine/scene/component';
-import { Scene } from '@engine/scene/scene';
+import { GRAVITY, Probe } from '@engine/scene/game-component.mock';
+import { type Scene } from '@engine/scene/scene';
 import { Scenes } from '@engine/scene/scenes';
-
-const GRAVITY = new InjectionToken<number>('GRAVITY');
-
-class Probe extends Component {
-  readonly scene = inject(Scene);
-  readonly gravity = inject(GRAVITY);
-  fixed = 0;
-  rendered: number[] = [];
-  destroyed = false;
-  override fixedUpdate(): void {
-    this.fixed += 1;
-  }
-  override render(dt: number): void {
-    this.rendered.push(dt);
-  }
-  override onDestroy(): void {
-    this.destroyed = true;
-  }
-}
 
 describe('Scene', () => {
   let scene: Scene;

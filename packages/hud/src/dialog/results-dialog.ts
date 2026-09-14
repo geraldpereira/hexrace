@@ -9,7 +9,7 @@ import {
 } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 
-import { formatTime } from '@hud/commons/format-time';
+import { FormatTimePipe } from '@hud/commons/format-time-pipe';
 
 /** What the end of a race has to say (functional spec 4.5). */
 export interface RaceResult {
@@ -61,7 +61,7 @@ export type ResultsChoice = 'retry' | 'home';
 export class ResultsDialog {
   readonly result = inject<RaceResult>(MAT_DIALOG_DATA);
   readonly title = this.result.mode === 'collapse' ? 'Collapsed' : 'Finished';
-  readonly time = formatTime(this.result.timeMs);
+  readonly time = inject(FormatTimePipe).transform(this.result.timeMs);
 
   private readonly ref = inject<MatDialogRef<ResultsDialog, ResultsChoice>>(MatDialogRef);
 

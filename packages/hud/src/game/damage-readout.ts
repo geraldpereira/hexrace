@@ -19,6 +19,17 @@ export type DamagePart = (typeof DAMAGE_PARTS)[number];
 export type DamageReadout = Readonly<Record<DamagePart, number>>;
 
 /** Everything intact. */
-export function intactDamage(): DamageReadout {
-  return Object.fromEntries(DAMAGE_PARTS.map((p) => [p, 100])) as Record<DamagePart, number>;
-}
+export const INTACT_DAMAGE: DamageReadout = {
+  engine: 100,
+  gearbox: 100,
+  steering: 100,
+  chassis: 100,
+  wheelFL: 100,
+  wheelFR: 100,
+  wheelRL: 100,
+  wheelRR: 100,
+  suspensionFL: 100,
+  suspensionFR: 100,
+  suspensionRL: 100,
+  suspensionRR: 100,
+};

@@ -1,32 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { Vec2, Vec3 } from '@hexrace/commons';
+import { Vec3 } from '@hexrace/commons';
 import * as THREE from 'three';
 
 import { type Environment } from '@tile/entity/environment';
-import { type Profile } from '@tile/entity/profile';
-import { type TileSweep } from '@tile/entity/sweep';
+import { PALE_SHOULDER } from '@tile/entity/profile.mock';
+import { sweepOf } from '@tile/entity/sweep.mock';
 import { type Paint, type Triangle3 } from '@tile/entity/triangle';
-import { Environments } from '@tile/geometry/environments';
+import { EnvironmentCatalog } from '@tile/geometry/environment-catalog';
 import { TileTriangles } from '@tile/geometry/tile-triangles';
 import { OBSTACLE_COLORS, TileMeshes } from '@tile/render/tile-meshes';
 
-const profile: Profile = {
-  position: 2,
-  roadWidth: 3,
-  leftShoulder: 1,
-  rightShoulder: 1,
-  height: 5,
-  road: 1,
-  shoulder: 2,
-  landscape: 1,
-};
-const sweep: TileSweep = {
-  center: new Vec2(0, 0),
-  heading: 0,
-  exit: 12,
-  entry: profile,
-  exitProfile: profile,
-};
+const sweep = sweepOf({ entry: PALE_SHOULDER });
 const two: Triangle3[] = [
   { a: new Vec3(0, 0, 0), b: new Vec3(1, 0, 0), c: new Vec3(0, 0, 1), paint: { kind: 'skirt' } },
   { a: new Vec3(1, 0, 0), b: new Vec3(1, 0, 1), c: new Vec3(0, 0, 1), paint: { kind: 'skirt' } },
@@ -39,7 +23,7 @@ describe('TileMeshes', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({});
     meshes = TestBed.inject(TileMeshes);
-    europe = TestBed.inject(Environments).of('europe');
+    europe = TestBed.inject(EnvironmentCatalog).of('europe');
   });
 
   describe('paintColor', () => {

@@ -1,14 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ENVIRONMENTS, ENVIRONMENT_IDS } from '@tile/entity/environment';
-import { Environments } from '@tile/geometry/environments';
+import { ENVIRONMENTS, ENVIRONMENT_IDS } from '@tile/entity/environments';
+import { EnvironmentCatalog } from '@tile/geometry/environment-catalog';
 
-describe('Environments', () => {
-  let environments: Environments;
+describe('EnvironmentCatalog', () => {
+  let environments: EnvironmentCatalog;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    environments = TestBed.inject(Environments);
+    environments = TestBed.inject(EnvironmentCatalog);
   });
 
   it('lists the three environments of the spec and finds each by its id', () => {

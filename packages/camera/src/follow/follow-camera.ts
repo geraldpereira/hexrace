@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CameraComponent, Component } from '@hexrace/engine';
+import { CameraComponent, GameComponent } from '@hexrace/engine';
 import * as THREE from 'three';
 
 import { type CameraTarget } from '@camera/entity/camera-target';
@@ -12,7 +12,7 @@ import { RigSolver } from '@camera/follow/rig-solver';
  * second, so a spin of the car does not whip the view. The first frame, and `snap`, jump at once.
  * Set `target` before the scene starts.
  */
-export class FollowCamera extends Component {
+export class FollowCamera extends GameComponent {
   target!: CameraTarget;
 
   private readonly tuning = inject(CameraTuning);

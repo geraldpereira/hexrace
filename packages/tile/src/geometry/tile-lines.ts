@@ -38,15 +38,15 @@ export class TileLines {
     for (let column = 0; column < columns; column++) {
       const u0 = column / columns;
       const u1 = (column + 1) / columns;
+      const at = (b: Boundaries, u: number, s: number): SPoint => ({
+        at: b.roadLeft.lerp(b.roadRight, u),
+        s,
+      });
       squares.push({
-        points: [across(b0, u0, s0), across(b1, u0, s1), across(b1, u1, s1), across(b0, u1, s0)],
+        points: [at(b0, u0, s0), at(b1, u0, s1), at(b1, u1, s1), at(b0, u1, s0)],
         dark: (row + column) % 2 === 0,
       });
     }
     return squares;
   }
-}
-
-function across(b: Boundaries, u: number, s: number): SPoint {
-  return { at: b.roadLeft.lerp(b.roadRight, u), s };
 }

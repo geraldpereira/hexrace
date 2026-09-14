@@ -1,5 +1,3 @@
-import { type GUI } from 'lil-gui';
-
 export interface PlotOptions {
   label: string;
   min: number;
@@ -100,11 +98,4 @@ export class DebugPlot {
     ctx.textBaseline = 'top';
     ctx.fillText(latest.toFixed(1), WIDTH - 4, 3);
   }
-}
-
-/** Mounts a plot as a row of a lil-gui folder. */
-export function addPlot(folder: GUI, options: PlotOptions): DebugPlot {
-  const plot = new DebugPlot(options);
-  folder.$children.appendChild(plot.element);
-  return plot;
 }

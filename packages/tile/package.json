@@ -2,7 +2,7 @@
   "name": "@hexrace/tile",
   "version": "0.0.0",
   "private": true,
-  "description": "La tuile hexagonale : le modèle du POC 2 (faces, profils, axe, balayage, obstacles) dans entity/, sa géométrie three.js dans render/, son collider Jolt dans physics/.",
+  "description": "La tuile hexagonale : le mod\u00e8le du POC 2 (faces, profils, axe, balayage, obstacles) dans entity/, sa g\u00e9om\u00e9trie three.js dans render/, son collider Jolt dans physics/.",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
@@ -15,11 +15,13 @@
   "dependencies": {
     "@angular/core": "^22.0.0",
     "@hexrace/engine": "*",
+    "lodash-es": "^4.17.21",
     "three": "^0.184.0"
   },
   "devDependencies": {
     "@angular/compiler": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.0.0",
     "@types/three": "^0.184.0"
   }

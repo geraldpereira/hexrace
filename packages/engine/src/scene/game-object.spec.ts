@@ -1,46 +1,5 @@
-import { Component } from '@engine/scene/component';
+import { Killer, Log, Silent } from '@engine/scene/game-component.mock';
 import { GameObject } from '@engine/scene/game-object';
-
-class Log extends Component {
-  static readonly events: string[] = [];
-  label = '';
-  override awake(): void {
-    Log.events.push(`awake ${this.label}`);
-  }
-  override start(): void {
-    Log.events.push(`start ${this.label}`);
-  }
-  override fixedUpdate(): void {
-    Log.events.push(`fixed ${this.label}`);
-  }
-  override render(dt: number): void {
-    Log.events.push(`render ${this.label} ${dt}`);
-  }
-  override onCollisionEnter(other: GameObject): void {
-    Log.events.push(`hit ${this.label} by ${other.name}`);
-  }
-  override onDestroy(): void {
-    Log.events.push(`destroy ${this.label}`);
-  }
-}
-
-class Silent extends Component {}
-
-class Killer extends Component {
-  victim!: GameObject;
-  override fixedUpdate(): void {
-    this.victim.destroy();
-  }
-  override render(): void {
-    this.victim.destroy();
-  }
-}
-
-function log(label: string): Log {
-  const c = new Log();
-  c.label = label;
-  return c;
-}
 
 describe('GameObject', () => {
   beforeEach(() => {
@@ -49,7 +8,7 @@ describe('GameObject', () => {
 
   it('wakes a component when added and finds it by class', () => {
     const go = GameObject.named('car');
-    const c = go.add(log('a'));
+    const c = go.add(Log.named('a'));
     go.add(new Silent());
     expect(c.gameObject).toBe(go);
     expect(Log.events).toEqual(['awake a']);
@@ -63,8 +22,8 @@ describe('GameObject', () => {
     const child = root.addChild(GameObject.named('child'));
     const grandChild = child.addChild(GameObject.named('grandChild'));
     child.add(new Silent());
-    const a = grandChild.add(log('a'));
-    const b = root.addChild(GameObject.named('other')).add(log('b'));
+    const a = grandChild.add(Log.named('a'));
+    const b = root.addChild(GameObject.named('other')).add(Log.named('b'));
     expect(grandChild.root()).toBe(root);
     expect(root.findInChildren(Log)).toBe(a);
     expect(root.findInChildren(Killer)).toBeUndefined();
@@ -76,8 +35,8 @@ describe('GameObject', () => {
 
   it('starts every component once, then ticks parents before children', () => {
     const root = GameObject.named('root');
-    root.add(log('root'));
-    root.addChild(GameObject.named('child')).add(log('child'));
+    root.add(Log.named('root'));
+    root.addChild(GameObject.named('child')).add(Log.named('child'));
     root.startAll();
     root.startAll();
     root.fixedUpdate();
@@ -97,9 +56,9 @@ describe('GameObject', () => {
   it('destroys the subtree, children first, and detaches it', () => {
     const root = GameObject.named('root');
     const child = root.addChild(GameObject.named('child'));
-    child.add(log('child'));
-    child.addChild(GameObject.named('grandChild')).add(log('grandChild'));
-    root.add(log('root'));
+    child.add(Log.named('child'));
+    child.addChild(GameObject.named('grandChild')).add(Log.named('grandChild'));
+    root.add(Log.named('root'));
     Log.events.length = 0;
     child.destroy();
     child.destroy();
@@ -114,7 +73,7 @@ describe('GameObject', () => {
   it('skips a sibling destroyed during the tick', () => {
     const root = GameObject.named('root');
     const victim = GameObject.named('victim');
-    victim.add(log('victim'));
+    victim.add(Log.named('victim'));
     const killer = new Killer();
     killer.victim = victim;
     root.addChild(GameObject.named('killer')).add(killer);
@@ -123,7 +82,7 @@ describe('GameObject', () => {
     root.fixedUpdate();
     expect(Log.events).toEqual(['destroy victim']);
     const victim2 = GameObject.named('victim2');
-    victim2.add(log('victim2'));
+    victim2.add(Log.named('victim2'));
     killer.victim = victim2;
     root.addChild(victim2);
     Log.events.length = 0;
@@ -133,7 +92,7 @@ describe('GameObject', () => {
 
   it('dispatches a collision to every component', () => {
     const go = GameObject.named('car');
-    go.add(log('a'));
+    go.add(Log.named('a'));
     go.add(new Silent());
     go.dispatchCollisionEnter(GameObject.named('wall'));
     expect(Log.events).toEqual(['awake a', 'hit a by wall']);

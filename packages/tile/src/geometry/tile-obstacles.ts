@@ -3,13 +3,12 @@ import { type Vec2 } from '@hexrace/commons';
 
 import {
   type Barrier,
-  type Footprint,
-  type Hazard,
-  type Obstacle,
   BARRIER_BODY_WIDTH,
   BARRIER_FOOTPRINT_WIDTH,
-  HAZARD_FOOTPRINT,
-} from '@tile/entity/obstacle';
+} from '@tile/entity/obstacles/barrier';
+import { type Footprint } from '@tile/entity/obstacles/footprint';
+import { type Hazard, HAZARD_FOOTPRINT } from '@tile/entity/obstacles/hazard';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type SPoint } from '@tile/entity/slice';
 import { type Boundaries, type TileSweep } from '@tile/entity/sweep';
 import { TileSweeper } from '@tile/geometry/tile-sweeper';

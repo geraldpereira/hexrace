@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
-import { formatTime } from '@hud/commons/format-time';
+import { FormatTimePipe } from '@hud/commons/format-time-pipe';
 
 /** A track as the pick screens show it (functional spec 7.5). */
 export interface TrackSummary {
@@ -89,8 +89,11 @@ export interface TrackSummary {
 export class TrackCard {
   readonly track = input.required<TrackSummary>();
   readonly lengthText = computed(() => `${(this.track().lengthM / 1000).toFixed(1)} km`);
+
+  private readonly time = inject(FormatTimePipe);
+
   readonly bestText = computed(() => {
     const best = this.track().bestMs;
-    return best === null ? 'no time yet' : formatTime(best);
+    return best === null ? 'no time yet' : this.time.transform(best);
   });
 }

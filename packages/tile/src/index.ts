@@ -4,12 +4,8 @@
  * `TileBodies` (physics) build on the same triangles in metres. A tile knows no track: the track
  * resolves the entry profile, the slopes and the position into a `TileSweep`.
  */
-export {
-  type Environment,
-  type EnvironmentId,
-  ENVIRONMENTS,
-  ENVIRONMENT_IDS,
-} from '@tile/entity/environment';
+export { type Environment, type EnvironmentId } from '@tile/entity/environment';
+export { ENVIRONMENTS, ENVIRONMENT_IDS } from '@tile/entity/environments';
 export {
   type ExitFace,
   type Face,
@@ -23,15 +19,12 @@ export { type Cell, type Heading, type Pose } from '@tile/entity/grid';
 export { type TileIssue, type TileIssueCode } from '@tile/entity/issue';
 export { type FaceFrame, SIDE } from '@tile/entity/layout';
 export { type CheckerSquare, LINE_AT } from '@tile/entity/line';
-export {
-  type Barrier,
-  type Footprint,
-  type Hazard,
-  type HazardSize,
-  type Obstacle,
-  type Patch,
-  type RoadBand,
-} from '@tile/entity/obstacle';
+export { type Barrier } from '@tile/entity/obstacles/barrier';
+export { type Footprint } from '@tile/entity/obstacles/footprint';
+export { type Hazard, type HazardSize } from '@tile/entity/obstacles/hazard';
+export { type Obstacle } from '@tile/entity/obstacles/obstacle';
+export { type Patch } from '@tile/entity/obstacles/patch';
+export { type RoadBand } from '@tile/entity/obstacles/road-band';
 export { type PathSample, type TransitionSpan } from '@tile/entity/path';
 export {
   type LandscapeType,
@@ -39,7 +32,6 @@ export {
   type RoadType,
   type ShoulderType,
   type ShoulderWidth,
-  type Zone,
   FACE_WIDTH,
   MAX_BLOCK_WIDTH,
   MAX_HEIGHT,
@@ -48,17 +40,12 @@ export {
   MIN_LANDSCAPE_WIDTH,
   MIN_ROAD_WIDTH,
 } from '@tile/entity/profile';
-export {
-  type SPoint,
-  type Slice,
-  type ZonePolygon,
-  type ZoneQuad,
-  type ZoneSide,
-} from '@tile/entity/slice';
+export { type SPoint, type Slice } from '@tile/entity/slice';
 export { type Surface } from '@tile/entity/surface';
 export { type Boundaries, type TileSweep } from '@tile/entity/sweep';
 export { type Tile, type TileProfiles } from '@tile/entity/tile';
 export { type Paint, type TileBuild, type Triangle3 } from '@tile/entity/triangle';
+export { type Zone, type ZonePolygon, type ZoneQuad, type ZoneSide } from '@tile/entity/zone';
 export {
   HEIGHT_STEP_METERS,
   HEIGHT_UNIT,
@@ -66,7 +53,7 @@ export {
   SKIRT_DEPTH_METERS,
   UNIT_METERS,
 } from '@tile/entity/units';
-export { Environments } from '@tile/geometry/environments';
+export { EnvironmentCatalog } from '@tile/geometry/environment-catalog';
 export { Faces } from '@tile/geometry/faces';
 export { Grid } from '@tile/geometry/grid';
 export { Layout } from '@tile/geometry/layout';

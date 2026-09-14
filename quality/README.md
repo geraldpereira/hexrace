@@ -22,3 +22,7 @@ no build step, and `tsconfig.json` here is what makes their `// @ts-check` mean 
   `eslint.config.js`, argued in `docs/remise-d-aplomb-tile.md`): no function, class or decorator,
   no Angular, three or Jolt import. The data model stays inert and serialisable; the logic is a
   service somewhere else.
+- **No module-level function in a package** (plain `no-restricted-syntax` selectors in
+  `eslint.config.js`, argued in `docs/remise-d-aplomb-2.md`): a capability is a method of a
+  service, a private helper a private method; the one exception is an Angular provider factory
+  named `provide*`. Specs and mocks are not checked.

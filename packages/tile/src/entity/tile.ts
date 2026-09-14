@@ -1,5 +1,5 @@
 import { type ExitFace } from '@tile/entity/face';
-import { type Obstacle } from '@tile/entity/obstacle';
+import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type Profile } from '@tile/entity/profile';
 
 /**

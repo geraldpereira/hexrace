@@ -15,6 +15,28 @@ import { oneClassPerFile } from './quality/eslint-rules/one-class-per-file.js';
  * `entity/` n'est que de la donnée : ni fonction, ni classe, ni décorateur, ni Angular
  * (docs/remise-d-aplomb-tile.md, section 3).
  */
+const NO_CONSTRUCTOR_PARAMS = {
+  selector: "MethodDefinition[kind='constructor'] > FunctionExpression[params.length>0]",
+  message:
+    'Pas de paramètre de constructeur : les dépendances viennent de inject(), et un test les remplace par TestBed.',
+};
+
+/** Dans un package, une capacité est un service ; la seule fonction de module admise est un `provide*` Angular. */
+const NO_MODULE_FUNCTIONS = [
+  {
+    selector:
+      'Program > FunctionDeclaration:not([id.name=/^provide/]), Program > ExportNamedDeclaration > FunctionDeclaration:not([id.name=/^provide/])',
+    message:
+      'Pas de fonction au niveau du module dans un package : une capacité est une méthode d’un service (docs/remise-d-aplomb-2.md, section 3).',
+  },
+  {
+    selector:
+      'Program > VariableDeclaration > VariableDeclarator > :matches(ArrowFunctionExpression, FunctionExpression), Program > ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > :matches(ArrowFunctionExpression, FunctionExpression)',
+    message:
+      'Pas de fonction au niveau du module dans un package : une capacité est une méthode d’un service (docs/remise-d-aplomb-2.md, section 3).',
+  },
+];
+
 export default tseslint.config(
   {
     ignores: ['**/dist/**', '**/.angular/**', '**/node_modules/**', '**/coverage/**', 'poc/**'],
@@ -83,33 +105,28 @@ export default tseslint.config(
   },
 
   {
-    files: ['packages/*/src/**/*.ts', 'apps/web/src/**/*.ts'],
-    ignores: ['**/*.spec.ts'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: "MethodDefinition[kind='constructor'] > FunctionExpression[params.length>0]",
-          message:
-            'Pas de paramètre de constructeur : les dépendances viennent de inject(), et un test les remplace par TestBed.',
-        },
-      ],
-    },
+    files: ['apps/web/src/**/*.ts'],
+    ignores: ['**/*.spec.ts', '**/*.mock.ts'],
+    rules: { 'no-restricted-syntax': ['error', NO_CONSTRUCTOR_PARAMS] },
   },
 
   {
     files: ['packages/*/src/**/*.ts'],
-    rules: { 'hexrace/one-class-per-file': 'error' },
+    ignores: ['**/*.spec.ts', '**/*.mock.ts'],
+    rules: {
+      'hexrace/one-class-per-file': 'error',
+      'no-restricted-syntax': ['error', NO_CONSTRUCTOR_PARAMS, ...NO_MODULE_FUNCTIONS],
+    },
   },
 
   {
-    files: ['packages/commons/src/math/*.ts'],
-    rules: { 'no-restricted-syntax': 'off' },
+    files: ['packages/commons/src/math/vec2.ts', 'packages/commons/src/math/vec3.ts'],
+    rules: { 'no-restricted-syntax': ['error', ...NO_MODULE_FUNCTIONS] },
   },
 
   {
     files: ['packages/*/src/entity/**/*.ts'],
-    ignores: ['**/*.spec.ts'],
+    ignores: ['**/*.spec.ts', '**/*.mock.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',

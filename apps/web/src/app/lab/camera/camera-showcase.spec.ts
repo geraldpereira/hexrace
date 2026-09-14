@@ -3,70 +3,28 @@ import { provideRouter } from '@angular/router';
 import type * as THREE from 'three';
 
 import { ThreeRenderer } from '@hexrace/engine';
-import { IDLE_ACTIONS, INPUT_SOURCES, type InputActions, type InputSource } from '@hexrace/inputs';
+import { INPUT_SOURCES } from '@hexrace/inputs';
 
 import { CameraShowcase } from '@ui/lab/camera/camera-showcase';
-
-class ScriptedSource implements InputSource {
-  readonly id = 'gamepad' as const;
-  readonly actions: InputActions = { ...IDLE_ACTIONS };
-  connected = true;
-  poll(): void {
-    // The test sets the actions by hand.
-  }
-}
+import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
+import { panelRow } from '@ui/testing/panel.mock';
+import { stubResizeObserver } from '@ui/testing/resize-observer.mock';
+import { ScriptedSource } from '@ui/testing/scripted-source.mock';
 
 describe('CameraShowcase', () => {
-  let frames: FrameRequestCallback[];
+  let capture: FrameCapture;
   let rendered: THREE.PerspectiveCamera[];
   let source: ScriptedSource;
-  let clock: number;
 
   beforeEach(() => {
-    frames = [];
+    capture = captureFrames({ clock: true });
     rendered = [];
-    clock = performance.now();
-    vi.spyOn(performance, 'now').mockImplementation(() => clock);
     source = new ScriptedSource();
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
-      frames.push(cb);
-      return frames.length;
-    });
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
     vi.spyOn(ThreeRenderer.prototype, 'render').mockImplementation((camera: THREE.Camera) => {
       rendered.push(camera as THREE.PerspectiveCamera);
     });
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        constructor(private readonly cb: ResizeObserverCallback) {}
-        observe(): void {
-          queueMicrotask(() => {
-            this.cb(
-              [{ contentRect: { width: 400, height: 200 } } as ResizeObserverEntry],
-              this as unknown as ResizeObserver,
-            );
-          });
-        }
-        disconnect(): void {
-          // Nothing to disconnect.
-        }
-      },
-    );
+    stubResizeObserver({ width: 400, height: 200 });
   });
-
-  function panelRow(name: string): Element {
-    const rows = [...document.querySelectorAll('.lil-controller')];
-    return rows.find((r) => r.querySelector('.lil-name')?.textContent === name)!;
-  }
-
-  function tick(count: number): void {
-    for (let i = 0; i < count; i++) {
-      clock += 20;
-      const pending = frames.splice(0);
-      for (const cb of pending) cb(clock);
-    }
-  }
 
   async function render(): Promise<{ host: HTMLElement; page: CameraShowcase; destroy(): void }> {
     await TestBed.configureTestingModule({
@@ -87,7 +45,7 @@ describe('CameraShowcase', () => {
     const renderer = TestBed.inject(ThreeRenderer);
     expect(renderer.scene.children).toHaveLength(5);
     expect([renderer.width, renderer.height]).toEqual([400, 200]);
-    tick(2);
+    capture.tick(2);
     expect(rendered).toHaveLength(2);
     expect(rendered[0]!.aspect).toBe(2);
     expect(page.speedKmh()).toBe(0);
@@ -99,23 +57,23 @@ describe('CameraShowcase', () => {
   it('drives the dummy with the inputs, the camera following, and resets from the panel', async () => {
     const { page } = await render();
     source.actions.throttle = 1;
-    tick(30);
+    capture.tick(30);
     expect(page.speedKmh()).toBeGreaterThan(0);
     const camera = rendered.at(-1)!;
     expect(camera.position.z).toBeGreaterThan(-20);
     source.actions.steer = 1;
-    tick(30);
+    capture.tick(30);
     expect(page.headingDeg()).toBeLessThan(0);
     source.actions.throttle = 0;
     source.actions.brake = 1;
-    tick(60);
+    capture.tick(60);
     expect(page.speedKmh()).toBe(0);
 
     panelRow('Next tile known').querySelector('input')!.click();
-    tick(1);
+    capture.tick(1);
     panelRow('Snap camera').querySelector('button')!.click();
     panelRow('Reset dummy').querySelector('button')!.click();
-    tick(1);
+    capture.tick(1);
     expect(page.headingDeg()).toBe(0);
     expect(rendered.at(-1)!.position.toArray()).toEqual([0, 5, -9]);
   });

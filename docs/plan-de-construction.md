@@ -227,7 +227,7 @@ la vitrine de l'étape est celle d'`engine`. Couverture et type-coverage à 100 
 image plafonnée à 0,1 s, cinq pas au plus puis abandon du retard), qui expose `alpha`, `stepMs` et
 `frameMs` ; `Scenes.create()` fabrique une `Scene` avec son injecteur enfant (`createEnvironmentInjector`),
 dans lequel `instantiate` construit les composants pour que leurs `inject()` résolvent, et `destroy`
-emporte l'arbre et l'injecteur ; `GameObject` / `Component` sans paramètre de constructeur, les
+emporte l'arbre et l'injecteur ; `GameObject` / `GameComponent` (renommé le 2026-09-14) sans paramètre de constructeur, les
 données par champs publics posés avant `add`. Deux services nommés pour ce qu'ils sont, sans
 interface ni jeton devant (décision du 2026-09-13) : `ThreeRenderer` (WebGL créé au premier rendu,
 canvas persistant, ratio de pixels plafonné à 2 ; les tests remplacent `WebGLRenderer` par `vi.mock`

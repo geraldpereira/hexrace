@@ -2,32 +2,18 @@ import { TestBed } from '@angular/core/testing';
 import { Vec2 } from '@hexrace/commons';
 
 import { APOTHEM } from '@tile/entity/layout';
-import { type Obstacle } from '@tile/entity/obstacle';
-import { type Profile } from '@tile/entity/profile';
-import { type TileSweep } from '@tile/entity/sweep';
+import { LEFT_BARRIER, PATCH } from '@tile/entity/obstacle.mock';
+import { type Patch } from '@tile/entity/obstacles/patch';
+import { DARK_EXIT, PALE_SHOULDER } from '@tile/entity/profile.mock';
+import { sweepOf } from '@tile/entity/sweep.mock';
 import { TileSurfaces } from '@tile/geometry/tile-surfaces';
 
-const profile: Profile = {
-  position: 2,
-  roadWidth: 3,
-  leftShoulder: 1,
-  rightShoulder: 1,
-  height: 5,
-  road: 1,
-  shoulder: 2,
-  landscape: 1,
-};
-const exitProfile: Profile = { ...profile, road: 3, shoulder: 3, landscape: 2 };
-const straight: TileSweep = {
-  center: new Vec2(0, 0),
-  heading: 0,
-  exit: 12,
-  entry: profile,
-  exitProfile,
+const straight = sweepOf({
+  entry: PALE_SHOULDER,
+  exitProfile: DARK_EXIT,
   transition: { start: 0.4, end: 0.6 },
-};
-const patch: Obstacle = { kind: 'patch', from: 0.6, to: 0.9, offset: 1, width: 1, road: 2 };
-const barrier: Obstacle = { kind: 'barrier', side: 'left', from: 0, to: 1 };
+});
+const patch: Patch = { ...PATCH, from: 0.6, to: 0.9, offset: 1, road: 2 };
 
 describe('TileSurfaces', () => {
   let surfaces: TileSurfaces;
@@ -73,12 +59,12 @@ describe('TileSurfaces', () => {
 
   it('lets a patch replace the road type where it covers the point, and nowhere else', () => {
     const covered = new Vec2(0.5, APOTHEM / 2);
-    expect(surfaces.at(straight, covered, [barrier, patch])).toMatchObject({
+    expect(surfaces.at(straight, covered, [LEFT_BARRIER, patch])).toMatchObject({
       zone: 'road',
       type: 2,
     });
     expect(surfaces.at(straight, new Vec2(-1.5, APOTHEM / 2), [patch])).toMatchObject({ type: 3 });
     expect(surfaces.at(straight, new Vec2(0.5, -APOTHEM / 2), [patch])).toMatchObject({ type: 1 });
-    expect(surfaces.at(straight, covered, [barrier])).toMatchObject({ type: 3 });
+    expect(surfaces.at(straight, covered, [LEFT_BARRIER])).toMatchObject({ type: 3 });
   });
 });

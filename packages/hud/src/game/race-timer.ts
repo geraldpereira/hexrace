@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 
-import { formatTime } from '@hud/commons/format-time';
+import { FormatTimePipe } from '@hud/commons/format-time-pipe';
 
 export type RaceMode = 'track' | 'rally' | 'collapse';
 
@@ -20,6 +20,7 @@ export interface TimerReadout {
 
 @Component({
   selector: 'hr-race-timer',
+  imports: [FormatTimePipe],
   template: `
     <div class="current">{{ currentText() }}</div>
     @switch (readout().mode) {
@@ -35,7 +36,7 @@ export interface TimerReadout {
       @case ('rally') {
         <ol class="splits">
           @for (split of readout().splitsMs; track $index) {
-            <li>{{ format(split) }}</li>
+            <li>{{ split | time }}</li>
           }
         </ol>
       }
@@ -83,17 +84,16 @@ export interface TimerReadout {
 })
 export class RaceTimer {
   readonly readout = input.required<TimerReadout>();
-  readonly currentText = computed(() => formatTime(this.readout().currentMs));
+
+  private readonly time = inject(FormatTimePipe);
+
+  readonly currentText = computed(() => this.time.transform(this.readout().currentMs));
   readonly bestText = computed(() => {
     const best = this.readout().bestMs;
-    return best === null ? '--' : formatTime(best);
+    return best === null ? '--' : this.time.transform(best);
   });
   readonly deltaText = computed(() => {
     const delta = this.readout().deltaMs;
-    return delta === null ? null : formatTime(delta, { signed: true });
+    return delta === null ? null : this.time.transform(delta, { signed: true });
   });
-
-  format(ms: number): string {
-    return formatTime(ms);
-  }
 }

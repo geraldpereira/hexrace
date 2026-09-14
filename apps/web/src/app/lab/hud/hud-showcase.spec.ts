@@ -4,45 +4,21 @@ import { provideRouter } from '@angular/router';
 import { DebugPanel } from '@hexrace/hud';
 
 import { HudShowcase } from '@ui/lab/hud/hud-showcase';
+import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
+import { panelButton } from '@ui/testing/panel.mock';
+import { stubResizeObserver } from '@ui/testing/resize-observer.mock';
 
 describe('HudShowcase', () => {
-  let frames: FrameRequestCallback[];
+  let capture: FrameCapture;
 
   beforeEach(() => {
-    frames = [];
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
-      frames.push(cb);
-      return frames.length;
-    });
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        constructor(private readonly cb: ResizeObserverCallback) {}
-        observe(): void {
-          queueMicrotask(() => {
-            this.cb(
-              [{ contentRect: { width: 320, height: 180 } } as ResizeObserverEntry],
-              this as unknown as ResizeObserver,
-            );
-          });
-        }
-        disconnect(): void {
-          // Nothing to disconnect.
-        }
-      },
-    );
+    capture = captureFrames();
+    stubResizeObserver({ width: 320, height: 180 });
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
-
-  function panelButton(name: string): HTMLButtonElement {
-    const rows = [...document.querySelectorAll('.lil-controller')];
-    const row = rows.find((r) => r.querySelector('.lil-name')?.textContent === name);
-    return row!.querySelector('button')!;
-  }
 
   async function render(): Promise<{ host: HTMLElement; page: HudShowcase }> {
     await TestBed.configureTestingModule({
@@ -79,7 +55,7 @@ describe('HudShowcase', () => {
 
   it('follows the fake race every frame, timer running, and paints the fake canvas', async () => {
     const { page } = await render();
-    [...frames].forEach((cb) => cb(500));
+    [...capture.frames].forEach((cb) => cb(500));
     const fill = vi.fn();
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
       fillRect: fill,
@@ -89,8 +65,8 @@ describe('HudShowcase', () => {
     page.race.gear = 4;
     page.race.kmh = 120;
     page.race.tcOwned = true;
-    [...frames].forEach((cb) => cb(1000));
-    [...frames].forEach((cb) => cb(1500));
+    [...capture.frames].forEach((cb) => cb(1000));
+    [...capture.frames].forEach((cb) => cb(1500));
     expect(page.rpm()).toBe(3000);
     expect(page.gear()).toBe(4);
     expect(page.kmh()).toBe(120);
@@ -101,7 +77,7 @@ describe('HudShowcase', () => {
     expect(page.canvas.height).toBe(180);
     page.race.running = false;
     const held = page.timer().currentMs;
-    [...frames].forEach((cb) => cb(2000));
+    [...capture.frames].forEach((cb) => cb(2000));
     expect(page.timer().currentMs).toBe(held);
   });
 

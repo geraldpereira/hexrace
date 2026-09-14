@@ -33,8 +33,16 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
   dependency-cruiser refusent le reste. La logique vit dans des services d'un autre sous-module
   (`geometry/` pour la tuile, `merge/` pour les entrées, `follow/` pour la caméra).
 - **Un fichier, une classe, nommée pareil** (`hexrace/one-class-per-file`) : `TileSweeper` vit dans
-  `tile-sweeper.ts`. Les fonctions libres se limitent à l'arithmétique sans état de `commons/math`
-  et aux aides privées d'un fichier ; une capacité est un service.
+  `tile-sweeper.ts`.
+- **Pas de fonction au niveau du module dans un package.** Une capacité est une méthode d'un
+  service, une aide privée une méthode privée ; même l'arithmétique est un service (`Maths`,
+  `Polygons` dans `commons`). Le lint le tient (`no-restricted-syntax`) ; seule exception, les
+  fabriques de providers Angular nommées `provide*`. Dans `apps/web`, un `provide*` ou une fonction
+  de test restent admis.
+- **Les doublures et les données de test vivent dans des `*.mock.ts`**, à côté de l'entité ou du
+  service qu'elles doublent, jamais déclarées dans un spec : `profile.mock.ts`, `sweep.mock.ts`,
+  `game-component.mock.ts`, `apps/web/src/app/testing/`. Les mocks échappent à la couverture et aux
+  règles de forme.
 - **Un module, une vitrine.** Un module n'est fini que quand sa page `lab/<module>` tourne. La liste
   est dans `apps/web/src/app/lab/showcases.ts` ; on y passe `ready: true` quand la route existe.
 - **Le mot est « tile », jamais « hex ».** En anglais, _hex_ est aussi une malédiction.
@@ -58,19 +66,21 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 ## Les modules
 
 ```
-packages/commons/  @hexrace/commons - EventBus typé par augmentation, Random à graine, arithmétique.
+packages/commons/  @hexrace/commons - EventBus typé par augmentation, Random et RngFactory, Maths et
+                                     Polygons, objets-valeurs Vec2 et Vec3.
 packages/inputs/   @hexrace/inputs - les entrées : actions, manette / clavier / tactile, fusion.
-packages/engine/   @hexrace/engine - boucle à pas fixe, scènes et injecteur enfant, GameObject,
-                                     ThreeRenderer et JoltPhysics, nommés pour ce qu'ils sont.
+packages/engine/   @hexrace/engine - boucle à pas fixe, scènes et injecteur enfant, GameObject et
+                                     GameComponent, ThreeRenderer, JoltPhysics et JoltConversions.
 packages/camera/   @hexrace/camera - la caméra de suivi : CameraTarget et RigPose (entity/),
                                      RigSolver, CameraTuning et FollowCamera (follow/).
 packages/tile/     @hexrace/tile   - la tuile : la donnée (entity/), la logique en unités en services
                                      par capacité (geometry/ : TileSweeper, TileGeometry,
                                      TileSurfaces, TileValidation…), TileMeshes (render/),
                                      TileBodies (physics/).
-packages/hud/      @hexrace/hud    - le seul package à composants : game/ (compte-tours, dégâts,
-                                     chrono…), commons/ (cadre de canvas, cartes), dialog/, debug/
-                                     (lil-gui). Testé par `ng test hud`, pas par Vitest seul.
+packages/hud/      @hexrace/hud    - le seul package à composants et pipes : game/ (compte-tours,
+                                     dégâts, chrono…), commons/ (cadre de canvas, cartes, pipe time),
+                                     dialog/, debug/ (les services autour de lil-gui). Testé par
+                                     `ng test hud`, pas par Vitest seul.
 apps/web/          @hexrace/web    - l'application Angular 22 : le lab des vitrines, puis le jeu.
 ```
 

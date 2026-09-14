@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { degToRad, lerp, ramp } from '@hexrace/commons';
+import { Injectable, inject } from '@angular/core';
+import { Maths } from '@hexrace/commons';
 
 import { type CameraTarget, type Vec3Like } from '@camera/entity/camera-target';
 import { type RigPose } from '@camera/entity/rig-pose';
@@ -14,17 +14,19 @@ const TWO_PI = 2 * Math.PI;
  */
 @Injectable({ providedIn: 'root' })
 export class RigSolver {
+  private readonly maths = inject(Maths);
+
   solve(target: CameraTarget, tuning: CameraTuning): RigPose {
     let heading = target.heading;
     if (target.nextTile) {
       const turn = this.turnBetween(heading, this.headingTo(target.position, target.nextTile));
-      const cap = degToRad(tuning.anticipationMaxDeg);
+      const cap = this.maths.degToRad(tuning.anticipationMaxDeg);
       heading += Math.max(-cap, Math.min(cap, turn * tuning.anticipation));
     }
-    const height = lerp(
+    const height = this.maths.lerp(
       tuning.heightAtRest,
       tuning.heightAtSpeed,
-      ramp(target.speed, 0, tuning.speedForFullHeight),
+      this.maths.ramp(target.speed, 0, tuning.speedForFullHeight),
     );
     const fx = Math.sin(heading);
     const fz = Math.cos(heading);

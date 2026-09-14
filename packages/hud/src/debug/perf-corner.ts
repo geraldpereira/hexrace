@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 
-import { startFrameLoop } from '@hud/debug/frame-loop';
+import { FrameLoop } from '@hud/debug/frame-loop';
 import { PerfMeter } from '@hud/debug/perf-meter';
 
 /**
@@ -37,7 +37,7 @@ export class PerfCorner {
   private nextRefresh = 0;
 
   constructor() {
-    startFrameLoop((now: number) => {
+    inject(FrameLoop).start((now: number) => {
       this.meter.frame(now);
       if (now < this.nextRefresh) return;
       this.nextRefresh = now + 250;

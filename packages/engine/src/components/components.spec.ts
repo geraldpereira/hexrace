@@ -6,21 +6,22 @@ import { CameraComponent } from '@engine/components/camera-component';
 import { LightComponent } from '@engine/components/light-component';
 import { MeshComponent } from '@engine/components/mesh-component';
 import { GameLoop } from '@engine/loop/game-loop';
-import { JoltPhysics, LAYER_MOVING, type JoltBody } from '@engine/physics/jolt-physics';
+import { boxBodyAt } from '@engine/physics/jolt-body.mock';
+import { JoltPhysics, type JoltBody } from '@engine/physics/jolt-physics';
 import { ThreeRenderer } from '@engine/render/three-renderer';
-import { type Component } from '@engine/scene/component';
+import { type GameComponent } from '@engine/scene/game-component';
 import { GameObject } from '@engine/scene/game-object';
 import { Scenes } from '@engine/scene/scenes';
 
 describe('components', () => {
   let renderer: ThreeRenderer;
-  let spawn: <T extends Component>(ctor: new () => T) => T;
+  let spawn: <T extends GameComponent>(ctor: new () => T) => T;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     renderer = TestBed.inject(ThreeRenderer);
     const scene = TestBed.inject(Scenes).create();
-    spawn = <T extends Component>(ctor: new () => T): T => scene.instantiate(ctor);
+    spawn = <T extends GameComponent>(ctor: new () => T): T => scene.instantiate(ctor);
   });
 
   it('MeshComponent puts its object in the scene and takes it out', () => {
@@ -65,18 +66,12 @@ describe('components', () => {
     });
 
     function crateAt(y: number): JoltBody {
-      const Jolt = physics.Jolt;
-      const settings = new Jolt.BodyCreationSettings(
-        new Jolt.BoxShape(new Jolt.Vec3(0.5, 0.5, 0.5)),
-        new Jolt.RVec3(0, y, 0),
-        Jolt.Quat.prototype.sIdentity(),
-        Jolt.EMotionType_Dynamic,
-        LAYER_MOVING,
-      );
-      const created = physics.bodyInterface.CreateBody(settings);
-      Jolt.destroy(settings);
-      physics.bodyInterface.AddBody(created.GetID(), Jolt.EActivation_DontActivate);
-      return created;
+      return boxBodyAt(physics, {
+        half: { x: 0.5, y: 0.5, z: 0.5 },
+        y,
+        moving: true,
+        activate: false,
+      });
     }
 
     function moveBodyTo(y: number): void {

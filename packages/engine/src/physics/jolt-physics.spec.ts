@@ -1,20 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
-import {
-  JoltPhysics,
-  LAYER_MOVING,
-  LAYER_NON_MOVING,
-  type JoltBody,
-} from '@engine/physics/jolt-physics';
-import { Component } from '@engine/scene/component';
+import { boxBodyAt } from '@engine/physics/jolt-body.mock';
+import { JoltPhysics, type JoltBody } from '@engine/physics/jolt-physics';
+import { Hits } from '@engine/scene/game-component.mock';
 import { GameObject } from '@engine/scene/game-object';
-
-class Hits extends Component {
-  hits: string[] = [];
-  override onCollisionEnter(other: GameObject): void {
-    this.hits.push(other.name);
-  }
-}
 
 describe('JoltPhysics', () => {
   let physics: JoltPhysics;
@@ -25,19 +14,7 @@ describe('JoltPhysics', () => {
   });
 
   function box(halfY: number, y: number, moving: boolean): JoltBody {
-    const Jolt = physics.Jolt;
-    const shape = new Jolt.BoxShape(new Jolt.Vec3(2, halfY, 2));
-    const settings = new Jolt.BodyCreationSettings(
-      shape,
-      new Jolt.RVec3(0, y, 0),
-      Jolt.Quat.prototype.sIdentity(),
-      moving ? Jolt.EMotionType_Dynamic : Jolt.EMotionType_Static,
-      moving ? LAYER_MOVING : LAYER_NON_MOVING,
-    );
-    const body = physics.bodyInterface.CreateBody(settings);
-    Jolt.destroy(settings);
-    physics.bodyInterface.AddBody(body.GetID(), Jolt.EActivation_Activate);
-    return body;
+    return boxBodyAt(physics, { half: { x: 2, y: halfY, z: 2 }, y, moving });
   }
 
   it('refuses the API before load resolves', () => {

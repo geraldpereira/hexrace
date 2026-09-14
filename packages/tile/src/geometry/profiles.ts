@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { type Profile, type Zone, FACE_WIDTH } from '@tile/entity/profile';
+import { type Profile, FACE_WIDTH } from '@tile/entity/profile';
+import { type Zone } from '@tile/entity/zone';
 
 /**
  * Reads a face profile (functional spec 2.1): where the road-plus-shoulders block starts and ends,

@@ -1,19 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 
-import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
-import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
+import { FakeSource } from '@inputs/entity/input-source.mock';
 import { INPUT_SOURCES } from '@inputs/merge/input-sources';
 import { Inputs } from '@inputs/merge/inputs';
-
-class FakeSource implements InputSource {
-  readonly actions: InputActions = { ...IDLE_ACTIONS };
-  connected = true;
-  polled: number[] = [];
-  constructor(readonly id: InputSourceId) {}
-  poll(dt: number): void {
-    this.polled.push(dt);
-  }
-}
 
 describe('Inputs', () => {
   it('reads actions at rest with no source at all', () => {

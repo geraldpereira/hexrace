@@ -3,8 +3,8 @@ import * as THREE from 'three';
 import { clamp } from 'lodash-es';
 
 import { type CameraTarget, type Vec3Like } from '@hexrace/camera';
-import { degToRad } from '@hexrace/commons';
-import { Component } from '@hexrace/engine';
+import { Maths } from '@hexrace/commons';
+import { GameComponent } from '@hexrace/engine';
 import { Inputs } from '@hexrace/inputs';
 
 const HULL = new THREE.BoxGeometry(1.8, 0.7, 4);
@@ -17,7 +17,7 @@ const MARKER = new THREE.RingGeometry(1.6, 2.2, 6);
  * bearing and a distance from the heading that the debug folder sets, so the camera's lean towards
  * the next tile can be judged before `track` exists. `object` holds the hull and the ring.
  */
-export class Dummy extends Component implements CameraTarget {
+export class Dummy extends GameComponent implements CameraTarget {
   readonly position = new THREE.Vector3();
   heading = 0;
   speed = 0;
@@ -35,6 +35,7 @@ export class Dummy extends Component implements CameraTarget {
   readonly object = new THREE.Group();
 
   private readonly inputs = inject(Inputs);
+  private readonly maths = inject(Maths);
   private readonly hull = new THREE.Group();
   private readonly marker = new THREE.Mesh(
     MARKER,
@@ -79,7 +80,7 @@ export class Dummy extends Component implements CameraTarget {
   private place(): void {
     this.hull.position.copy(this.position);
     this.hull.rotation.y = this.heading;
-    const bearing = this.heading + degToRad(this.nextTileBearingDeg);
+    const bearing = this.heading + this.maths.degToRad(this.nextTileBearingDeg);
     this.marker.position.set(
       this.position.x + Math.sin(bearing) * this.nextTileDistance,
       0.05,

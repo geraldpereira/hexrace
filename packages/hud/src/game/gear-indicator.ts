@@ -52,7 +52,7 @@ export class GearIndicator {
   /** Negative is reverse, 0 neutral, 1 and up forward. */
   readonly gear = input.required<number>();
   readonly shiftHint = input(false);
-  readonly text = computed(() => gearText(this.gear()));
+  readonly text = computed(() => this.gearText(this.gear()));
 
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -63,10 +63,10 @@ export class GearIndicator {
       gear?.animate?.(FLASH, { duration: 250, easing: 'ease-out' });
     });
   }
-}
 
-function gearText(gear: number): string {
-  if (gear < 0) return 'R';
-  if (gear === 0) return 'N';
-  return String(gear);
+  private gearText(gear: number): string {
+    if (gear < 0) return 'R';
+    if (gear === 0) return 'N';
+    return String(gear);
+  }
 }

@@ -2,13 +2,13 @@ import { inject } from '@angular/core';
 import * as THREE from 'three';
 
 import { ThreeRenderer } from '@engine/render/three-renderer';
-import { Component } from '@engine/scene/component';
+import { GameComponent } from '@engine/scene/game-component';
 
 /**
  * A sun: one directional light casting shadows, with its target in the scene so three keeps the
  * shadow camera oriented, plus a soft ambient fill.
  */
-export class LightComponent extends Component {
+export class LightComponent extends GameComponent {
   readonly sun = new THREE.DirectionalLight(0xffffff, 2.5);
   readonly ambient = new THREE.AmbientLight(0xffffff, 0.4);
 

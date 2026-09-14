@@ -2,19 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { CameraComponent, Scenes } from '@hexrace/engine';
 import * as THREE from 'three';
 
-import { type CameraTarget } from '@camera/entity/camera-target';
+import { DummyTarget } from '@camera/entity/camera-target.mock';
 import { CameraTuning } from '@camera/follow/camera-tuning';
 import { FollowCamera } from '@camera/follow/follow-camera';
 
-class Dummy implements CameraTarget {
-  position = new THREE.Vector3();
-  heading = 0;
-  speed = 0;
-  nextTile: THREE.Vector3 | null = null;
-}
-
 describe('FollowCamera', () => {
-  let dummy: Dummy;
+  let dummy: DummyTarget;
   let follow: FollowCamera;
   let camera: THREE.PerspectiveCamera;
   let tuning: CameraTuning;
@@ -26,7 +19,7 @@ describe('FollowCamera', () => {
     tuning.heightAtRest = 5;
     tuning.lookAhead = 5;
     tuning.smoothing = 5;
-    dummy = new Dummy();
+    dummy = new DummyTarget();
     const scene = TestBed.inject(Scenes).create();
     const go = scene.spawn('camera', CameraComponent);
     follow = scene.instantiate(FollowCamera);

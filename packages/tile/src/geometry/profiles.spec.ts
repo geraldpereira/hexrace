@@ -1,18 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
-import { type Profile } from '@tile/entity/profile';
+import { STANDARD_PROFILE } from '@tile/entity/profile.mock';
 import { Profiles } from '@tile/geometry/profiles';
 
-const sketch: Profile = {
-  position: 2,
-  roadWidth: 3,
-  leftShoulder: 1,
-  rightShoulder: 1,
-  height: 5,
-  road: 1,
-  shoulder: 1,
-  landscape: 1,
-};
+const sketch = STANDARD_PROFILE;
 
 describe('Profiles', () => {
   let profiles: Profiles;

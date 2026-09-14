@@ -1,9 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
 import { Random } from '@commons/random/random';
-import { createRng } from '@commons/random/rng';
+import { RngFactory } from '@commons/random/rng-factory';
 
-describe('createRng', () => {
+describe('RngFactory', () => {
+  const createRng = (seed: string) => TestBed.inject(RngFactory).create(seed);
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+  });
+
   it('replays the same stream for the same seed, another for another seed', () => {
     const a = createRng('track-1');
     const b = createRng('track-1');

@@ -3,8 +3,9 @@ import * as THREE from 'three';
 
 import { MeshComponent } from '@engine/components/mesh-component';
 import { GameLoop } from '@engine/loop/game-loop';
+import { JoltConversions } from '@engine/physics/jolt-conversions';
 import { JoltPhysics, type JoltBody } from '@engine/physics/jolt-physics';
-import { Component } from '@engine/scene/component';
+import { GameComponent } from '@engine/scene/game-component';
 
 interface Pose {
   readonly position: THREE.Vector3;
@@ -17,10 +18,11 @@ interface Pose {
  * (technical spec 2.4). The scene's fixed update must run before the physics step, so that
  * `fixedUpdate` records the pose the step starts from. Set `body` before adding.
  */
-export class BodyComponent extends Component {
+export class BodyComponent extends GameComponent {
   body!: JoltBody;
 
   private readonly physics = inject(JoltPhysics);
+  private readonly conversions = inject(JoltConversions);
   private readonly loop = inject(GameLoop);
   private readonly previous: Pose = {
     position: new THREE.Vector3(),
@@ -62,9 +64,9 @@ export class BodyComponent extends Component {
   }
 
   private readPose(into: Pose): void {
-    const p = this.body.GetPosition();
-    const q = this.body.GetRotation();
-    into.position.set(p.GetX(), p.GetY(), p.GetZ());
-    into.rotation.set(q.GetX(), q.GetY(), q.GetZ(), q.GetW());
+    const p = this.conversions.read(this.body.GetPosition());
+    const q = this.conversions.readQuat(this.body.GetRotation());
+    into.position.set(p.x, p.y, p.z);
+    into.rotation.set(q.x, q.y, q.z, q.w);
   }
 }

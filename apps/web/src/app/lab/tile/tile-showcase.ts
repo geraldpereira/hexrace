@@ -13,7 +13,7 @@ import {
 } from '@hexrace/engine';
 import { CanvasFrame, type DebugFolder } from '@hexrace/hud';
 import {
-  Environments,
+  EnvironmentCatalog,
   TileBodies,
   TileMeshes,
   TilePaths,
@@ -102,14 +102,14 @@ export class TileShowcase extends PhysicsLab implements OnInit {
   readonly status = signal('Loading the physics…');
   readonly probe: ProbeReadout = probeReadout(null);
 
-  private readonly environments = inject(Environments);
+  private readonly environments = inject(EnvironmentCatalog);
   private readonly validation = inject(TileValidation);
   private readonly paths = inject(TilePaths);
   private readonly units = inject(Units);
   private readonly surfaces = inject(TileSurfaces);
   private readonly triangles = inject(TileTriangles);
   private readonly meshes = inject(TileMeshes);
-  private readonly bodies = inject(TileBodies);
+  private readonly tileBodies = inject(TileBodies);
 
   private readonly eye = this.scene.spawn('camera', CameraComponent).getOrThrow(CameraComponent);
   private readonly controls = new OrbitControls(this.eye.camera, this.canvas);
@@ -152,7 +152,7 @@ export class TileShowcase extends PhysicsLab implements OnInit {
     const meshComponent = this.scene.instantiate(MeshComponent);
     meshComponent.object = group;
     const bodyComponent = this.scene.instantiate(BodyComponent);
-    bodyComponent.body = this.bodies.create(triangles);
+    bodyComponent.body = this.tileBodies.create(triangles);
     this.tile = this.scene
       .spawn('tile')
       .add(meshComponent)

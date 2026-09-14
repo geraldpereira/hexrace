@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 
-import { startFrameLoop } from '@hud/debug/frame-loop';
+import { FrameLoop } from '@hud/debug/frame-loop';
 import { type TouchPaddle, type TouchSource } from '@hexrace/inputs';
 
 const KNOB_PX = 56;
@@ -87,7 +87,7 @@ export class TouchPaddles {
   readonly ringPx = signal(0);
 
   constructor() {
-    startFrameLoop(this.tick);
+    inject(FrameLoop).start(this.tick);
   }
 
   knobX(p: TouchPaddle): number {

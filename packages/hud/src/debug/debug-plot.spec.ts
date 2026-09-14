@@ -1,7 +1,9 @@
+import { TestBed } from '@angular/core/testing';
 import { GUI } from 'lil-gui';
 
 import { fakeContext, mockCanvasContext } from '@hud/debug/canvas.mock';
-import { DebugPlot, addPlot } from '@hud/debug/debug-plot';
+import { DebugPlot } from '@hud/debug/debug-plot';
+import { DebugPlots } from '@hud/debug/debug-plots';
 
 describe('DebugPlot', () => {
   let frames: FrameRequestCallback[];
@@ -23,7 +25,13 @@ describe('DebugPlot', () => {
   it('samples every frame while on the page and stops a second after leaving it', () => {
     const gui = new GUI({ autoPlace: false, container: document.body });
     let value = 0;
-    const plot = addPlot(gui, { label: 'x', min: 0, max: 10, sample: () => value++ });
+    TestBed.configureTestingModule({});
+    const plot = TestBed.inject(DebugPlots).add(gui, {
+      label: 'x',
+      min: 0,
+      max: 10,
+      sample: () => value++,
+    });
     frames[0]?.(0);
     frames[1]?.(16);
     expect(plot.values).toEqual([0, 1]);

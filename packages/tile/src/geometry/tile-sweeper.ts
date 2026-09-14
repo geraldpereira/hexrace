@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { type Vec2, hermite } from '@hexrace/commons';
+import { Maths, type Vec2 } from '@hexrace/commons';
 
 import { DEFAULT_TRANSITION } from '@tile/entity/path';
 import { type Profile } from '@tile/entity/profile';
@@ -18,6 +18,7 @@ const EPSILON = 1e-3;
  */
 @Injectable({ providedIn: 'root' })
 export class TileSweeper {
+  private readonly maths = inject(Maths);
   private readonly paths = inject(TilePaths);
   private readonly profiles = inject(Profiles);
 
@@ -28,9 +29,17 @@ export class TileSweeper {
     const travel = after.sub(before).normalized();
     const right = travel.right();
     const t = this.paths.transition(s, sweep.transition ?? DEFAULT_TRANSITION);
-    const halfRoad = lerp(sweep.entry.roadWidth, sweep.exitProfile.roadWidth, t) / 2;
-    const leftShoulder = lerp(sweep.entry.leftShoulder, sweep.exitProfile.leftShoulder, t);
-    const rightShoulder = lerp(sweep.entry.rightShoulder, sweep.exitProfile.rightShoulder, t);
+    const halfRoad = this.maths.lerp(sweep.entry.roadWidth, sweep.exitProfile.roadWidth, t) / 2;
+    const leftShoulder = this.maths.lerp(
+      sweep.entry.leftShoulder,
+      sweep.exitProfile.leftShoulder,
+      t,
+    );
+    const rightShoulder = this.maths.lerp(
+      sweep.entry.rightShoulder,
+      sweep.exitProfile.rightShoulder,
+      t,
+    );
     return {
       center,
       travel,
@@ -45,7 +54,7 @@ export class TileSweeper {
   /** The road centre: the axis shifted by the current profile's centre. */
   roadCenter(sweep: TileSweep, s: number): Vec2 {
     const sample = this.paths.world(sweep.center, sweep.heading, sweep.exit, s);
-    const u = lerp(
+    const u = this.maths.lerp(
       this.profiles.roadCenter(sweep.entry),
       this.profiles.roadCenter(sweep.exitProfile),
       this.paths.transition(s, sweep.transition ?? DEFAULT_TRANSITION),
@@ -61,7 +70,7 @@ export class TileSweeper {
   /** Height of the axis at `s`, in units; the transition span plays no part. */
   heightOfS(sweep: TileSweep, s: number): number {
     const length = this.paths.length(sweep.exit);
-    const h = hermite(
+    const h = this.maths.hermite(
       sweep.entry.height,
       (sweep.entrySlope ?? 0) * length,
       sweep.exitProfile.height,
@@ -78,8 +87,4 @@ export class TileSweeper {
       this.paths.axisParameter(sweep.center, sweep.heading, sweep.exit, p),
     );
   }
-}
-
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
 }

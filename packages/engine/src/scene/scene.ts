@@ -1,6 +1,6 @@
 import { type EnvironmentInjector, runInInjectionContext } from '@angular/core';
 
-import { type Component } from '@engine/scene/component';
+import { type GameComponent } from '@engine/scene/game-component';
 import { GameObject } from '@engine/scene/game-object';
 
 /**
@@ -15,12 +15,12 @@ export class Scene {
   private destroyed = false;
 
   /** Builds a component inside the scene's injection context. */
-  instantiate<T extends Component>(ctor: new () => T): T {
+  instantiate<T extends GameComponent>(ctor: new () => T): T {
     return runInInjectionContext(this.injector, () => new ctor());
   }
 
   /** A new object under the root, with components built here and added in order. */
-  spawn(name: string, ...components: (new () => Component)[]): GameObject {
+  spawn(name: string, ...components: (new () => GameComponent)[]): GameObject {
     const go = GameObject.named(name);
     for (const ctor of components) go.add(this.instantiate(ctor));
     this.root.addChild(go);

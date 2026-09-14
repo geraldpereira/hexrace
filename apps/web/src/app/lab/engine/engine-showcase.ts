@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { CameraComponent, LightComponent } from '@hexrace/engine';
 import { CanvasFrame, type DebugFolder } from '@hexrace/hud';
 
-import { PhysicsLab, labPanel, spawnBox } from '@ui/lab/lab-scene';
+import { PhysicsLab, labPanel } from '@ui/lab/lab-scene';
 
 const GROUND_HALF = new THREE.Vector3(20, 0.5, 20);
 const SPREAD = 4;
@@ -90,7 +90,7 @@ export class EngineShowcase extends PhysicsLab implements OnInit {
       `Physics ready in ${this.readout.wasmMs} ms. Drop crates from the Engine folder.`,
     );
     const ground = { half: GROUND_HALF, position: new THREE.Vector3(0, -0.5, 0), moving: false };
-    spawnBox(this.scene, this.physics, 'ground', ground, 0x556b2f);
+    this.bodies.spawn(this.scene, 'ground', ground, 0x556b2f);
     this.scene.spawn('sun', LightComponent);
     const camera = this.scene.spawn('camera', CameraComponent).getOrThrow(CameraComponent);
     camera.camera.position.set(0, 10, 18);

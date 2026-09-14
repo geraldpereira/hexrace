@@ -85,7 +85,8 @@
               "**/*.spec.ts",
               "**/index.ts",
               "apps/web/src/main.ts",
-              "apps/web/src/test-setup.ts"
+              "apps/web/src/test-setup.ts",
+              "**/*.mock.ts"
             ],
             "coverageThresholds": {
               "statements": 100,

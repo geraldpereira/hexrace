@@ -5,56 +5,22 @@ import type * as THREE from 'three';
 import { JoltPhysics, ThreeRenderer } from '@hexrace/engine';
 
 import { TileShowcase } from '@ui/lab/tile/tile-showcase';
+import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
+import { panelRow } from '@ui/testing/panel.mock';
+import { stubResizeObserver } from '@ui/testing/resize-observer.mock';
 
 describe('TileShowcase', () => {
-  let frames: FrameRequestCallback[];
+  let capture: FrameCapture;
   let rendered: THREE.Camera[];
-  let clock: number;
 
   beforeEach(() => {
-    frames = [];
+    capture = captureFrames({ clock: true });
     rendered = [];
-    clock = performance.now();
-    vi.spyOn(performance, 'now').mockImplementation(() => clock);
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
-      frames.push(cb);
-      return frames.length;
-    });
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
     vi.spyOn(ThreeRenderer.prototype, 'render').mockImplementation((camera: THREE.Camera) => {
       rendered.push(camera);
     });
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        constructor(private readonly cb: ResizeObserverCallback) {}
-        observe(): void {
-          queueMicrotask(() => {
-            this.cb(
-              [{ contentRect: { width: 400, height: 300 } } as ResizeObserverEntry],
-              this as unknown as ResizeObserver,
-            );
-          });
-        }
-        disconnect(): void {
-          // Nothing to disconnect.
-        }
-      },
-    );
+    stubResizeObserver({ width: 400, height: 300 });
   });
-
-  function panelRow(name: string): Element {
-    const rows = [...document.querySelectorAll('.lil-controller')];
-    return rows.find((r) => r.querySelector('.lil-name')?.textContent === name)!;
-  }
-
-  function tick(count: number): void {
-    for (let i = 0; i < count; i++) {
-      clock += 20;
-      const pending = frames.splice(0);
-      for (const cb of pending) cb(clock);
-    }
-  }
 
   async function render(): Promise<{ host: HTMLElement; page: TileShowcase; destroy(): void }> {
     await TestBed.configureTestingModule({
@@ -100,7 +66,7 @@ describe('TileShowcase', () => {
     expect(physics.physicsSystem.GetNumBodies()).toBe(1);
     expect(renderer.scene.children).toHaveLength(4);
     expect([renderer.width, renderer.height]).toEqual([400, 300]);
-    tick(2);
+    capture.tick(2);
     expect(rendered).toHaveLength(2);
 
     panelRow('Smooth shading').querySelector('input')!.click();
@@ -128,7 +94,7 @@ describe('TileShowcase', () => {
     const hover = (x: number, y: number): void => {
       page.canvas.dispatchEvent(new MouseEvent('pointermove', { clientX: x, clientY: y }));
     };
-    tick(1);
+    capture.tick(1);
     hover(200, 160);
     expect(['road', 'shoulder', 'landscape']).toContain(page.probe.zone);
     expect(page.probe.type).toBeGreaterThan(0);
@@ -143,7 +109,7 @@ describe('TileShowcase', () => {
     panelRow('Drop a crate').querySelector('button')!.click();
     panelRow('Drop a crate').querySelector('button')!.click();
     expect(physics.physicsSystem.GetNumBodies()).toBe(3);
-    tick(3);
+    capture.tick(3);
     panelRow('Clear crates').querySelector('button')!.click();
     expect(physics.physicsSystem.GetNumBodies()).toBe(1);
     destroy();
