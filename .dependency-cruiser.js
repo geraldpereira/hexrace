@@ -7,10 +7,12 @@ export default {
   forbidden: [
     {
       name: 'no-circular',
-      comment: 'Deux fichiers qui ont besoin l’un de l’autre sont un seul fichier.',
+      comment:
+        'Deux fichiers qui ont besoin l’un de l’autre sont un seul fichier ; un cycle de types seuls ' +
+        '(GameObject et Component se nomment) est admis.',
       severity: 'error',
       from: {},
-      to: { circular: true },
+      to: { circular: true, viaOnly: { dependencyTypesNot: ['type-only'] } },
     },
     {
       name: 'a-package-is-reached-by-its-name',
@@ -22,12 +24,21 @@ export default {
       to: { path: '(packages|\\.\\.)/[a-z-]+/src/', pathNot: '/src/index\\.ts$' },
     },
     {
-      name: 'entity-knows-no-engine',
+      name: 'entity-is-data-only',
       comment:
-        'Le sous-module `entity` d’un package est le modèle de données : il ne lit ni three.js ni ' +
-        'Jolt, ce qui le rend testable seul (spec technique 2.1).',
+        'Le sous-module `entity` d’un package est le modèle de données : il ne lit que lui-même et ' +
+        '`commons` (spec technique 2.1, docs/remise-d-aplomb-tile.md).',
       severity: 'error',
       from: { path: '^src/entity/' },
+      to: { pathNot: '^src/entity/|/commons/src/', dependencyTypesNot: ['type-only'] },
+    },
+    {
+      name: 'geometry-knows-no-engine',
+      comment:
+        'Les sous-modules `entity` et `geometry` ne lisent ni three.js ni Jolt : la logique en ' +
+        'unités reste testable seule (spec technique 2.1).',
+      severity: 'error',
+      from: { path: '^src/(entity|geometry)/' },
       to: { path: 'node_modules/(three|jolt-physics)/' },
     },
     {

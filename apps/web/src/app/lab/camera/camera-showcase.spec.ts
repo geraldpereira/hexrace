@@ -3,13 +3,13 @@ import { provideRouter } from '@angular/router';
 import type * as THREE from 'three';
 
 import { ThreeRenderer } from '@hexrace/engine';
-import { INPUT_SOURCES, InputActions, type InputSource } from '@hexrace/inputs';
+import { IDLE_ACTIONS, INPUT_SOURCES, type InputActions, type InputSource } from '@hexrace/inputs';
 
 import { CameraShowcase } from '@ui/lab/camera/camera-showcase';
 
 class ScriptedSource implements InputSource {
   readonly id = 'gamepad' as const;
-  readonly actions = new InputActions();
+  readonly actions: InputActions = { ...IDLE_ACTIONS };
   connected = true;
   poll(): void {
     // The test sets the actions by hand.

@@ -3,7 +3,7 @@ import { CameraComponent, Scenes } from '@hexrace/engine';
 import * as THREE from 'three';
 
 import { type CameraTarget } from '@camera/entity/camera-target';
-import { CameraTuning } from '@camera/entity/camera-tuning';
+import { CameraTuning } from '@camera/follow/camera-tuning';
 import { FollowCamera } from '@camera/follow/follow-camera';
 
 class Dummy implements CameraTarget {

@@ -1,37 +1,12 @@
-import { InputActions } from '@inputs/entity/input-actions';
+import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
 
-describe('InputActions', () => {
-  it('starts at rest and is not engaged', () => {
-    const actions = new InputActions();
-    expect(actions.throttle).toBe(0);
-    expect(actions.steer).toBe(0);
-    expect(actions.isEngaged()).toBe(false);
-  });
-
-  it.each([
-    ['throttle', 0.5],
-    ['brake', 1],
-    ['steer', -0.2],
-    ['handBrake', 1],
-    ['reset', 1],
-    ['gearUp', 1],
-    ['gearDown', 1],
-    ['navigateX', 1],
-    ['navigateY', -1],
-    ['confirm', 1],
-    ['back', 1],
-  ] as const)('is engaged once %s is used', (field, value) => {
-    const actions = new InputActions();
-    actions[field] = value;
-    expect(actions.isEngaged()).toBe(true);
-  });
-
-  it('goes back to rest on clear', () => {
-    const actions = new InputActions();
+describe('IDLE_ACTIONS', () => {
+  it('rests every action at zero and copies into a fresh, independent set', () => {
+    const actions: InputActions = { ...IDLE_ACTIONS };
+    expect(Object.values(actions).every((v: number) => v === 0)).toBe(true);
     actions.throttle = 1;
-    actions.steer = 0.3;
-    actions.back = 1;
-    actions.clear();
-    expect(actions).toEqual(new InputActions());
+    expect(IDLE_ACTIONS.throttle).toBe(0);
+    Object.assign(actions, IDLE_ACTIONS);
+    expect(actions).toEqual(IDLE_ACTIONS);
   });
 });

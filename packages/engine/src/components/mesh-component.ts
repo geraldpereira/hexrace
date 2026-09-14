@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import type * as THREE from 'three';
 
 import { ThreeRenderer } from '@engine/render/three-renderer';
-import { Component } from '@engine/scene/game-object';
+import { Component } from '@engine/scene/component';
 
 /** Puts an Object3D in the renderer's scene while its GameObject lives; set `object` before adding. */
 export class MeshComponent extends Component {

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { Component } from '@engine/scene/game-object';
+import { Component } from '@engine/scene/component';
 
 const FOV = 60;
 const NEAR = 0.1;

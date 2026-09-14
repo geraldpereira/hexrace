@@ -20,5 +20,7 @@ export {
   type JoltVec3,
 } from '@engine/physics/jolt-physics';
 export { ThreeRenderer } from '@engine/render/three-renderer';
-export { Component, GameObject } from '@engine/scene/game-object';
-export { Scene, Scenes } from '@engine/scene/scene';
+export { Component } from '@engine/scene/component';
+export { GameObject } from '@engine/scene/game-object';
+export { Scene } from '@engine/scene/scene';
+export { Scenes } from '@engine/scene/scenes';

@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import { type InputActions } from '@inputs/entity/input-actions';
 
 export type InputSourceId = 'gamepad' | 'keyboard' | 'touch';
@@ -17,6 +15,3 @@ export interface InputSource {
   /** Reads the hardware and updates `actions`; `dt` in seconds, for the keyboard's ramps. */
   poll(dt: number): void;
 }
-
-/** The sources plugged in, as a multi-provider: see `provideInputSources()`. */
-export const INPUT_SOURCES = new InjectionToken<readonly InputSource[]>('INPUT_SOURCES');

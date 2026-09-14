@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, type OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Vec2 } from '@hexrace/commons';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -15,10 +16,12 @@ import {
   Environments,
   TileBodies,
   TileMeshes,
-  TileObstacles,
+  TilePaths,
   TileSurfaces,
   TileTriangles,
+  TileValidation,
   UNIT_METERS,
+  Units,
 } from '@hexrace/tile';
 
 import { PhysicsLab, labPanel } from '@ui/lab/lab-scene';
@@ -100,7 +103,9 @@ export class TileShowcase extends PhysicsLab implements OnInit {
   readonly probe: ProbeReadout = probeReadout(null);
 
   private readonly environments = inject(Environments);
-  private readonly obstacles = inject(TileObstacles);
+  private readonly validation = inject(TileValidation);
+  private readonly paths = inject(TilePaths);
+  private readonly units = inject(Units);
   private readonly surfaces = inject(TileSurfaces);
   private readonly triangles = inject(TileTriangles);
   private readonly meshes = inject(TileMeshes);
@@ -133,11 +138,11 @@ export class TileShowcase extends PhysicsLab implements OnInit {
   rebuild(): void {
     if (!this.physics.ready) return;
     this.tile?.destroy();
-    this.errors.set(this.draft.errors(this.obstacles));
+    this.errors.set(this.draft.errors(this.validation, this.paths));
     this.status.set(
       this.errors().length > 0 ? this.errors().join(' · ') : 'The model accepts the tile.',
     );
-    const build = this.draft.build();
+    const build = this.draft.build(this.paths, this.units);
     const triangles = this.triangles.build(build);
     const environment = this.environments.of(this.draft.environment);
     const mesh = this.meshes.mesh(build, environment, this.draft.smooth, triangles);
@@ -181,8 +186,8 @@ export class TileShowcase extends PhysicsLab implements OnInit {
     raycaster.setFromCamera(pointer, this.eye.camera);
     const hit = raycaster.intersectObject(this.tileMesh)[0];
     if (!hit) return;
-    const plane = { x: hit.point.x / UNIT_METERS, y: -hit.point.z / UNIT_METERS };
-    const surface = this.surfaces.at(this.draft.sweep(), plane, this.draft.obstacles());
+    const plane = new Vec2(hit.point.x / UNIT_METERS, -hit.point.z / UNIT_METERS);
+    const surface = this.surfaces.at(this.draft.sweep(this.paths), plane, this.draft.obstacles());
     Object.assign(this.probe, probeReadout(surface));
   };
 

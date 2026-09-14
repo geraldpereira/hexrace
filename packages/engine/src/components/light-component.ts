@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import * as THREE from 'three';
 
 import { ThreeRenderer } from '@engine/render/three-renderer';
-import { Component } from '@engine/scene/game-object';
+import { Component } from '@engine/scene/component';
 
 /**
  * A sun: one directional light casting shadows, with its target in the scene so three keeps the

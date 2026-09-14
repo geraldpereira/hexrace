@@ -6,15 +6,16 @@ import {
   type Profile,
   type Surface,
   type TileBuild,
-  type TileObstacles,
+  type TileIssue,
+  type TilePaths,
   type TileSweep,
+  type TileValidation,
+  type Units,
   HEIGHT_UNIT,
   LINE_AT,
   SKIRT_DEPTH_METERS,
-  metersToUnits,
-  profileErrors,
-  transitionOfExtent,
 } from '@hexrace/tile';
+import { Vec2 } from '@hexrace/commons';
 
 type MutableProfile = { -readonly [K in keyof Profile]: Profile[K] };
 
@@ -77,14 +78,14 @@ export class TileDraft {
   smooth = false;
   outline = true;
 
-  sweep(): TileSweep {
+  sweep(paths: TilePaths): TileSweep {
     return {
-      center: { x: 0, y: 0 },
+      center: Vec2.ZERO,
       heading: this.heading,
       exit: this.exit,
       entry: { ...this.entry },
       exitProfile: { ...this.exitProfile },
-      transition: transitionOfExtent(this.transitionExtent),
+      transition: paths.spanOfExtent(this.transitionExtent),
       entrySlope: this.entrySlope,
       exitSlope: this.exitSlope,
     };
@@ -101,23 +102,20 @@ export class TileDraft {
     return list;
   }
 
-  build(): TileBuild {
+  build(paths: TilePaths, units: Units): TileBuild {
     const lowest = Math.min(this.entry.height, this.exitProfile.height) * HEIGHT_UNIT;
     return {
-      sweep: this.sweep(),
+      sweep: this.sweep(paths),
       obstacles: this.obstacles(),
       line: this.line ? LINE_AT : null,
-      skirtBase: lowest - metersToUnits(SKIRT_DEPTH_METERS),
+      skirtBase: lowest - units.metersToUnits(SKIRT_DEPTH_METERS),
     };
   }
 
   /** What the model refuses, in words, prefixed by where. */
-  errors(obstacles: TileObstacles): string[] {
-    const sweep = this.sweep();
-    return [
-      ...profileErrors(this.entry).map((e: string) => `entry: ${e}`),
-      ...profileErrors(this.exitProfile).map((e: string) => `exit: ${e}`),
-      ...this.obstacles().flatMap((o) => obstacles.errors(sweep, o)),
-    ];
+  errors(validation: TileValidation, paths: TilePaths): string[] {
+    return validation
+      .tile(this.sweep(paths), this.obstacles())
+      .map((issue: TileIssue) => `${issue.subject}: ${issue.message}`);
   }
 }

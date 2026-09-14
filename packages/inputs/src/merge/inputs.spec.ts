@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { InputActions } from '@inputs/entity/input-actions';
-import { INPUT_SOURCES, type InputSource, type InputSourceId } from '@inputs/entity/input-source';
+import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
+import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
+import { INPUT_SOURCES } from '@inputs/merge/input-sources';
 import { Inputs } from '@inputs/merge/inputs';
 
 class FakeSource implements InputSource {
-  readonly actions = new InputActions();
+  readonly actions: InputActions = { ...IDLE_ACTIONS };
   connected = true;
   polled: number[] = [];
   constructor(readonly id: InputSourceId) {}
@@ -19,7 +20,7 @@ describe('Inputs', () => {
     TestBed.configureTestingModule({});
     const inputs = TestBed.inject(Inputs);
     inputs.poll(1 / 60);
-    expect(inputs.actions.isEngaged()).toBe(false);
+    expect(inputs.isEngaged(inputs.actions)).toBe(false);
     expect(inputs.activeSource).toBeNull();
   });
 

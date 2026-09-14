@@ -6,7 +6,8 @@ import {
   LAYER_NON_MOVING,
   type JoltBody,
 } from '@engine/physics/jolt-physics';
-import { Component, GameObject } from '@engine/scene/game-object';
+import { Component } from '@engine/scene/component';
+import { GameObject } from '@engine/scene/game-object';
 
 class Hits extends Component {
   hits: string[] = [];

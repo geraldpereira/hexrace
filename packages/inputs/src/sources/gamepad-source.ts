@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { clamp } from 'lodash-es';
 
-import { InputActions } from '@inputs/entity/input-actions';
+import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
 import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
 
 const BUTTON_A = 0;
@@ -33,7 +33,7 @@ const TRIGGER_DEADZONE = 0.05;
 @Injectable({ providedIn: 'root' })
 export class GamepadSource implements InputSource {
   readonly id: InputSourceId = 'gamepad';
-  readonly actions = new InputActions();
+  readonly actions: InputActions = { ...IDLE_ACTIONS };
   stickDeadzone = STICK_DEADZONE;
   triggerDeadzone = TRIGGER_DEADZONE;
 
@@ -55,7 +55,7 @@ export class GamepadSource implements InputSource {
   poll(): void {
     const pad = this.activeIndex === null ? null : this.pads()[this.activeIndex];
     if (!pad) {
-      this.actions.clear();
+      Object.assign(this.actions, IDLE_ACTIONS);
       return;
     }
     const a = this.actions;
@@ -111,7 +111,7 @@ export class GamepadSource implements InputSource {
   private readonly onDisconnected = (e: GamepadEvent): void => {
     if (this.activeIndex !== e.gamepad.index) return;
     this.activeIndex = null;
-    this.actions.clear();
+    Object.assign(this.actions, IDLE_ACTIONS);
     this.activeIndex = this.firstConnected();
   };
 }

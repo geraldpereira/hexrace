@@ -5,7 +5,7 @@ import { GUI } from 'lil-gui';
 import { exportDebugValues } from '@hud/debug/debug-export';
 import { DebugStore } from '@hud/debug/debug-store';
 import { PerfMeter } from '@hud/debug/perf-meter';
-import { addPlot } from '@hud/debug/plot';
+import { addPlot } from '@hud/debug/debug-plot';
 
 const TOGGLE_CODE = 'Backquote';
 const WIDTH = 280;

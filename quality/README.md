@@ -15,3 +15,10 @@ no build step, and `tsconfig.json` here is what makes their `// @ts-check` mean 
   link to one of the three documents under `docs/`, or a word on a deliberately empty block. Specs
   take none. The argument: the name and the signature are what a reader has; prose that does not
   fit in the ration belongs in the header of the class or wants a better name.
+- **`hexrace/one-class-per-file`**: a file in a package holds one class and is named after it in
+  kebab-case, `TileSweeper` in `tile-sweeper.ts`. What a reader sees in the tree is what they find
+  inside, and a service is found without a search. Specs and mocks are not checked.
+- **`entity/` is data only** (plain `no-restricted-syntax` and `no-restricted-imports` blocks in
+  `eslint.config.js`, argued in `docs/remise-d-aplomb-tile.md`): no function, class or decorator,
+  no Angular, three or Jolt import. The data model stays inert and serialisable; the logic is a
+  service somewhere else.

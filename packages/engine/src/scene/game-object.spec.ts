@@ -1,4 +1,5 @@
-import { Component, GameObject } from '@engine/scene/game-object';
+import { Component } from '@engine/scene/component';
+import { GameObject } from '@engine/scene/game-object';
 
 class Log extends Component {
   static readonly events: string[] = [];

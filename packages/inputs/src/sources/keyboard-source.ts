@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 
-import { InputActions } from '@inputs/entity/input-actions';
+import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
 import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
 
 const SMOOTHING_TIME = 0.1;
@@ -16,11 +16,11 @@ const SMOOTHING_TIME = 0.1;
 @Injectable({ providedIn: 'root' })
 export class KeyboardSource implements InputSource {
   readonly id: InputSourceId = 'keyboard';
-  readonly actions = new InputActions();
+  readonly actions: InputActions = { ...IDLE_ACTIONS };
   smoothingTime = SMOOTHING_TIME;
 
   private readonly held = new Set<string>();
-  private readonly target = new InputActions();
+  private readonly target: InputActions = { ...IDLE_ACTIONS };
   private touched = false;
 
   constructor() {
@@ -84,7 +84,7 @@ export class KeyboardSource implements InputSource {
   private readonly onBlur = (): void => {
     this.held.clear();
     this.recompute();
-    this.actions.clear();
+    Object.assign(this.actions, IDLE_ACTIONS);
   };
 
   private static readonly HANDLED = new Set([

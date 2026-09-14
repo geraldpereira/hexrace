@@ -1,6 +1,6 @@
 import { type Provider } from '@angular/core';
 
-import { INPUT_SOURCES } from '@inputs/entity/input-source';
+import { INPUT_SOURCES } from '@inputs/merge/input-sources';
 import { GamepadSource } from '@inputs/sources/gamepad-source';
 import { KeyboardSource } from '@inputs/sources/keyboard-source';
 import { TouchSource } from '@inputs/sources/touch-source';

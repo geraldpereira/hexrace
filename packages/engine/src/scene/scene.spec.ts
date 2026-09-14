@@ -1,8 +1,9 @@
 import { InjectionToken, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { Component } from '@engine/scene/game-object';
-import { Scene, Scenes } from '@engine/scene/scene';
+import { Component } from '@engine/scene/component';
+import { Scene } from '@engine/scene/scene';
+import { Scenes } from '@engine/scene/scenes';
 
 const GRAVITY = new InjectionToken<number>('GRAVITY');
 

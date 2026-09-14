@@ -27,7 +27,14 @@ n'a généralement pas. `make check` est le quotidien, toutes les portes puis to
 - **DI Angular partout, pas de constructeur à paramètres.** Chaque classe d'un package est un service
   `@Injectable({ providedIn: 'root' })` qui obtient ses dépendances par `inject()`. Les tests passent
   par `TestBed` et remplacent des jetons. Le lint le tient (`no-restricted-syntax` sur les
-  constructeurs).
+  constructeurs). Seule exception : les objets-valeurs `Vec2` et `Vec3` de `commons/math`.
+- **`entity/` est de la donnée, rien d'autre** : interfaces, alias, unions, constantes littérales.
+  Ni fonction, ni classe, ni décorateur, ni import d'Angular, de three ou de Jolt ; le lint et
+  dependency-cruiser refusent le reste. La logique vit dans des services d'un autre sous-module
+  (`geometry/` pour la tuile, `merge/` pour les entrées, `follow/` pour la caméra).
+- **Un fichier, une classe, nommée pareil** (`hexrace/one-class-per-file`) : `TileSweeper` vit dans
+  `tile-sweeper.ts`. Les fonctions libres se limitent à l'arithmétique sans état de `commons/math`
+  et aux aides privées d'un fichier ; une capacité est un service.
 - **Un module, une vitrine.** Un module n'est fini que quand sa page `lab/<module>` tourne. La liste
   est dans `apps/web/src/app/lab/showcases.ts` ; on y passe `ready: true` quand la route existe.
 - **Le mot est « tile », jamais « hex ».** En anglais, _hex_ est aussi une malédiction.
@@ -55,11 +62,12 @@ packages/commons/  @hexrace/commons - EventBus typé par augmentation, Random à
 packages/inputs/   @hexrace/inputs - les entrées : actions, manette / clavier / tactile, fusion.
 packages/engine/   @hexrace/engine - boucle à pas fixe, scènes et injecteur enfant, GameObject,
                                      ThreeRenderer et JoltPhysics, nommés pour ce qu'ils sont.
-packages/camera/   @hexrace/camera - la caméra de suivi : gréement pur (entity/), FollowCamera
-                                     qui pilote un CameraComponent d'après une CameraTarget.
-packages/tile/     @hexrace/tile   - la tuile : modèle du POC 2 en unités (entity/, sans three ni
-                                     Jolt) en services par capacité (TileSweeper, TileGeometry,
-                                     TileSurfaces…), TileMeshes (render/), TileBodies (physics/).
+packages/camera/   @hexrace/camera - la caméra de suivi : CameraTarget et RigPose (entity/),
+                                     RigSolver, CameraTuning et FollowCamera (follow/).
+packages/tile/     @hexrace/tile   - la tuile : la donnée (entity/), la logique en unités en services
+                                     par capacité (geometry/ : TileSweeper, TileGeometry,
+                                     TileSurfaces, TileValidation…), TileMeshes (render/),
+                                     TileBodies (physics/).
 packages/hud/      @hexrace/hud    - le seul package à composants : game/ (compte-tours, dégâts,
                                      chrono…), commons/ (cadre de canvas, cartes), dialog/, debug/
                                      (lil-gui). Testé par `ng test hud`, pas par Vitest seul.

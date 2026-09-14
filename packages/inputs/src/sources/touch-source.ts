@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 
-import { InputActions } from '@inputs/entity/input-actions';
+import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
 import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
 
 const PADDLE_TRAVEL_PX = 50;
@@ -32,7 +32,7 @@ export interface TouchPaddle {
 @Injectable({ providedIn: 'root' })
 export class TouchSource implements InputSource {
   readonly id: InputSourceId = 'touch';
-  readonly actions = new InputActions();
+  readonly actions: InputActions = { ...IDLE_ACTIONS };
   travelPx = PADDLE_TRAVEL_PX;
   /** Lets the mouse stand in for a finger, to try the paddles on a desktop. */
   acceptMouse = false;

@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { MeshComponent } from '@engine/components/mesh-component';
 import { GameLoop } from '@engine/loop/game-loop';
 import { JoltPhysics, type JoltBody } from '@engine/physics/jolt-physics';
-import { Component } from '@engine/scene/game-object';
+import { Component } from '@engine/scene/component';
 
 interface Pose {
   readonly position: THREE.Vector3;

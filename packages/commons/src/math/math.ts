@@ -29,3 +29,12 @@ export function kmhToMps(kmh: number): number {
 export function mpsToKmh(mps: number): number {
   return mps * 3.6;
 }
+
+/** Cubic Hermite interpolation on [0, 1]: values and tangents (derivatives in s) at both ends. */
+export function hermite(h0: number, t0: number, h1: number, t1: number, s: number): number {
+  const s2 = s * s;
+  const s3 = s2 * s;
+  return (
+    (2 * s3 - 3 * s2 + 1) * h0 + (s3 - 2 * s2 + s) * t0 + (-2 * s3 + 3 * s2) * h1 + (s3 - s2) * t1
+  );
+}

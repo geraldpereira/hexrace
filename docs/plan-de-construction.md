@@ -254,7 +254,9 @@ derrière la cible le long d'un cap mêlé entre celui de la cible et la directi
 par le facteur `anticipation` (plafonné par `anticipationMaxDeg`), à une hauteur qui monte avec la
 vitesse entre `heightAtRest` et `heightAtSpeed`, et vise `lookAhead` mètres devant sur le même cap ;
 `FollowCamera`, le composant qui pilote le `CameraComponent` voisin avec un lissage exponentiel et un
-`snap` pour les téléportations ; `CameraTuning`, les réglages en service unique. La vitrine
+`snap` pour les téléportations ; `CameraTuning`, les réglages en service unique. Remis d'aplomb le
+2026-09-14 : `entity/` ne garde que `CameraTarget` et `RigPose`, le calcul est le service `RigSolver`
+dans `follow/` avec le réglage. La vitrine
 `lab/camera` fait rouler un mobile cinématique au stick ou au clavier (palonniers sur tactile) sur
 un sol quadrillé, avec un anneau au sol pour tuile suivante factice dont le relèvement et la
 distance se règlent, pour juger l'inclinaison. Question ouverte : une caméra fixe pour le garage se
@@ -281,8 +283,13 @@ revêtement sous un point, spec technique 4.2), `Environments` (la palette), `Ti
 de triangles **en mètres** partagée par le maillage et le collider, chaque triangle enroulé normale
 vers le haut ou l'extérieur parce que Jolt ne collisionne qu'avec la face avant d'un maillage).
 `render/` : `TileMeshes`, le maillage three à couleur par sommet (plat ou lissé) et le contour ;
-`physics/` : `TileBodies`, qui injecte `JoltPhysics` et fait le corps statique en `MeshShape`. Un
-premier pas : si le style convient, les faces, l'axe et l'arithmétique passeront aussi en services. Ce qui
+`physics/` : `TileBodies`, qui injecte `JoltPhysics` et fait le corps statique en `MeshShape`. Remis
+d'aplomb le 2026-09-14 ([plan](remise-d-aplomb-tile.md)) : `entity/` n'est plus que de la donnée,
+la logique est dans `geometry/` en quinze services, un par fichier (`Units`, `Faces`, `Profiles`,
+`Grid`, `Layout`, `TilePaths`, `Slopes`, `Environments`, `TileSweeper`, `TileGeometry`,
+`TileObstacles`, `TileLines`, `TileSurfaces`, `TileValidation`, `TileTriangles`), `Vec2` et `Vec3`
+sont des objets-valeurs de `commons`, les erreurs sont des `TileIssue` à code, et deux règles de lint
+plus deux règles dependency-cruiser tiennent la forme. Ce qui
 reste à la piste (`track`) : le profil d'entrée, les pentes aux faces, le placement, les marques de
 départ et d'arrivée, la validation, le fichier, le générateur et la fenêtre. La vitrine `lab/tile`
 édite chaque champ dans le panneau, reconstruit maillage et collider à chaque changement, affiche

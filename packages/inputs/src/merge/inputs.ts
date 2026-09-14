@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { clamp } from 'lodash-es';
 
-import { InputActions } from '@inputs/entity/input-actions';
-import { INPUT_SOURCES, type InputSource, type InputSourceId } from '@inputs/entity/input-source';
+import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
+import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
+import { INPUT_SOURCES } from '@inputs/merge/input-sources';
 
 /**
  * The sources merged into the one snapshot the game reads at the start of each step. Analogue
@@ -12,7 +13,7 @@ import { INPUT_SOURCES, type InputSource, type InputSourceId } from '@inputs/ent
  */
 @Injectable({ providedIn: 'root' })
 export class Inputs {
-  readonly actions = new InputActions();
+  readonly actions: InputActions = { ...IDLE_ACTIONS };
   activeSource: InputSourceId | null = null;
 
   private readonly sources: readonly InputSource[] =
@@ -20,11 +21,11 @@ export class Inputs {
 
   poll(dt: number): void {
     const a = this.actions;
-    a.clear();
+    Object.assign(a, IDLE_ACTIONS);
     for (const source of this.sources) {
       source.poll(dt);
       const s = source.actions;
-      if (s.isEngaged()) this.activeSource = source.id;
+      if (this.isEngaged(s)) this.activeSource = source.id;
       a.throttle = Math.max(a.throttle, s.throttle);
       a.brake = Math.max(a.brake, s.brake);
       a.steer = clamp(a.steer + s.steer, -1, 1);
@@ -37,5 +38,10 @@ export class Inputs {
       a.confirm = Math.max(a.confirm, s.confirm);
       a.back = Math.max(a.back, s.back);
     }
+  }
+
+  /** Whether any action is off its rest value. */
+  isEngaged(actions: InputActions): boolean {
+    return Object.values(actions).some((v: number) => v !== 0);
   }
 }

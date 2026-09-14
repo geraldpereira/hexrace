@@ -8,15 +8,3 @@ export const HEIGHT_UNIT = HEIGHT_STEP_METERS / UNIT_METERS;
 export const MAX_AMPLITUDE_STEPS = 1000;
 /** The skirt goes this far below the track's lowest point, in metres (functional spec 2.7). */
 export const SKIRT_DEPTH_METERS = 2;
-
-export function metersToUnits(meters: number): number {
-  return meters / UNIT_METERS;
-}
-
-export function unitsToMeters(units: number): number {
-  return units * UNIT_METERS;
-}
-
-export function stepsToUnits(steps: number): number {
-  return steps * HEIGHT_UNIT;
-}

@@ -1,13 +1,7 @@
-import {
-  EnvironmentInjector,
-  Injectable,
-  createEnvironmentInjector,
-  inject,
-  runInInjectionContext,
-  type Provider,
-} from '@angular/core';
+import { type EnvironmentInjector, runInInjectionContext } from '@angular/core';
 
-import { type Component, GameObject } from '@engine/scene/game-object';
+import { type Component } from '@engine/scene/component';
+import { GameObject } from '@engine/scene/game-object';
 
 /**
  * One screen's worth of game objects and the child injector they live in (technical spec 2.2):
@@ -50,20 +44,5 @@ export class Scene {
     this.destroyed = true;
     this.root.destroy();
     this.injector.destroy();
-  }
-}
-
-/** Creates scenes under the application's injector; the scene provides itself to its components. */
-@Injectable({ providedIn: 'root' })
-export class Scenes {
-  private readonly parent = inject(EnvironmentInjector);
-
-  create(providers: Provider[] = []): Scene {
-    const scene = new Scene();
-    scene.injector = createEnvironmentInjector(
-      [...providers, { provide: Scene, useValue: scene }],
-      this.parent,
-    );
-    return scene;
   }
 }

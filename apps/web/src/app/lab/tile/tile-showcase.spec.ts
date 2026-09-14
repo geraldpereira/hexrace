@@ -110,7 +110,9 @@ describe('TileShowcase', () => {
     page.draft.entry.position = 7;
     page.rebuild();
     TestBed.tick();
-    expect(page.errors()).toContain('entry: no landscape on the right: the block ends at unit 11');
+    expect(page.errors()).toContain(
+      'entry profile: no landscape on the right: the block ends at unit 11',
+    );
     expect(page.errors()).toContain('right barrier: spills out of the tile');
     expect(host.querySelector('p.error')).not.toBeNull();
   });

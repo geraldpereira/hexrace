@@ -3,8 +3,8 @@ import { CameraComponent, Component } from '@hexrace/engine';
 import * as THREE from 'three';
 
 import { type CameraTarget } from '@camera/entity/camera-target';
-import { CameraTuning } from '@camera/entity/camera-tuning';
-import { solveRig } from '@camera/entity/rig';
+import { CameraTuning } from '@camera/follow/camera-tuning';
+import { RigSolver } from '@camera/follow/rig-solver';
 
 /**
  * Drives the sibling CameraComponent after a `target` (functional spec 3.9): every frame the rig is
@@ -16,6 +16,7 @@ export class FollowCamera extends Component {
   target!: CameraTarget;
 
   private readonly tuning = inject(CameraTuning);
+  private readonly solver = inject(RigSolver);
   private readonly eye = new THREE.Vector3();
   private readonly aim = new THREE.Vector3();
   private camera!: THREE.PerspectiveCamera;
@@ -27,7 +28,7 @@ export class FollowCamera extends Component {
 
   /** Jumps to the solved pose: spawn, reset, teleport. */
   snap(): void {
-    const pose = solveRig(this.target, this.tuning);
+    const pose = this.solver.solve(this.target, this.tuning);
     this.eye.copy(pose.eye);
     this.aim.copy(pose.aim);
     this.settled = true;
@@ -39,7 +40,7 @@ export class FollowCamera extends Component {
       this.snap();
       return;
     }
-    const pose = solveRig(this.target, this.tuning);
+    const pose = this.solver.solve(this.target, this.tuning);
     const k = 1 - Math.exp(-this.tuning.smoothing * dt);
     this.eye.lerp(pose.eye, k);
     this.aim.lerp(pose.aim, k);

@@ -8,8 +8,9 @@ import { MeshComponent } from '@engine/components/mesh-component';
 import { GameLoop } from '@engine/loop/game-loop';
 import { JoltPhysics, LAYER_MOVING, type JoltBody } from '@engine/physics/jolt-physics';
 import { ThreeRenderer } from '@engine/render/three-renderer';
-import { type Component, GameObject } from '@engine/scene/game-object';
-import { Scenes } from '@engine/scene/scene';
+import { type Component } from '@engine/scene/component';
+import { GameObject } from '@engine/scene/game-object';
+import { Scenes } from '@engine/scene/scenes';
 
 describe('components', () => {
   let renderer: ThreeRenderer;

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { INPUT_SOURCES } from '@inputs/entity/input-source';
+import { INPUT_SOURCES } from '@inputs/merge/input-sources';
 import { provideInputSources } from '@inputs/merge/provide-input-sources';
 
 describe('provideInputSources', () => {

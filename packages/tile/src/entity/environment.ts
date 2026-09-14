@@ -1,9 +1,8 @@
-import { Injectable } from '@angular/core';
-
 import { type TransitionSpan } from '@tile/entity/path';
-import { type Zone } from '@tile/entity/profile';
 
 export type EnvironmentId = 'north' | 'europe' | 'africa';
+
+export const ENVIRONMENT_IDS: readonly EnvironmentId[] = ['north', 'europe', 'africa'];
 
 /**
  * An environment (functional spec 2.2): a track's theme. It fixes the palette of eight surface
@@ -26,7 +25,8 @@ export interface Environment {
 
 const FULL: TransitionSpan = { start: 0, end: 1 };
 
-const ENVIRONMENTS: Readonly<Record<EnvironmentId, Environment>> = {
+/** The three environments of the functional spec 2.2, by id. */
+export const ENVIRONMENTS: Readonly<Record<EnvironmentId, Environment>> = {
   europe: {
     id: 'europe',
     name: 'Europe',
@@ -58,22 +58,3 @@ const ENVIRONMENTS: Readonly<Record<EnvironmentId, Environment>> = {
     transition: FULL,
   },
 };
-
-/** The catalogue of environments: the three of the functional spec 2.2, looked up by id. */
-@Injectable({ providedIn: 'root' })
-export class Environments {
-  readonly ids: readonly EnvironmentId[] = ['north', 'europe', 'africa'];
-
-  of(id: EnvironmentId): Environment {
-    return ENVIRONMENTS[id];
-  }
-
-  isId(value: string): value is EnvironmentId {
-    return (this.ids as readonly string[]).includes(value);
-  }
-
-  /** The colour of a zone by its rank in the palette; magenta when the rank does not exist. */
-  zoneColor(environment: Environment, zone: Zone, type: number): string {
-    return environment.colors[zone][type - 1] ?? '#ff00ff';
-  }
-}

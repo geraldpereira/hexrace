@@ -1,7 +1,7 @@
 import { type GUI } from 'lil-gui';
 
 import { buildCurveCanvas, buildCurveHeader } from '@hud/debug/curve-dom';
-import { CurveLayout, paintCurve } from '@hud/debug/curve-paint';
+import { CurveLayout, paintCurve } from '@hud/debug/curve-layout';
 import { type CurvePoint } from '@hud/debug/curve-point';
 
 export { type CurvePoint } from '@hud/debug/curve-point';

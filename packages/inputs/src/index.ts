@@ -3,8 +3,9 @@
  * behind `INPUT_SOURCES` and `provideInputSources()` plugs in the game's three. The sources are
  * exported for their settings and for drawing the paddles, never for reading actions directly.
  */
-export { InputActions } from '@inputs/entity/input-actions';
-export { INPUT_SOURCES, type InputSource, type InputSourceId } from '@inputs/entity/input-source';
+export { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
+export { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
+export { INPUT_SOURCES } from '@inputs/merge/input-sources';
 export { Inputs } from '@inputs/merge/inputs';
 export { provideInputSources } from '@inputs/merge/provide-input-sources';
 export { GamepadSource } from '@inputs/sources/gamepad-source';

@@ -17,7 +17,7 @@ export { DebugPanel } from '@hud/debug/debug-panel';
 export { startFrameLoop } from '@hud/debug/frame-loop';
 export { PerfCorner } from '@hud/debug/perf-corner';
 export { PerfMeter } from '@hud/debug/perf-meter';
-export { addPlot } from '@hud/debug/plot';
+export { addPlot } from '@hud/debug/debug-plot';
 export { ResultsDialog, type RaceResult, type ResultsChoice } from '@hud/dialog/results-dialog';
 export { ResultsDialogs } from '@hud/dialog/results-dialogs';
 export { AssistLamps, type AssistReadout } from '@hud/game/assist-lamps';

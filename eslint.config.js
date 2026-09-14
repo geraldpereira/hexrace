@@ -6,12 +6,14 @@ import tseslint from 'typescript-eslint';
 
 import { commentRation } from './quality/eslint-rules/comment-ration.js';
 import { directorySize } from './quality/eslint-rules/directory-size.js';
+import { oneClassPerFile } from './quality/eslint-rules/one-class-per-file.js';
 
 /**
- * Ce que le lint tient, et pourquoi. Les règles maison de hexact (un export par fichier, pas de
- * fonction libre) ne sont pas reprises : ici la DI Angular est partout et la 3D impose des fichiers
- * d'assemblage. Ce qui est propre à HexRace tient en une règle : pas de paramètre de constructeur,
- * les dépendances viennent de `inject()` (plan de construction, 1.2).
+ * Ce que le lint tient, et pourquoi. Pas de paramètre de constructeur, les dépendances viennent de
+ * `inject()` (plan de construction, 1.2), sauf les objets-valeurs de `commons/math`. Dans les
+ * packages, un fichier porte une classe et son nom (`hexrace/one-class-per-file`), et le sous-module
+ * `entity/` n'est que de la donnée : ni fonction, ni classe, ni décorateur, ni Angular
+ * (docs/remise-d-aplomb-tile.md, section 3).
  */
 export default tseslint.config(
   {
@@ -26,6 +28,7 @@ export default tseslint.config(
           'comment-ration': commentRation,
           'directory-getting-big': directorySize({ over: 20, upTo: 30 }),
           'directory-too-big': directorySize({ over: 30 }),
+          'one-class-per-file': oneClassPerFile,
         },
       },
     },
@@ -89,6 +92,49 @@ export default tseslint.config(
           selector: "MethodDefinition[kind='constructor'] > FunctionExpression[params.length>0]",
           message:
             'Pas de paramètre de constructeur : les dépendances viennent de inject(), et un test les remplace par TestBed.',
+        },
+      ],
+    },
+  },
+
+  {
+    files: ['packages/*/src/**/*.ts'],
+    rules: { 'hexrace/one-class-per-file': 'error' },
+  },
+
+  {
+    files: ['packages/commons/src/math/*.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
+  },
+
+  {
+    files: ['packages/*/src/entity/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'FunctionDeclaration, ArrowFunctionExpression, FunctionExpression',
+          message: 'entity/ is data only: a function belongs to a service of another sub-module.',
+        },
+        {
+          selector: 'ClassDeclaration, Decorator',
+          message: 'entity/ is data only: interfaces, type aliases, enums and literal constants.',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['./*', '../*', '.', '..'],
+              message: 'Reach a module by its name: @hexrace/<package>, @<package>/*, @ui/*.',
+            },
+            {
+              group: ['@angular/*', 'three', 'three/*', 'jolt-physics', 'lodash-es'],
+              message: 'entity/ is data only: it imports its own package and @hexrace/commons.',
+            },
+          ],
         },
       ],
     },
