@@ -225,7 +225,7 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
     let brake = 0;
     if (pedal > 0) {
       if (this.manualGearbox || forwardSpeed > REVERSE_SPEED) brake = pedal;
-      else forward = -pedal;
+      else if (gas === 0) forward = -pedal;
     }
     const idle = forward === 0 && brake === 0 && speedKmh < IDLE_BRAKE_KMH;
     if (idle && this.inputs.actions.handBrake === 0) brake = IDLE_BRAKE;

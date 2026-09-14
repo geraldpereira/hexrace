@@ -1,14 +1,25 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { clamp } from 'lodash-es';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { clamp, throttle } from 'lodash-es';
 
 const START_DEG = -135;
 const SWEEP_DEG = 270;
 const RADIUS = 44;
+const NUMBER_REFRESH_MS = 125;
 
 /**
  * The rev counter: an arc from the start angle over 270°, red from the shift-up rpm, blinking on
- * the limiter, and the revs as a number (functional spec 7.5). The box stops just under the arc's
- * ends, so the counter sits on the same baseline as its neighbours. The car's module feeds it.
+ * the limiter, and the revs as a number (functional spec 7.5). The arc follows every frame; the
+ * number only refreshes every `NUMBER_REFRESH_MS`, or its digits blur into a flicker. The box
+ * stops just under the arc's ends, so the counter sits on the same baseline as its neighbours.
  */
 @Component({
   selector: 'hr-rev-counter',
@@ -81,7 +92,15 @@ export class RevCounter {
   readonly share = computed(() => clamp(this.rpm() / this.maxRpm(), 0, 1));
   readonly redShare = computed(() => clamp(this.redlineRpm() / this.maxRpm(), 0, 1));
   readonly inRed = computed(() => this.rpm() >= this.redlineRpm());
-  readonly rpmText = computed(() => String(Math.round(this.rpm() / 10) * 10));
+  readonly rpmText = computed(() => String(Math.round(this.shown() / 10) * 10));
+
+  private readonly shown = signal(0);
+  private readonly show = throttle((rpm: number) => this.shown.set(rpm), NUMBER_REFRESH_MS);
+
+  constructor() {
+    effect(() => this.show(this.rpm()));
+    inject(DestroyRef).onDestroy(() => this.show.cancel());
+  }
 
   /** An SVG arc path from one share of the sweep to another. */
   arc(from: number, to: number): string {

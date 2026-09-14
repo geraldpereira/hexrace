@@ -87,6 +87,20 @@ describe('game components', () => {
     expect(instance.share()).toBe(1);
   });
 
+  it('rev counter: the number settles on the latest revs within one refresh', async () => {
+    const { host, set } = await render(RevCounter, {
+      rpm: 2000,
+      maxRpm: 4000,
+      redlineRpm: 3600,
+    });
+    expect(host.querySelector('.value')?.textContent).toBe('2000');
+    await set('rpm', 2500);
+    await set('rpm', 3812);
+    await vi.waitFor(() => {
+      expect(host.querySelector('.value')?.textContent).toBe('3810');
+    });
+  });
+
   it('gear indicator: R, N, numbers and the shift hint', async () => {
     const { host, set } = await render(GearIndicator, { gear: -1, shiftHint: false });
     expect(host.querySelector('.gear')?.textContent).toBe('R');

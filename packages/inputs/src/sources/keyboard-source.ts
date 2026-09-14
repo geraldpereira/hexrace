@@ -5,13 +5,14 @@ import { type InputActions, IDLE_ACTIONS } from '@inputs/entity/input-actions';
 import { type InputSource, type InputSourceId } from '@inputs/entity/input-source';
 
 const SMOOTHING_TIME = 0.1;
+const SNAP = 1e-3;
 
 /**
  * The keyboard, mapped as the functional spec 3.3 says: WASD or arrows to throttle, brake and
  * steer, Space hand brake, R reset, E / Q shift up / down, Enter confirm, Escape back. A key is 0
- * or 1; the three driving actions ramp over `smoothingTime` seconds to give the digital keyboard a
- * little of the analogue it lacks (technical spec 5.3). A window losing focus releases every key,
- * since their release would otherwise never be seen.
+ * or 1; the three driving actions ramp over `smoothingTime` seconds (technical spec 5.3) and snap
+ * to the key once close, so a released pedal reads exactly 0 rather than fading forever. A window
+ * losing focus releases every key, since their release would otherwise never be seen.
  */
 @Injectable({ providedIn: 'root' })
 export class KeyboardSource implements InputSource {
@@ -38,9 +39,9 @@ export class KeyboardSource implements InputSource {
     const alpha = this.smoothingTime > 0 ? 1 - Math.exp(-dt / this.smoothingTime) : 1;
     const a = this.actions;
     const t = this.target;
-    a.throttle += (t.throttle - a.throttle) * alpha;
-    a.brake += (t.brake - a.brake) * alpha;
-    a.steer += (t.steer - a.steer) * alpha;
+    a.throttle = this.approach(a.throttle, t.throttle, alpha);
+    a.brake = this.approach(a.brake, t.brake, alpha);
+    a.steer = this.approach(a.steer, t.steer, alpha);
     a.handBrake = t.handBrake;
     a.reset = t.reset;
     a.gearUp = t.gearUp;
@@ -49,6 +50,11 @@ export class KeyboardSource implements InputSource {
     a.navigateY = t.navigateY;
     a.confirm = t.confirm;
     a.back = t.back;
+  }
+
+  private approach(current: number, target: number, alpha: number): number {
+    const next = current + (target - current) * alpha;
+    return Math.abs(target - next) < SNAP ? target : next;
   }
 
   private recompute(): void {

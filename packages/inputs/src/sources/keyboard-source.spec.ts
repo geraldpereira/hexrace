@@ -91,6 +91,18 @@ describe('KeyboardSource', () => {
     expect(source.actions.throttle).toBeCloseTo(1, 3);
   });
 
+  it('snaps a released pedal back to exactly 0 instead of fading forever', () => {
+    source.smoothingTime = 0.1;
+    press('KeyS');
+    source.poll(1);
+    expect(source.actions.brake).toBe(1);
+    release('KeyS');
+    source.poll(1 / 60);
+    expect(source.actions.brake).toBeGreaterThan(0);
+    source.poll(1);
+    expect(source.actions.brake).toBe(0);
+  });
+
   it('does not count a repeated key twice', () => {
     press('KeyW');
     press('KeyW');

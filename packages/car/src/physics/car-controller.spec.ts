@@ -71,6 +71,20 @@ describe('CarController', () => {
     expect(world.car.velocity.z).toBeLessThan(0);
   });
 
+  it('lets the throttle win over a lingering brake so reverse never traps the car', async () => {
+    world = await carWorld();
+    world.step(60);
+    idle();
+    world.inputs.actions.brake = 1;
+    world.step(120);
+    expect(world.car.velocity.z).toBeLessThan(-0.5);
+    world.inputs.actions.brake = 0.01;
+    world.inputs.actions.throttle = 1;
+    world.step(240);
+    expect(world.car.state.gear).toBeGreaterThan(0);
+    expect(world.car.velocity.z).toBeGreaterThan(1);
+  });
+
   it('cuts the throttle when traction control is bought and the wheels spin', async () => {
     world = await carWorld((car: CarController) => {
       car.options = carOptions();
