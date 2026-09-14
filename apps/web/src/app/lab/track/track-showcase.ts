@@ -21,6 +21,7 @@ import {
 } from '@hexrace/track';
 import * as THREE from 'three';
 
+import { IssueList } from '@ui/lab/issue-list';
 import { labPanel } from '@ui/lab/lab-scene';
 import { OrbitLab } from '@ui/lab/orbit-lab';
 import { TrackDraft } from '@ui/lab/track/track-draft';
@@ -37,7 +38,7 @@ const CRATE_SPREAD = 2;
  */
 @Component({
   selector: 'hr-track-showcase',
-  imports: [RouterLink, CanvasFrame],
+  imports: [RouterLink, CanvasFrame, IssueList],
   templateUrl: './track-showcase.html',
   styleUrl: './track-showcase.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

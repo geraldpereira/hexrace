@@ -6,18 +6,9 @@
   </header>
   <div class="frame">
     <hr-canvas-frame [canvas]="canvas" (resized)="onResized($event)" />
-    <div class="overlay dashboard">
-      <hr-rev-counter
-        [rpm]="rpm()"
-        [maxRpm]="spec.engine.maxRpm"
-        [redlineRpm]="spec.gearbox.shiftUpRpm"
-        [limiter]="limiter()"
-      />
-      <hr-gear-indicator [gear]="gear()" [shiftHint]="shiftHint()" />
-      <hr-speed-indicator [kmh]="kmh()" />
-    </div>
+    <hr-car-gauges class="overlay dashboard" [dash]="dash" [spec]="spec" />
     <div class="overlay lamps">
-      <hr-assist-lamps [assists]="assists()" />
+      <hr-assist-lamps [assists]="dash.assists()" />
     </div>
   </div>
 </main>

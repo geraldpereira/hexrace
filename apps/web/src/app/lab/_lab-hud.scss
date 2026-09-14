@@ -1,0 +1,15 @@
+/* What a driving page hangs over its canvas: the HUD corners, which take no pointer. */
+.overlay {
+  position: absolute;
+  pointer-events: none;
+}
+
+.dashboard {
+  left: 1rem;
+  bottom: 1rem;
+}
+
+.lamps {
+  right: 1rem;
+  top: 1rem;
+}

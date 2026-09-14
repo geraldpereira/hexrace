@@ -1,3 +1,5 @@
+@use '../lab-hud';
+
 main {
   display: flex;
   flex-direction: column;
@@ -27,22 +29,4 @@ p {
   min-height: 0;
   border-radius: 0.5rem;
   overflow: hidden;
-}
-
-.overlay {
-  position: absolute;
-  pointer-events: none;
-}
-
-.dashboard {
-  left: 1rem;
-  bottom: 1rem;
-  display: flex;
-  align-items: flex-end;
-  gap: 1rem;
-}
-
-.lamps {
-  right: 1rem;
-  top: 1rem;
 }

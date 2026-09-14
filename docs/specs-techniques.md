@@ -135,7 +135,21 @@ rendu. `stepMs` et `frameMs` nourrissent le compteur de performance du `hud`, br
 
 ### 2.5 État de partie et modes
 
-_Machine à états du tronc commun [F 4.1] et de chaque mode. Où vit le chrono, qui déclare la fin._
+**Écrit (2026-09-14, `packages/game-commons`).**
+
+**La machine.** Trois phases, et pas de pause [F 4.1] : `countdown`, `racing`, `finished`. `RaceMachine` les tient dans un `RaceState` que le HUD et la vitrine lisent chaque image et que personne d'autre que le directeur n'écrit : phase, pas du compte à rebours (3, 2, 1, puis 0 pour le GO, puis null), chrono, tour courant sur N, sens interdit, et la **position continue** sur la piste. `start()` remet l'état à zéro et lance le compte à rebours ; `update()` est appelée une fois par pas fixe avec la position du moment et ne fait rien de plus que lire l'horloge et compter les franchissements.
+
+**L'horloge est réelle, pas simulée.** `CountdownTimer` et `RaceClock` lisent `Clock` de `commons`, c'est-à-dire `Date.now()` derrière un jeton qu'un test remonte à la main. C'est la conséquence directe de 2.4 : un onglet caché ne simule pas la physique manquante mais **applique le temps écoulé**, donc le chrono avance pendant qu'on regarde ailleurs. Corollaire : le compte à rebours dure trois secondes de montre, quel que soit le nombre d'images rendues.
+
+**Où vit le chrono.** Dans `RaceClock`, et nulle part ailleurs : il démarre au GO, s'arrête à l'arrivée et garde ensuite le temps final. `RaceState.elapsedMs` n'en est que la copie de l'image courante, pour le HUD.
+
+**Qui déclare la fin.** `RaceMachine`, sur un franchissement de ligne et sur rien d'autre. `LapCounter` compare la position d'avant et celle d'après le pas : sur une boucle il prend **le plus court chemin**, donc un aller-retour sur la ligne ne compte aucun tour, et une marche arrière retire le tour qu'elle avait donné. En Track la course finit quand le dernier tour se referme sur la ligne de départ ; en Rally, sur la ligne d'arrivée de la dernière tuile. La fin arrête le chrono, propose le temps à `BestTimes` (9.1) et publie l'événement ; c'est à l'écran, pas à la machine, d'ouvrir la boîte de résultats [F 4.5].
+
+**Les événements du bus.** `race/start` (le GO est donné, avec le nombre de tours), `race/lap` (un tour bouclé, le tour courant et le total), `race/finish` (le temps final et s'il bat le record) et `race/fall` (la voiture est sortie du terrain, avec la tuile où elle est reposée). Le HUD, le son et les menus s'y branchent ; la machine ne connaît aucun d'eux.
+
+**Le pont avec la scène.** `RaceDirector` est un `GameComponent` : il situe la voiture sur la piste (`TrackLocator`), déplace la fenêtre de tuiles, remplit la tuile suivante que la caméra vise [F 3.9], gèle la voiture tant que le GO n'est pas donné, passe la position à la machine et remet la voiture sur la piste quand elle tombe (4.7). Une course est donc une scène qui porte un `TrackStage`, une `CarController` et un `RaceDirector`, dans cet ordre : le directeur tique en dernier et voit la position du pas courant.
+
+**Les modes.** `RaceRules` (mode et nombre de tours) est lu à côté de la piste, pour qu'un panneau puisse raccourcir une course sans toucher au fichier. Track compte les tours, Rally en tient toujours un seul ; Collapse n'est pas écrit.
 
 ### 2.6 Structure des dossiers
 
@@ -259,7 +273,13 @@ Qui répond « quel revêtement sous ce point » n'est pas le problème de la vo
 
 ### 4.7 Reset et respawn
 
-**En partie écrit (2026-09-14).** `CarController` tient le bouton de reset : maintenu trois secondes ([F 3.8]), il repose la voiture à son point de départ, dans son cap de départ, à l'arrêt, et publie `car/reset` ; `CarState.resetHeld` nourrit la jauge du HUD. La dernière tuile parcourue et la sortie du terrain viendront avec `game-commons`, qui saura où la piste passe.
+**Écrit (2026-09-14).** `CarController` tient le bouton de reset : maintenu trois secondes ([F 3.8]), il repose la voiture à son point de départ (`home`, `homeHeading`), à l'arrêt, relit sa pose sur-le-champ pour que la caméra et le directeur ne voient pas une image de retard, et publie `car/reset` ; `CarState.resetHeld` nourrit la jauge du HUD.
+
+Où est ce point de départ, c'est `game-commons` qui le dit, parce que lui seul sait où la piste passe. `RaceDirector` garde **la dernière tuile parcourue** — celle que `TrackLocator` a trouvée au dernier pas où la voiture était sur le terrain — et, dès que `FallWatch` juge la voiture tombée, il déplace `home` au centre de cette tuile, dans le sens de la piste, et déclenche le reset : la course continue, le chrono aussi, et `race/fall` est publié. Un reset manuel ramène donc au même endroit, puisque `home` y a déjà été déplacé.
+
+**Tombée, ça veut dire quoi.** Le monde n'a pas de sol : chaque tuile descend par une jupe jusqu'à un plancher commun à toute la piste [F 2.7]. `FallWatch` ne regarde qu'une hauteur : sous le plancher moins une marge (3 m par défaut, réglable), plus rien ne peut rattraper la voiture. Pas de volume de déclenchement, pas de test de sortie de polygone : une seule comparaison par pas.
+
+`RaceDirector.restart()` repose la voiture de la même façon, mais sur la ligne de départ, à peine passée, pour que son premier franchissement compte comme un tour.
 
 ### 4.8 Déterminisme
 
@@ -408,6 +428,16 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 
 **Aucune migration** à écrire tant que le jeu n'est pas déployé sur `hexrace.delper.software` : avant cela, un changement de schéma efface simplement les données locales.
 
+**Écrit (2026-09-14, `BestTimes` dans `packages/game-commons`).** Les meilleurs temps vivent sous la clé **`hexrace.best.v1`**, le numéro de version étant dans la clé. Le document est un seul objet JSON :
+
+```json
+{ "tracks": { "europe-ring-01": 61234, "north-catalog-01": 128900 } }
+```
+
+`tracks` associe l'identifiant d'une piste au meilleur temps total en millisecondes [F 6.1] ; rien d'autre n'est gardé, ni date, ni voiture, ni détail par tour (la spec 4.2 refuse le chrono au tour). Un document absent, illisible ou de la mauvaise forme est traité comme vide, pas migré ni réparé. Sans `window` — sous un rendu nu ou un test — rien n'est écrit et chaque course se lit comme un record, ce qui garde la classe utilisable partout.
+
+Le panneau de debug garde ses propres réglages sous ses propres clés ; les pistes éditées (9.2) et les réglages du joueur (7.3) n'ont pas encore de schéma.
+
 - 9.2 Pistes éditées
   _Stockage des fichiers de piste dans le navigateur, listing, suppression._
 - 9.3 Évolution vers un serveur
@@ -505,6 +535,11 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 | 2026-09-14 | `render/` et `audio/` de `car` lisent la physique par une interface de donnée (`CarReadout`), jamais le contrôleur                                                                                                                                                                                                                                          |
 | 2026-09-14 | Un réglage que Jolt ne lit qu'à la construction d'un corps reconstruit la voiture au relâchement du curseur, pas à chaque pixel                                                                                                                                                                                                                              |
 | 2026-09-14 | Dégâts et sons de collision remis à plus tard : la collision ne publie qu'un événement                                                                                                                                                                                                                                                                       | Plus fin que trois états, et directement lisible                                                                                                                                                              |
+| 2026-09-14 | Le chrono et le compte à rebours tournent sur l'horloge réelle (`Clock` dans `commons`, `Date.now()` derrière un jeton), pas sur les pas fixes                                                                                                                                                                                                             | Conséquence de 2.4 : pas de pause, le temps d'un onglet caché est appliqué et non simulé ; `commons` ne compile pas le DOM, donc pas de `performance`                                                          |
+| 2026-09-14 | La place de la voiture sur la piste est **un seul nombre continu**, partie entière la tuile et fraction l'avancement dessus                                                                                                                                                                                                                                | La fenêtre de tuiles, le tour, le sens interdit et la remise en place se lisent tous du même relevé ; c'est déjà ce que `TrackWindow` demande                                                                  |
+| 2026-09-14 | Un franchissement de ligne se mesure par le plus court chemin sur la boucle ; un aller-retour ne compte aucun tour, une marche arrière retire le tour donné                                                                                                                                                                                                | Sur une boucle la position saute de n - ε à 0 + ε ; une simple différence compterait un tour à chaque tour de piste à l'envers                                                                                 |
+| 2026-09-14 | La voiture part sur la ligne de départ, à peine passée, et la chute est jugée sous le plancher de la jupe moins une marge, avec remise au centre de la dernière tuile parcourue                                                                                                                                                                            | Le premier passage sur la ligne compte alors comme un tour ; et une seule comparaison de hauteur par pas suffit, sans volume de déclenchement ([F 2.7], [F 3.8])                                               |
+| 2026-09-14 | Meilleurs temps dans le stockage local sous `hexrace.best.v1` : le temps total par piste, rien d'autre ; le HUD reçoit tour n sur N, sans meilleur tour ni écart                                                                                                                                                                                           | [F 6.1] et [F 4.2] : le score est le chrono total, il n'y a pas de chrono au tour ni de fantôme                                                                                                                |
 
 ### 13.2 Questions ouvertes
 

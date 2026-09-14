@@ -405,10 +405,81 @@ chrono, tour bouclé, fin, résultats. Une machine à états, l'EventBus pour pr
 tuile, le chrono au tour dans le panneau. C'est le POC 3 de la spec, fait pour de vrai : il valide les
 critères de la spec fonctionnelle 10.3.
 
+**Fait le 2026-09-14.** `entity/` porte la donnée seule : `RaceState` et `RacePhase` (l'instantané
+d'une course, phase, pas du compte à rebours, chrono, tour sur N, sens interdit et **position
+continue**), `RaceRules` (mode et nombre de tours, `DEFAULT_LAPS` = 2, lus à côté de la piste pour
+qu'un panneau puisse raccourcir une course sans toucher au fichier), `SpawnPose`, `SavedTimes` avec
+la clé `hexrace.best.v1`, et les quatre événements du bus, `race/start`, `race/lap`, `race/finish`,
+`race/fall`. `race/` est la course sans scène, en services : `CountdownTimer` (3, 2, 1, GO lus sur
+l'horloge, le GO tenu une seconde de plus), `RaceClock` (le chrono, qui ne s'arrête qu'à l'arrivée),
+`LapCounter` (le franchissement d'une ligne dans le sens de la marche), `BestTimes` (le meilleur
+temps par piste dans le stockage local) et `RaceMachine`, le tronc commun de la spec 4.1 : compte à
+rebours, GO, chrono, tours, fin, record. `stage/` est ce que la scène tient : `TrackStage` (la piste
+posée une fois, puis un `GameObject` par tuile de la fenêtre, maillage et collider, ajoutés et
+détruits quand elle bouge — spec 9.2), `TrackProbe` (le revêtement sous une roue, répondu par la
+tuile qui tient le point), `FallWatch` (le plancher de la jupe moins une marge) et `RaceDirector`,
+le `GameComponent` qui marie tout : chaque pas il situe la voiture sur la piste, déplace la fenêtre,
+vise la tuile suivante pour la caméra, appelle le sens interdit, gèle la voiture sous le compte à
+rebours, fait tourner la course et repose la voiture quand elle tombe.
+
+Retouches aux voisins : `Clock` dans `commons` (l'horloge réelle derrière un jeton, qu'un test
+remonte à la main) ; `TrackLocator` dans `track` (l'inverse de `TrackWindow` : d'un point du plan à
+la tuile qui le tient et à la position continue, la recherche partant de la tuile du pas d'avant) ;
+`frozen` sur `CarController` (pédales et volant ignorés, freins serrés) ; et, en finissant la
+vitrine, `CarController.reset()` qui relit la pose tout de suite, pour que la caméra, le directeur
+et les traces ne voient plus une image de retard après une remise en place.
+
+La vitrine `lab/race` : la piste vient d'un exemple, d'une graine ou du texte d'un fichier `.track`,
+elle est validée puis posée dans le `TrackStage` — une piste que le modèle refuse roule quand même,
+ses problèmes listés sous le chrono ; la voiture est celle de `lab/car` (caisse, traces, particules,
+trois couches de son), posée sur la ligne par le directeur, suivie par la caméra de la spec 3.9 dont
+l'anticipation joue enfin sur une vraie tuile suivante ; par-dessus le canvas, le compte à rebours,
+le chrono avec tour n sur N, le sens interdit, le compte-tours, le rapport, la vitesse, la jauge de
+reset, les témoins d'assistance et les palonniers sur tactile ; à l'arrivée, la boîte de résultats du
+`hud`, Retry qui relance et Home qui rend au lab. Le panneau porte le choix de la piste et les
+cadrans du générateur, le mode et le nombre de tours, la fenêtre de tuiles et l'ombrage, la vitesse
+au-delà de laquelle on parle de sens interdit, la marge de chute, l'anticipation de la caméra, les
+boutons Restart, Start sound et Clear best time, et les relevés en lecture seule : phase, tour,
+chrono, position continue, tuile, meilleur temps. Les réglages de la voiture ne sont pas refaits
+ici : `lab/car` en est le banc, et les deux pages partagent les mêmes services.
+
+Décidé en route : **le chrono tourne sur l'horloge réelle** (`Date.now()` derrière `Clock`, parce
+que `commons` ne compile pas le DOM et n'a donc pas `performance`), ce qui applique le temps passé
+dans un onglet caché sans simuler la physique manquante (spec technique 2.4) ; **la position sur la
+piste est un seul nombre**, partie entière la tuile et fraction l'avancement dessus, celui-là même
+que `TrackWindow` lit, ce qui donne la fenêtre, le tour et le sens interdit d'un seul relevé ; le
+franchissement se mesure **par le plus court chemin sur la boucle**, donc un aller-retour sur la
+ligne ne compte aucun tour ; la voiture part **sur la ligne, à peine passée**, pour que son premier
+passage soit bien un tour ; la chute, c'est **sous le plancher de la jupe moins une marge**, et la
+voiture revient au centre de la dernière tuile parcourue, à l'arrêt (spec 2.7 et 3.8) ; les records
+vivent sous `hexrace.best.v1`, un document illisible étant jeté plutôt que migré ; le HUD reçoit
+**tour n sur N sans meilleur tour ni écart**, la spec 4.2 refusant le chrono au tour ; les dégâts
+restent hors périmètre. En finissant la vitrine : `RaceDirector.restart()` **repose aussi la voiture
+sur la ligne**, sans quoi « recommencer » laissait la voiture où elle était ; et ce que `lab/car` et
+`lab/race` ont en commun est sorti une fois pour toutes — `CarDash` et `CarGauges` pour le tableau
+de bord, `IssueList` pour les problèmes d'une piste, `GeneratorPanel` pour les cadrans du générateur,
+`PhysicsLab.followCamera` et `PhysicsLab.showPanel` pour la caméra de suivi et le dossier du panneau,
+et deux feuilles `_lab-page.scss` et `_lab-hud.scss` pour l'habillage d'une page du lab.
+
+**Ce qui reste.** Les cinq critères de la spec 10.3 ne se cochent qu'en conduisant : c'est à Gérald
+de dire si une suite de tuiles valides passe sans accroc, si les changements au milieu d'une tuile se
+conduisent bien, si une sortie légère sur le bas-côté à la jonction ne fait pas tomber, si la hauteur
+maximale par tuile est la bonne, et si la fenêtre d'affichage se voit à la vitesse de pointe. Le mode
+Collapse (piste qui se dérobe), les secteurs et les fantômes ne sont pas dans ce package et ne le
+seront que s'ils arrivent dans la spec ; les dégâts et les sons de collision attendent toujours ; le
+son n'est pas branché sur la course (pas de bip de compte à rebours ni de jingle d'arrivée) ; et la
+piste, la voiture et la course ne se choisissent encore que dans le panneau debug, les menus étant
+l'affaire de 2.9.
+
 ### 2.9 `game/track` et le `hud`
 
 **Ce qu'il possède.** Le mode Track, les menus, le HUD de course, l'écran de résultats, la sauvegarde
 locale du meilleur temps. Première route qui n'est pas une vitrine : le jeu.
+
+Depuis 2.8, l'écran de résultats (`ResultsDialogs`), la sauvegarde du meilleur temps (`BestTimes`) et
+le branchement du HUD sur les vraies valeurs existent et tournent dans `lab/race` : il reste à les
+mettre sous une route du jeu, avec les menus, le choix de la piste et de la voiture, et le retour au
+menu plutôt qu'au lab.
 
 **Fini quand** le MVP de la spec fonctionnelle 10.4 se joue de bout en bout, à la manette et au
 tactile.

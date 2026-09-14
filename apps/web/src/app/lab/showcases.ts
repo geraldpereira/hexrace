@@ -64,8 +64,8 @@ const PLANNED: readonly Showcase[] = [
   {
     module: 'game-commons',
     path: 'lab/race',
-    summary: 'The car on a track, lap timer.',
-    ready: false,
+    summary: 'The car of POC 1 on a track of POC 2: countdown, chrono, laps, fall, results.',
+    ready: true,
   },
 ];
 

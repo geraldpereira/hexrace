@@ -1,0 +1,30 @@
+{
+  "name": "@hexrace/game-commons",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Le tronc commun des modes de jeu : la voiture sur la piste, le revêtement sous chaque roue, la fenêtre de tuiles, le compte à rebours, le chrono, les tours, la remise sur la piste et le meilleur temps.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@hexrace/car": "*",
+    "@hexrace/commons": "*",
+    "@hexrace/engine": "*",
+    "@hexrace/tile": "*",
+    "@hexrace/track": "*"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@hexrace/inputs": "*",
+    "@types/node": "^24.0.0"
+  }
+}

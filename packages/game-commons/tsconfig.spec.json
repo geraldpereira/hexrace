@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": ["vitest/globals", "node"],
+    "noEmit": true,
+    "paths": {
+      "@game-commons/*": ["./src/*"],
+      "@hexrace/commons": ["../commons/src/index.ts"],
+      "@commons/*": ["../commons/src/*"],
+      "@hexrace/engine": ["../engine/src/index.ts"],
+      "@engine/*": ["../engine/src/*"],
+      "@hexrace/inputs": ["../inputs/src/index.ts"],
+      "@inputs/*": ["../inputs/src/*"],
+      "@hexrace/camera": ["../camera/src/index.ts"],
+      "@camera/*": ["../camera/src/*"],
+      "@hexrace/tile": ["../tile/src/index.ts"],
+      "@tile/*": ["../tile/src/*"],
+      "@hexrace/track": ["../track/src/index.ts"],
+      "@track/*": ["../track/src/*"],
+      "@hexrace/car": ["../car/src/index.ts"],
+      "@car/*": ["../car/src/*"]
+    }
+  },
+  "include": ["src", "test-setup.ts", "vitest.config.ts"]
+}

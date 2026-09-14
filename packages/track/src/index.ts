@@ -1,7 +1,7 @@
 /**
  * The track (functional spec 5): an ordered list of tiles laid on the grid, no position ever
- * written. `entity/` is the data alone; `geometry/` places, slopes, marks, validates and windows
- * it in units; `format/` reads and writes the track file of technical spec 3.3; `generation/`
+ * written. `entity/` is the data alone; `geometry/` places, slopes, marks, validates, windows and
+ * locates it in units; `format/` reads and writes the track file of technical spec 3.3; `generation/`
  * draws one from a seed; `TrackMeshes` and `TrackBodies` build the tiles of the window in metres.
  */
 export { type Cursor, type PlayerPose, TILES_AHEAD, TILES_BEHIND } from '@track/entity/cursor';
@@ -17,6 +17,7 @@ export { type TrackIssue, type TrackIssueCode, type TrackReview } from '@track/e
 export { type LineMark, type MarkKind } from '@track/entity/mark';
 export { type Overlap, type PlacedTile, type Placement, ORIGIN } from '@track/entity/placement';
 export { type Track, type TrackMode, TRACK_MODES } from '@track/entity/track';
+export { TrackLocator, type TrackSpot } from '@track/geometry/track-locator';
 export { TrackMarks } from '@track/geometry/track-marks';
 export { TrackPlacement } from '@track/geometry/track-placement';
 export { TrackProfiles } from '@track/geometry/track-profiles';

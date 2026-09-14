@@ -24,22 +24,14 @@ import {
   Surfaces,
   type TyreSound,
 } from '@hexrace/car';
-import { CameraComponent, type GameObject, LightComponent } from '@hexrace/engine';
-import {
-  AssistLamps,
-  type AssistReadout,
-  CanvasFrame,
-  type DebugFolder,
-  DebugPanel,
-  GearIndicator,
-  RevCounter,
-  SpeedIndicator,
-  TouchPaddles,
-} from '@hexrace/hud';
+import { type CameraComponent, type GameObject, LightComponent } from '@hexrace/engine';
+import { AssistLamps, CanvasFrame, type DebugFolder, TouchPaddles } from '@hexrace/hud';
 import { Inputs, TouchSource } from '@hexrace/inputs';
 import { type EnvironmentId } from '@hexrace/tile';
 
 import { BENCH_TITLE, type CarBench } from '@ui/lab/car/car-bench';
+import { CarDash } from '@ui/lab/car/car-dash';
+import { CarGauges } from '@ui/lab/car/car-gauges';
 import { CarPanel } from '@ui/lab/car/car-panel';
 import { CarScene } from '@ui/lab/car/car-scene';
 import { DEFAULT_OBSTACLES, type ObstacleSpec } from '@ui/lab/car/obstacle-spec';
@@ -54,15 +46,7 @@ import { PhysicsLab } from '@ui/lab/lab-scene';
  */
 @Component({
   selector: 'hr-car-showcase',
-  imports: [
-    RouterLink,
-    CanvasFrame,
-    TouchPaddles,
-    RevCounter,
-    GearIndicator,
-    SpeedIndicator,
-    AssistLamps,
-  ],
+  imports: [RouterLink, CanvasFrame, TouchPaddles, CarGauges, AssistLamps],
   templateUrl: './car-showcase.html',
   styleUrl: './car-showcase.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,12 +59,7 @@ export class CarShowcase extends PhysicsLab implements OnInit, CarBench {
   readonly obstacles: ObstacleSpec = { ...DEFAULT_OBSTACLES };
   environment: EnvironmentId = 'europe';
 
-  readonly rpm = signal(0);
-  readonly gear = signal(0);
-  readonly kmh = signal(0);
-  readonly limiter = signal(false);
-  readonly shiftHint = signal(false);
-  readonly assists = signal<AssistReadout>({ abs: null, tractionControl: null });
+  readonly dash = new CarDash();
   readonly palette = inject(CarScene).palette;
   readonly status = signal('Loading the physics…');
 
@@ -96,7 +75,6 @@ export class CarShowcase extends PhysicsLab implements OnInit, CarBench {
   private readonly carPanel = inject(CarPanel);
   private readonly surfaces = inject(Surfaces);
   private readonly hub = inject(AudioHub);
-  private readonly panel = inject(DebugPanel);
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
   readonly showPaddles = signal(this.prefersTouch());
@@ -147,35 +125,18 @@ export class CarShowcase extends PhysicsLab implements OnInit, CarBench {
     this.scene.spawn('inputs', InputPoller);
     this.scene.spawn('sun', LightComponent);
     this.rebuildGround();
-    const camera = this.scene.spawn('camera', CameraComponent);
-    camera.add(this.follow);
-    this.eye = camera.getOrThrow(CameraComponent);
-    this.camera = this.eye;
-    this.eye.setAspect(this.renderer.width, this.renderer.height);
+    this.eye = this.followCamera(this.follow);
     this.buildCar();
+    this.dash.options = this.options;
     this.status.set('Throttle, brake, steer. Hold R or Y for three seconds to reset.');
-    this.panel.register(
-      BENCH_TITLE,
-      (folder: DebugFolder) => {
-        this.carPanel.build(folder, this);
-      },
-      this.destroyRef,
-    );
-    this.panel.show();
+    this.showPanel(BENCH_TITLE, (folder: DebugFolder) => {
+      this.carPanel.build(folder, this);
+    });
   }
 
   protected render(dt: number): void {
     this.frame(dt);
-    const state = this.car.state;
-    this.rpm.set(Math.round(state.rpm));
-    this.gear.set(state.gear);
-    this.kmh.set(Math.round(state.speedKmh));
-    this.limiter.set(state.limiter);
-    this.shiftHint.set(state.shiftHint);
-    this.assists.set({
-      abs: this.options.abs.enabled ? state.absCut > 0.01 : null,
-      tractionControl: this.options.tractionControl.enabled ? state.tractionCut > 0.01 : null,
-    });
+    this.dash.read(this.car.state);
     this.renderer.render(this.eye.camera);
   }
 

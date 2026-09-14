@@ -69,6 +69,7 @@ export default tseslint.config(
           './packages/tile/tsconfig.spec.json',
           './packages/track/tsconfig.spec.json',
           './packages/car/tsconfig.spec.json',
+          './packages/game-commons/tsconfig.spec.json',
           './packages/hud/tsconfig.spec.json',
           './apps/web/tsconfig.app.json',
           './apps/web/tsconfig.spec.json',

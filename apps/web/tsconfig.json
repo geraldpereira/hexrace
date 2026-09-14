@@ -19,6 +19,8 @@
       "@track/*": ["../../packages/track/src/*"],
       "@hexrace/car": ["../../packages/car/src/index.ts"],
       "@car/*": ["../../packages/car/src/*"],
+      "@hexrace/game-commons": ["../../packages/game-commons/src/index.ts"],
+      "@game-commons/*": ["../../packages/game-commons/src/*"],
       "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
       "@inputs/*": ["../../packages/inputs/src/*"],
       "@hexrace/hud": ["../../packages/hud/src/index.ts"],

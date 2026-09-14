@@ -20,13 +20,7 @@
         (input)="onText($any($event.target).value)"
       ></textarea>
       <button type="button" (click)="loadText()">Load this text</button>
-      @if (issues().length > 0) {
-        <ul class="issues">
-          @for (issue of issues(); track $index) {
-            <li>{{ issue }}</li>
-          }
-        </ul>
-      }
+      <hr-issue-list [issues]="issues()" />
     </aside>
   </div>
 </main>

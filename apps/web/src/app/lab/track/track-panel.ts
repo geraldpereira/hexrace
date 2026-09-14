@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { type DebugFolder } from '@hexrace/hud';
-import { EnvironmentCatalog } from '@hexrace/tile';
 import { TrackExamples } from '@hexrace/track';
 
+import { GeneratorPanel } from '@ui/lab/track/generator-panel';
 import { type TrackDraft } from '@ui/lab/track/track-draft';
 
 type Knob = ReturnType<DebugFolder['add']>;
@@ -16,14 +16,6 @@ export interface TrackPage {
   clearAllCrates(): void;
 }
 
-const DIALS: readonly [keyof TrackDraft, string][] = [
-  ['turning', 'Turning'],
-  ['sharpness', 'Sharpness'],
-  ['relief', 'Relief'],
-  ['variety', 'Variety'],
-  ['obstacles', 'Obstacles'],
-];
-
 /**
  * The debug folder of the track showcase: where the track comes from, the dials of the generator,
  * how many tiles live around the player, where the player stands, and the crates. The player
@@ -31,8 +23,8 @@ const DIALS: readonly [keyof TrackDraft, string][] = [
  */
 @Injectable({ providedIn: 'root' })
 export class TrackPanel {
-  private readonly environments = inject(EnvironmentCatalog);
   private readonly examples = inject(TrackExamples);
+  private readonly generators = inject(GeneratorPanel);
   private position: Knob | null = null;
 
   build(folder: DebugFolder, page: TrackPage): void {
@@ -81,22 +73,10 @@ export class TrackPanel {
   }
 
   private generator(folder: DebugFolder, page: TrackPage): void {
-    const draft = page.draft;
-    folder.add(draft, 'seed').name('Seed');
-    folder.add(draft, 'environment', [...this.environments.ids]).name('Environment');
-    for (const [key, label] of DIALS) folder.add(draft, key, 0, 9, 1).name(label);
-    folder.add(draft, 'length', 3, 120, 1).name('Tiles');
-    folder
-      .add(
-        {
-          generate: () => {
-            draft.source = 'generated';
-            page.rebuild();
-          },
-        },
-        'generate',
-      )
-      .name('Generate');
+    this.generators.build(folder, page.draft, () => {
+      page.draft.source = 'generated';
+      page.rebuild();
+    });
   }
 
   private window(folder: DebugFolder, page: TrackPage, move: () => void): void {

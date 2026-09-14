@@ -1,0 +1,36 @@
+<main>
+  <header>
+    <a routerLink="/lab">← lab</a>
+    <h1>race</h1>
+    <p class="help">
+      Throttle, brake, steer. Hold R or Y for three seconds to reset. Fall off and you are put back
+      on the last tile.
+    </p>
+    <p class="what" [class.error]="issues().length > 0">{{ status() }}</p>
+  </header>
+  <div class="stage">
+    <div class="view">
+      <hr-canvas-frame [canvas]="canvas" (resized)="onResized($event)" />
+      <hr-car-gauges class="overlay dashboard" [dash]="dash" [spec]="spec" />
+      <div class="overlay sidebar">
+        <hr-race-timer [readout]="timer()" />
+        <hr-wrong-way [active]="wrongWay()" />
+        <hr-assist-lamps [assists]="dash.assists()" />
+        <hr-reset-gauge [progress]="dash.resetProgress()" />
+      </div>
+      <hr-countdown [step]="countdownStep()" />
+    </div>
+    <aside>
+      <p class="record">Best: {{ best }}</p>
+      <hr-issue-list [issues]="issues()" />
+      <details>
+        <summary>Track file</summary>
+        <textarea #file spellcheck="false" [value]="text()"></textarea>
+        <button type="button" (click)="loadText(file.value)">Load this text</button>
+      </details>
+    </aside>
+  </div>
+</main>
+@if (showPaddles()) {
+  <hr-touch-paddles [source]="touch" />
+}

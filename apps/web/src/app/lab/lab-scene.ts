@@ -1,10 +1,11 @@
 import { DestroyRef, inject } from '@angular/core';
 import * as THREE from 'three';
 
+import { type FollowCamera } from '@hexrace/camera';
 import { Random } from '@hexrace/commons';
 import {
   BodyComponent,
-  type CameraComponent,
+  CameraComponent,
   FIXED_TIMESTEP,
   GameLoop,
   type GameObject,
@@ -50,6 +51,8 @@ export abstract class PhysicsLab {
   protected readonly random = inject(Random).fresh();
   protected readonly scene = inject(Scenes).create();
   protected readonly bodies = inject(LabBodies);
+  private readonly debugPanel = inject(DebugPanel);
+  private readonly ownDestroyRef = inject(DestroyRef);
   protected readonly crates: GameObject[] = [];
   protected camera: CameraComponent | null = null;
   private alive = true;
@@ -63,6 +66,22 @@ export abstract class PhysicsLab {
   onResized(size: FrameSize): void {
     this.renderer.resize(size.width, size.height);
     this.camera?.setAspect(size.width, size.height);
+  }
+
+  /** Puts the page's folder in the debug panel, shown, and takes it away when the page is left. */
+  protected showPanel(title: string, build: (folder: DebugFolder) => void): void {
+    this.debugPanel.register(title, build, this.ownDestroyRef);
+    this.debugPanel.show();
+  }
+
+  /** The scene's camera, driven by `follow` and sized to the canvas: what a driving page renders through. */
+  protected followCamera(follow: FollowCamera): CameraComponent {
+    const object = this.scene.spawn('camera', CameraComponent);
+    object.add(follow);
+    const eye = object.getOrThrow(CameraComponent);
+    this.camera = eye;
+    eye.setAspect(this.renderer.width, this.renderer.height);
+    return eye;
   }
 
   protected abstract start(): void;

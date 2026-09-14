@@ -22,6 +22,7 @@
     "@hexrace/car": "*",
     "@hexrace/commons": "*",
     "@hexrace/engine": "*",
+    "@hexrace/game-commons": "*",
     "@hexrace/hud": "*",
     "@hexrace/inputs": "*",
     "@hexrace/tile": "*",

@@ -184,6 +184,21 @@ describe('CarController', () => {
     expect(world.car.state.gear).toBe(0);
   });
 
+  it('stays put while frozen, whatever the driver asks, then drives again once released', async () => {
+    world = await carWorld();
+    world.step(60);
+    world.car.frozen = true;
+    world.inputs.actions.throttle = 1;
+    world.inputs.actions.steer = 1;
+    world.step(180);
+    expect(world.car.state.speedKmh).toBeLessThan(1);
+    expect(world.car.state.steer).toBe(0);
+    expect(world.car.state.brake).toBe(1);
+    world.car.frozen = false;
+    world.step(120);
+    expect(world.car.state.speedKmh).toBeGreaterThan(5);
+  });
+
   it('does nothing once it has been destroyed', async () => {
     world = await carWorld();
     world.step(10);

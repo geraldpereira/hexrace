@@ -51,6 +51,8 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
   defaultSurface: SurfaceQuery = { environment: 'europe', zone: 'road', rank: 1 };
   home: Point3 = { x: 0, y: 0, z: 0 };
   homeHeading = 0;
+  /** Held still by the countdown: the pedals and the wheel are ignored, the brakes stay full on. */
+  frozen = false;
   /** The debug option of the POC: the game itself stays automatic (functional spec 3.3). */
   manualGearbox = false;
   grain = true;
@@ -140,7 +142,10 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
       actions.gearDown > 0,
     );
     this.limit(drive, speedKmh, dt);
-    const steer = this.steering.shape(actions.steer, this.spec.steering.steerResponse);
+    if (this.frozen) this.freeze(drive);
+    const steer = this.frozen
+      ? 0
+      : this.steering.shape(actions.steer, this.spec.steering.steerResponse);
     this.applySteerAngle(rig, speedKmh);
     this.readGround(rig);
     this.applyRearScale(rig, handBrake > 0 ? this.spec.handBrakeLateralGrip : 1);
@@ -195,6 +200,7 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
     Jolt.destroy(position);
     Jolt.destroy(rotation);
     Jolt.destroy(zero);
+    this.poses.read(rig, this.contactList, this.poseData);
     this.state.resetHeld = 0;
     this.bus.publish('car/reset', { held: RESET_SECONDS });
   }
@@ -251,6 +257,11 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
       drive.brake > IDLE_BRAKE,
       dt,
     );
+  }
+
+  private freeze(drive: { forward: number; brake: number }): void {
+    drive.forward = 0;
+    drive.brake = 1;
   }
 
   private maxSlip(): number {

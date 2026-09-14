@@ -84,6 +84,9 @@ packages/car/      @hexrace/car    - la voiture : entity/ (caractéristiques, op
                                      par revêtement), drive/ (boîte, moteur, assistances, grain),
                                      physics/ (CarBodies, CarController), render/ (caisse, traces,
                                      particules), audio/ (les quatre couches procédurales du POC 1).
+packages/game-commons/ @hexrace/game-commons - le tronc commun des modes : la course (entity/), le
+                                     compte à rebours, le chrono, les tours, les records (race/),
+                                     TrackStage, TrackProbe, FallWatch et RaceDirector (stage/).
 packages/hud/      @hexrace/hud    - le seul package à composants et pipes : game/ (compte-tours,
                                      dégâts, chrono…), commons/ (cadre de canvas, cartes, pipe time),
                                      dialog/, debug/ (les services autour de lil-gui). Testé par

@@ -109,9 +109,9 @@ describe('CarShowcase', () => {
     expect(page.car.contacts[0]?.surface.key).toBe('firm');
     source.actions.throttle = 1;
     capture.tick(120, 50);
-    expect(page.kmh()).toBeGreaterThan(20);
-    expect(page.rpm()).toBeGreaterThan(800);
-    expect(page.gear()).toBeGreaterThan(1);
+    expect(page.dash.kmh()).toBeGreaterThan(20);
+    expect(page.dash.rpm()).toBeGreaterThan(800);
+    expect(page.dash.gear()).toBeGreaterThan(1);
     expect(page.car.position.z).toBeGreaterThan(5);
     expect(rendered.at(-1)!.position.y).toBeGreaterThan(1);
     source.actions.steer = 1;
@@ -168,7 +168,7 @@ describe('CarShowcase', () => {
     page.options.tractionControl.enabled = true;
     capture.tick(2, 50);
     expect(host.querySelectorAll('hr-assist-lamps svg')).toHaveLength(2);
-    expect(page.assists().abs).toBe(false);
+    expect(page.dash.assists().abs).toBe(false);
     destroy();
   });
 
