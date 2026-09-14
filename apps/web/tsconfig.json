@@ -17,6 +17,8 @@
       "@tile/*": ["../../packages/tile/src/*"],
       "@hexrace/track": ["../../packages/track/src/index.ts"],
       "@track/*": ["../../packages/track/src/*"],
+      "@hexrace/car": ["../../packages/car/src/index.ts"],
+      "@car/*": ["../../packages/car/src/*"],
       "@hexrace/inputs": ["../../packages/inputs/src/index.ts"],
       "@inputs/*": ["../../packages/inputs/src/*"],
       "@hexrace/hud": ["../../packages/hud/src/index.ts"],

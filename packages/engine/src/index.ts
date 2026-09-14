@@ -20,6 +20,7 @@ export {
   type JoltPhysicsSystem,
   type JoltQuat,
   type JoltRVec3,
+  type JoltShape,
   type JoltVec3,
 } from '@engine/physics/jolt-physics';
 export { ThreeRenderer } from '@engine/render/three-renderer';

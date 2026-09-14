@@ -1,0 +1,48 @@
+main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 1rem;
+  box-sizing: border-box;
+  gap: 0.5rem;
+}
+
+header a {
+  font-size: 0.9rem;
+}
+
+h1 {
+  margin: 0.2rem 0;
+}
+
+p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.overlay {
+  position: absolute;
+  pointer-events: none;
+}
+
+.dashboard {
+  left: 1rem;
+  bottom: 1rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.lamps {
+  right: 1rem;
+  top: 1rem;
+}

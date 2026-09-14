@@ -57,8 +57,9 @@ const PLANNED: readonly Showcase[] = [
   {
     module: 'car',
     path: 'lab/car',
-    summary: 'The car on flat ground, several surfaces.',
-    ready: false,
+    summary:
+      'The car of POC 1 on flat ground, one lane per surface, ramp and speed bump, HUD and sound.',
+    ready: true,
   },
   {
     module: 'game-commons',

@@ -351,6 +351,51 @@ rampe et le dos d'âne. C'est ici que se termine ce que le POC 1 avait laissé :
 la caméra de la spec, le tactile en conduite, la mesure à 30 images par seconde sur mobile, et les
 deux rendus de la spec fonctionnelle 8.1.
 
+**Fait le 2026-09-14.** `entity/` porte la donnée seule : `CarSpec` (caisse et masse, roues et
+suspensions, moteur, boîte, braquage dégressif, transmission), `CarOptions` (ABS, contrôle de
+traction, aileron, plus l'amortissement de lacet du tactile, tous coupés au départ), `CarState`
+(l'instantané que lisent le HUD, le son et le panneau), `CarReadout` (état, contacts de roue,
+pose) par lequel `render/` et `audio/` lisent `physics/` sans se connaître, `SurfaceProbe` (ce que
+l'appelant répond sur le sol sous un point) et **le tableau par revêtement**, `SURFACE_CATALOG` :
+onze `SurfaceFeel` nommés par leur caractère (`firm`, `worn`, `rough`, `loose`, `soft`, `boggy`,
+`turf`, `packed`, `deep`, `slick`, `rocky`), rangés par environnement, zone et rang. `drive/` est
+la logique pure en services : `Surfaces` (la lecture du catalogue), `Steering` (courbe de réponse
+et braquage dégressif), `Assists` (ABS et contrôle de traction sur le glissement longitudinal),
+`Grain` et `Noise` (les bosses virtuelles et la force latérale bruitée), `EngineModel` (part de
+régime, rupteur, invite au passage), `Drivetrain` (boîte manuelle, embrayage), `Ramps` (le seuil
+à deux bornes du POC). `physics/` : `CarBodies` (corps, `VehicleConstraint`, différentiels selon
+la transmission), `CarController` (le composant qui lit les entrées, mène la contrainte, tient les
+courbes de friction sous chaque roue, ajoute traînée, grain, lacet et appui, publie
+`car/collision`, `car/shift`, `car/reset`, et **est sa propre `CameraTarget`**), avec
+`WheelContacts`, `CarPoses`, `CarForces`, `WheelSurfaces`, `ChassisAxes`, `ManualGearbox`,
+`CarTelemetry`. `render/` : `CarMeshes` et `CarView` (caisse, cabine, quatre roues, repère du
+centre de gravité), `SkidMarks` (ruban par roue, couleur et opacité du revêtement) et
+`CarParticles` sur `Puffs` (bouffées et débris). `audio/` : `AudioHub`, le seul endroit qui touche
+Web Audio (contexte au premier geste, worklets chargés depuis leur texte par Blob URL), et les
+trois couches procédurales du POC reprises telles quelles, `EngineSound`, `TyreSound` et
+`ChassisSound` sur une base commune `SurfaceSound` (une voix par rang de la palette).
+
+La vitrine `lab/car` : le sol plat découpé en huit bandes, une par rang de l'environnement choisi
+dans le panneau (Europe, Nord, Afrique), la rampe et le dos d'âne du POC, la conduite à la manette,
+au clavier ou aux palonniers tactiles, la caméra de la spec 3.9 à la place de la caméra de
+poursuite, le compte-tours, le rapport, la vitesse et les témoins d'assistance du `hud` par-dessus,
+et dans le panneau : masse et équilibre, moteur, boîte, direction, options de garage, sol, son
+(niveaux, tests, réglages par revêtement), traces, particules et obstacles. Le son démarre au
+premier geste ou sur le bouton « Start sound ».
+
+Décidé en route : **le tableau par revêtement vit dans `car`**, pas dans `tile`, parce que `tile`
+ne connaît qu'un rang et une couleur ; le son procédural du POC est gardé tel quel, aucun
+échantillon ; ce que Jolt ne lit qu'à la construction d'un corps (masse, moteur, rapports) se
+réapplique en reconstruisant la voiture au relâchement du curseur, pas à chaque pixel ; le bruit
+de grain est une valeur-noise maison, `simplex-noise` n'entrant pas dans les dépendances. Seule
+retouche à un voisin : `JoltShape` exporté par `engine`.
+
+**Ce qui reste.** Les dégâts et les sons de collision (décision de Gérald : plus tard, la collision
+ne publie qu'un événement) ; la passe de réglage du son et du grain que le TODO du POC réclame ;
+les valeurs des huit rangs de chaque environnement, un premier jet hors des quatre revêtements
+validés au POC ; le chrono au tour (avec `game-commons`), les barrières, la mesure à 30 images par
+seconde sur mobile et les deux rendus de 8.1.
+
 ### 2.8 `game-commons`
 
 **Ce qu'il possède.** Le tronc commun de la spec fonctionnelle 4.1 : compte à rebours, départ,

@@ -34,6 +34,11 @@ export const LAB_ROUTES: Routes = [
       ),
   },
   {
+    path: 'lab/car',
+    loadComponent: () =>
+      import('@ui/lab/car/car-showcase').then((m: { CarShowcase: Type<unknown> }) => m.CarShowcase),
+  },
+  {
     path: 'lab/track',
     loadComponent: () =>
       import('@ui/lab/track/track-showcase').then(

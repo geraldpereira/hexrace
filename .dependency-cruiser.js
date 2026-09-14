@@ -35,12 +35,12 @@ export default {
     {
       name: 'geometry-knows-no-engine',
       comment:
-        'Les sous-modules de logique en unités (`entity`, `geometry`, et pour la piste `format` ' +
-        'et `generation`) ne lisent ni three.js ni Jolt : ils restent testables seuls (spec ' +
-        'technique 2.1).',
+        'Les sous-modules de logique en unités (`entity`, `geometry`, pour la piste `format` ' +
+        'et `generation`, pour la voiture `drive` et `audio`) ne lisent ni three.js ni Jolt : ils ' +
+        'restent testables seuls (spec technique 2.1).',
       severity: 'error',
       from: {
-        path: '^src/(entity|geometry|format|generation)/',
+        path: '^src/(entity|geometry|format|generation|drive|audio)/',
         pathNot: '\\.(spec|mock)\\.ts$',
       },
       to: { path: 'node_modules/(three|jolt-physics)/' },

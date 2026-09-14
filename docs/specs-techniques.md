@@ -91,7 +91,7 @@ Briques fonctionnelles :
 - `physics` : le modèle physique, lit `entity` et `geometry` ;
 - `render` : le modèle 3D, lit `entity` et `geometry`.
 
-`physics` et `render` ne se lisent pas l'un l'autre : ce qu'ils ont à se dire passe par `entity` et `geometry`. Les règles sont tenues par dependency-cruiser (2.2). Un package sans 3D ni physique (`inputs`, `camera`) garde le même `entity` de donnée pure et met sa logique dans un sous-module nommé pour elle (`merge`, `follow`).
+`physics` et `render` ne se lisent pas l'un l'autre : ce qu'ils ont à se dire passe par `entity` et `geometry`. Les règles sont tenues par dependency-cruiser (2.2). Un package sans 3D ni physique (`inputs`, `camera`) garde le même `entity` de donnée pure et met sa logique dans un sous-module nommé pour elle (`merge`, `follow`) ; le sous-module de logique de `car` s'appelle `drive`, et son `audio` ne lit lui non plus ni three.js ni Jolt.
 On peut voir a faire en sorte que chaque module puisse être testé dans le navigateur avec une petite appli de test: car affichera une voiture on fonction de son data model, tiles idem, etc
 
 ### 2.2 Assemblage, dépendances et injection
@@ -229,7 +229,7 @@ Le **contrôleur véhicule de Jolt** (`WheeledVehicleController` sous `VehicleCo
 
 Ce contrôleur fait lui-même **un lancer par roue** à chaque pas (rally-game utilisait `VehicleCollisionTesterCastCylinder`) : chaque roue connaît le corps qu'elle touche et le point de contact. On a donc le contact par roue sans l'écrire.
 
-<TODO> Masse, centre de gravité, ce qui est simulé et ce qui est triché pour le ressenti [F 3.2].
+**Écrit (2026-09-14, `packages/car`).** `CarBodies` construit le corps depuis un `CarSpec` : une boîte de 1,6 × 0,6 × 3,8 m, 1300 kg, centre de masse descendu de 30 cm sous le centre de la boîte par une `OffsetCenterOfMassShapeSettings` (moteur et transmission bas, la voiture ne se retourne pas), quatre `WheelSettingsWV` accrochées au bas de la caisse, suspension courte et raide (0,05 à 0,25 m, 2,5 Hz, amortissement 0,7), deux barres anti-roulis, et un `WheeledVehicleController` dont le moteur, la boîte automatique et les différentiels viennent du spec ; la transmission (traction, propulsion, quatre roues) est la part de couple des deux différentiels, un essieu à zéro n'ayant pas de différentiel du tout. Ce qui est triché tient en quatre choses, toutes du POC 1 : le braquage dégressif avec la vitesse, le grain des revêtements (bosses virtuelles injectées dans la précharge de suspension, force latérale bruitée), la traînée par roue au contact, et le grip latéral arrière divisé au frein à main. `CarController` mène le tout à chaque pas fixe et remplit un `CarState` que le HUD, le son, les traces et les particules lisent sans jamais l'écrire.
 
 ### 4.2 Surfaces et friction
 
@@ -237,22 +237,37 @@ Grâce au contact par roue fourni par le contrôleur (4.1), **chaque roue conna�
 
 **Écrit (2026-09-13).** `TileSurfaces.at(sweep, point, obstacles)` dans `packages/tile` : le point de l'axe le plus proche donne `s`, la distance signée au centre de la piste le long de la droite du conducteur dit piste, bas-côté ou paysage, et une plaque qui couvre le point remplace le type de piste ; null hors de l'hexagone, une autre tuile possède le point.
 
-<TODO> Table type de surface vers paramètres de friction [F 3.4], et comment on lisse le passage d'une zone à l'autre.
+**Le tableau par revêtement vit dans `car` (2026-09-14).** `tile` ne connaît d'une surface qu'un rang et une couleur ; ce qu'un rang fait à un pneu est du domaine de la voiture. `SURFACE_CATALOG` (`car/entity/surfaces/`) range un `SurfaceFeel` par environnement, zone et rang : courbes de friction longitudinale et latérale, résistance au roulement, traînée, hauteur de bosse, rugosité latérale, longueur d'onde du grain, couleur et opacité de la trace, et les paramètres de son de glisse, de roulement et de particules. Les onze `SurfaceFeel` sont nommés par leur caractère (`firm`, `worn`, `rough`, `loose`, `soft`, `boggy`, `turf`, `packed`, `deep`, `slick`, `rocky`) et jamais par leur matière, comme [F 2.2] l'exige ; quatre d'entre eux sont exactement les revêtements réglés au POC 1, les autres sont un premier jet à doser en roulant. Les courbes sont du μ effectif : `WheelSurfaces` les élève au carré avant de les donner à Jolt, qui combine pneu et sol par la racine du produit et dont tous les sols ont une friction de 1.
 
-- 4.3 Glisse, frein à main, tête-à-queue
-  _Comment on obtient le comportement voulu [F 3.5] : courbes de friction, aides invisibles, marche arrière au frein maintenu._
-- 4.4 Suspensions
-  _Paramètres, ce qu'elles doivent faire sentir [F 3.2], comportement aux atterrissages._
-- 4.5 Sauts
-  _Décollage sur rampe, contrôle en vol nul ou léger [F 3.6], détection de retournement._
-- 4.6 Collisions et dégâts
-  _Couches de collision, détection de l'impact par partie de voiture, modèle de dégâts et application à la conduite [F 3.7]._
-- 4.7 Reset et respawn
-  _Dernière tuile parcourue, remise à l'arrêt, sortie du terrain [F 3.8]._
-- 4.8 Déterminisme
-  _Ce qu'on garantit (même entrée, même course) et ce qu'on ne garantit pas. Conséquences pour le défi quotidien._
-- 4.9 Réglage
-  _Panneau de réglage dans le sous-module `debug` du HUD, sauvegarde des valeurs, comment un réglage passe de l'outil au code._
+Qui répond « quel revêtement sous ce point » n'est pas le problème de la voiture : le `CarController` reçoit un `SurfaceProbe`, l'appelant le remplit. La vitrine `lab/car` en donne un qui lit ses bandes peintes ; la course en donnera un bâti sur `TileSurfaces`. Le passage d'une zone à l'autre n'est pas lissé : la roue prend la nouvelle surface au pas où son contact y entre, et les quatre roues étant indépendantes, la voiture traverse une frontière essieu par essieu, ce qui suffit à la sentir sans à-coup.
+
+### 4.3 Glisse, frein à main, tête-à-queue
+
+**Écrit (2026-09-14).** Jolt tient la friction latérale sur le seul angle de dérive, si bien qu'une roue arrière bloquée garde presque tout son grip de côté et que la voiture ralentit au lieu de tourner. Le frein à main divise donc la courbe latérale arrière par le facteur `handBrakeLateralGrip` du modèle (0,3 au POC) tant qu'il est tiré, et la remet dès qu'il est lâché : c'est le « tire et lance » d'arcade de [F 3.5]. La marche arrière est celle de l'exemple Jolt : la pédale freine tant que la voiture avance à plus de 0,5 m/s, et engage la marche arrière une fois à l'arrêt ; en boîte manuelle elle ne fait que freiner, R étant un rapport. Les entrées passent par une courbe de réponse mêlant linéaire et cubique (0,6 en direction, 0,3 aux pédales), qui adoucit le centre sans rogner les extrêmes, et un freinage de repos de 0,2 empêche la voiture de descendre les pentes toute seule. L'aide invisible du tactile est l'amortissement de lacet : un couple opposé à la rotation autour de l'axe haut de la caisse, mis à l'échelle de l'inertie de lacet donc réglé en 1/s, appliqué seulement quand une roue touche, coupé à la manette où la glisse brute plaît mieux.
+
+### 4.4 Suspensions
+
+**Écrit (2026-09-14).** Course courte et raide : 0,05 à 0,25 m, ressort à 2,5 Hz, amortissement 0,7, deux barres anti-roulis à 1000, ce qui garde la caisse à plat sans effacer le travail des roues. Le grain d'un revêtement entre par la **précharge** de la suspension et non par une force : à 5 Hz, même une force du poids de la voiture ne déplace 1300 kg que de quelques millimètres, alors qu'une précharge fait travailler le ressort comme si le sol s'était levé ; le maillage de la roue est levé d'autant, si bien qu'elle roule visiblement sur un sol que le collider ne porte pas. `WheelContacts` relève la vitesse de détente de chaque roue et le talonnage, dont le son de châssis tire ses coups.
+
+### 4.5 Sauts
+
+**Écrit (2026-09-14).** Rien à écrire pour le vol : sans roue au sol, le contrôleur véhicule n'a plus de prise, et ni le grain, ni l'amortissement de lacet, ni la traînée de revêtement ne s'appliquent — le « pas de contrôle en vol » de [F 3.6] tombe tout seul. `CarState.airborne` dit qu'aucune roue ne touche. La détection de retournement et la remise sur les roues restent à faire avec le reset de la course ; au banc, le reset manuel suffit.
+
+### 4.6 Collisions et dégâts
+
+**En partie écrit (2026-09-14).** Le corps de la voiture est enregistré auprès de `JoltPhysics`, dont l'écouteur de contacts appelle `onCollisionEnter` ; `CarController` publie alors `car/collision` avec la vitesse et le nom de ce qui a été touché. Les **dégâts et les sons de collision sont explicitement remis à plus tard** (décision de Gérald, 2026-09-14) : le contrat d'affichage existe déjà dans le `hud` (`DamageReadout`, douze éléments en pourcentage), rien ne le produit encore.
+
+### 4.7 Reset et respawn
+
+**En partie écrit (2026-09-14).** `CarController` tient le bouton de reset : maintenu trois secondes ([F 3.8]), il repose la voiture à son point de départ, dans son cap de départ, à l'arrêt, et publie `car/reset` ; `CarState.resetHeld` nourrit la jauge du HUD. La dernière tuile parcourue et la sortie du terrain viendront avec `game-commons`, qui saura où la piste passe.
+
+### 4.8 Déterminisme
+
+<TODO> Ce qu'on garantit (même entrée, même course) et ce qu'on ne garantit pas. Conséquences pour le défi quotidien. Noté en passant : le grain est une fonction pure de la distance parcourue et du numéro de roue, donc rejouable ; les particules et les ratés d'allumage tirent de `Random.fresh()` et ne le sont pas, mais ne touchent ni la physique ni le chrono.
+
+### 4.9 Réglage
+
+**Écrit (2026-09-14).** Chaque module expose ses réglages au panneau `hud/debug`, qui les garde dans le stockage local et les rend en JSON à recopier dans le code. La vitrine `lab/car` en est le banc : masse et équilibre, moteur, boîte, direction, options de garage, revêtements, son, traces, particules, obstacles. Ce que Jolt ne lit qu'à la construction d'un corps — masse, centre de masse, courbe de couple, rapports — se réapplique en **reconstruisant la voiture au relâchement du curseur** (`onFinishChange`), pas à chaque pixel du glissement ; le reste (braquage, grip du frein à main, assistances, grain, revêtements, niveaux de son) est lu à chaque pas et change à chaud.
 
 ---
 
@@ -337,16 +352,21 @@ livrent des valeurs continues ; c'est le module des menus qui détectera les fro
 
 ### 7.1 Bibliothèque
 
-Rien n'existe dans rally-game : Howler et Tone y sont installés, aucun son n'a été écrit. Le choix est donc ouvert.
+Rien n'existe dans rally-game : Howler et Tone y sont installés, aucun son n'a été écrit.
 
-<CHOIX> **Howler** (lecture d'échantillons, sprites audio, gestion du déblocage mobile, léger), **Tone** (synthèse et séquencement, plus lourd, utile si le moteur est synthétisé), ou **Web Audio nu** (aucune dépendance, tout à écrire). Le choix dépend de 7.2 : si le son moteur est fait d'échantillons, Howler suffit ; s'il est synthétisé, Web Audio nu ou Tone.
+**Tranché (2026-09-14) : Web Audio nu, aucune bibliothèque, aucun échantillon.** Tout le son du jeu est procédural, comme le POC 1 l'a validé : trois `AudioWorklet` écrits à la main, chargés depuis leur texte source par une Blob URL, donc sans fichier à livrer ni pipeline d'assets. Un seul service touche Web Audio, `AudioHub` dans `packages/car/audio` : il crée le contexte, charge un worklet une fois par nom, monte la chaîne d'une voix (nœud, gain, passe-bas éventuel) et la coupe. Tout le reste ne connaît que `Voice`, ce qui rend le son testable sans navigateur, et une page sans `AudioContext` roule en silence sans une seule erreur.
 
-- 7.2 Moteur
-  _Son dépendant du régime, rupteur, claquements d'échappement [F 8.5] : échantillons ou synthèse._
-- 7.3 Roulement, glisse, collisions, interface
-  _Sources, déclencheurs, mixage._
-- 7.4 Contraintes navigateur
-  _Déblocage du contexte audio au premier geste, comportement en arrière-plan, mobile._
+### 7.2 Moteur
+
+**Écrit (2026-09-14).** Une impulsion de pression par cylindre sur le cycle du vilebrequin, cosinus surélevé plus bouffée de bruit, avec un décalage et un gain propres à chaque cylindre et une gigue par allumage : le train est irrégulier comme un vrai moteur. Il fait ensuite sonner trois résonances d'échappement et un filtre en peigne pour la longueur de pipe, prend un souffle d'admission sous charge et sature doucement. Un rupteur hache l'allumage au plafond de régime et pendant un passage plein gaz ; le pot détone au rétrogradage pied levé et crépite au hasard en décélération haut dans les tours. Un passe-bas final s'ouvre avec le régime et la charge, un moteur qui roule sur l'erre étant plus sourd qu'un moteur qui tire.
+
+### 7.3 Roulement, glisse, collisions, interface
+
+**Écrit (2026-09-14) sauf les collisions et l'interface.** Le crissement suit exactement les traces au sol : mêmes seuils, un pneu chante quand, et seulement quand, il écrit par terre. Une voix par rang de la palette, mêlant par le paramètre `tone` un sifflement tonal (bruit blanc dans une résonance aiguë qui monte avec la glisse) et un crissement granuleux (train de grains sous un passe-bas) ; les roues d'un même revêtement s'additionnent comme des bruits indépendants. Le châssis porte le reste : le roulement, une voix par rang dosée par le nombre de roues au sol et la vitesse ; le vent, bruit filtré qui s'ouvre et enfle avec la vitesse ; et les suspensions, un coup sourd à chaque compression rapide, un claquement plus léger à la détente, un choc métallique au talonnage, chaque roue muette un dixième de seconde après le sien. Les sons de collision et les retours d'interface restent à faire.
+
+### 7.4 Contraintes navigateur
+
+**Écrit (2026-09-14).** Le contexte naît au premier `keydown` ou `pointerdown` de la page, jamais avant : tous les navigateurs l'exigent et **la manette ne compte pas comme un geste**, d'où le bouton « Start sound » du banc. Qui veut le contexte s'inscrit auprès d'`AudioHub` et est rappelé quand il existe ; un contexte suspendu est repris au geste suivant. En arrière-plan le navigateur arrête les images, donc les niveaux cessent d'être poussés, mais le worklet continue de tourner : la reprise est immédiate au retour. Reste à mesurer sur mobile.
 
 ---
 
@@ -479,13 +499,19 @@ Schéma des données sauvegardées [F 6.4] dans le stockage local du navigateur,
 | 2026-09-13 | Angular Material pour les composants génériques, Material Symbols pour les icônes ; `hud` n'écrit que le propre au jeu ([F 7.5])                                                                                                                                                                                                                                 | On ne refait pas un menu ni une boîte de dialogue                                                                                                                                                             |
 | 2026-09-13 | Panneau de debug : lil-gui repris avec les ajouts du POC voiture, dans `hud/debug` ; annule la décision du 2026-09-10                                                                                                                                                                                                                                            | Jamais visible du joueur, pas la peine de le redévelopper en Angular                                                                                                                                          |
 | 2026-09-14 | Les pistes d'exemple sont gardées comme **textes de fichier `.track`** dans `entity/examples/`, pas comme objets `Track`                                                                                                                                                                                            | Une seule source pour la donnée et pour le format ; réécrire ce qu'on a lu redonne le fichier octet pour octet, ce qui teste la grammaire 3.3 à chaque suite                                          |
-| 2026-09-13 | Dégâts : un pourcentage par élément (100 intact, 0 cassé), effets proportionnels ([F 3.7, F 7.5])                                                                                                                                                                                                                                                                | Plus fin que trois états, et directement lisible                                                                                                                                                              |
+| 2026-09-13 | Dégâts : un pourcentage par élément (100 intact, 0 cassé), effets proportionnels ([F 3.7, F 7.5])                                                                                                                                                                                                                                                                |
+| 2026-09-14 | Le tableau par revêtement (adhérences, traînée, grain, traces, sons, particules) vit dans `car`, pas dans `tile`, sous la clé environnement + zone + rang ; ses entrées portent un nom de caractère, jamais de matière                                                                                                                                        |
+| 2026-09-14 | Audio : Web Audio nu, aucune bibliothèque et aucun échantillon ; trois AudioWorklet procéduraux du POC 1, chargés depuis leur texte par Blob URL, derrière un `AudioHub` seul à toucher Web Audio                                                                                                                                                            |
+| 2026-09-14 | `render/` et `audio/` de `car` lisent la physique par une interface de donnée (`CarReadout`), jamais le contrôleur                                                                                                                                                                                                                                          |
+| 2026-09-14 | Un réglage que Jolt ne lit qu'à la construction d'un corps reconstruit la voiture au relâchement du curseur, pas à chaque pixel                                                                                                                                                                                                                              |
+| 2026-09-14 | Dégâts et sons de collision remis à plus tard : la collision ne publie qu'un événement                                                                                                                                                                                                                                                                       | Plus fin que trois états, et directement lisible                                                                                                                                                              |
 
 ### 13.2 Questions ouvertes
 
-| Réf. | Question                                                                          |
-| ---- | --------------------------------------------------------------------------------- |
-| 7.1  | Howler, Tone ou Web Audio nu, selon que le moteur est échantillonné ou synthétisé |
+| Réf. | Question                                                                                  |
+| ---- | ------------------------------------------------------------------------------------------ |
+| 4.2  | Les huit rangs de chaque environnement : quatre viennent du POC 1, les autres sont à doser |
+| 4.8  | Ce que le déterminisme garantit, et ce qu'il ne garantit pas                                |
 
 ---
 

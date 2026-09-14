@@ -68,6 +68,7 @@ export default tseslint.config(
           './packages/camera/tsconfig.spec.json',
           './packages/tile/tsconfig.spec.json',
           './packages/track/tsconfig.spec.json',
+          './packages/car/tsconfig.spec.json',
           './packages/hud/tsconfig.spec.json',
           './apps/web/tsconfig.app.json',
           './apps/web/tsconfig.spec.json',

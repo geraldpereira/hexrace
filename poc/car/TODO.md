@@ -1,5 +1,7 @@
 # TODO — POC voiture
 
+> **Repris le 2026-09-14 dans `packages/car` et la vitrine `lab/car`** ([fiche 2.7](../../docs/plan-de-construction.md)) : ce qui reste à faire y est listé, ce fichier n'est plus qu'une trace.
+
 **En pause depuis le 2026-09-12.** Le ressenti, la boîte, les sons, les traces et les particules sont
 en place et validés ; les critères restants du POC 1 (chrono, glace, barrières, caméra de la spec,
 tactile, mesure mobile, rendus de 8.1) attendent une reprise, probablement avec le POC 3 qui met la

@@ -1,0 +1,26 @@
+<main>
+  <header>
+    <a routerLink="/lab">← lab</a>
+    <h1>car</h1>
+    <p>{{ status() }}</p>
+  </header>
+  <div class="frame">
+    <hr-canvas-frame [canvas]="canvas" (resized)="onResized($event)" />
+    <div class="overlay dashboard">
+      <hr-rev-counter
+        [rpm]="rpm()"
+        [maxRpm]="spec.engine.maxRpm"
+        [redlineRpm]="spec.gearbox.shiftUpRpm"
+        [limiter]="limiter()"
+      />
+      <hr-gear-indicator [gear]="gear()" [shiftHint]="shiftHint()" />
+      <hr-speed-indicator [kmh]="kmh()" />
+    </div>
+    <div class="overlay lamps">
+      <hr-assist-lamps [assists]="assists()" />
+    </div>
+  </div>
+</main>
+@if (showPaddles()) {
+  <hr-touch-paddles [source]="touch" />
+}

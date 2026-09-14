@@ -1,0 +1,52 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "types": [],
+    "paths": {
+      "@car/*": [
+        "./src/*"
+      ],
+      "@hexrace/commons": [
+        "../commons/src/index.ts"
+      ],
+      "@commons/*": [
+        "../commons/src/*"
+      ],
+      "@hexrace/engine": [
+        "../engine/src/index.ts"
+      ],
+      "@engine/*": [
+        "../engine/src/*"
+      ],
+      "@hexrace/inputs": [
+        "../inputs/src/index.ts"
+      ],
+      "@inputs/*": [
+        "../inputs/src/*"
+      ],
+      "@hexrace/camera": [
+        "../camera/src/index.ts"
+      ],
+      "@camera/*": [
+        "../camera/src/*"
+      ],
+      "@hexrace/tile": [
+        "../tile/src/index.ts"
+      ],
+      "@tile/*": [
+        "../tile/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.mock.ts"
+  ]
+}

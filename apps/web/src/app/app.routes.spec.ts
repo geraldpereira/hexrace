@@ -14,6 +14,7 @@ describe('ROUTES', () => {
     ['the camera showcase loads lazily', '/lab/camera', '/lab/camera'],
     ['the tile showcase loads lazily', '/lab/tile', '/lab/tile'],
     ['the track showcase loads lazily', '/lab/track', '/lab/track'],
+    ['the car showcase loads lazily', '/lab/car', '/lab/car'],
     ['an unknown address goes back to the lab', '/nulle-part', '/lab'],
   ])('%s', async (_name, from, to) => {
     const router = TestBed.inject(Router);

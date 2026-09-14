@@ -11,6 +11,7 @@ export type JoltPhysicsSystem = Jolt.PhysicsSystem;
 export type JoltVec3 = Jolt.Vec3;
 export type JoltRVec3 = Jolt.RVec3;
 export type JoltQuat = Jolt.Quat;
+export type JoltShape = Jolt.Shape;
 
 /** Two object layers, static ground and moving bodies, shared by every body the game creates. */
 export const LAYER_NON_MOVING = 0;

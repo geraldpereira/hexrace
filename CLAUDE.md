@@ -80,6 +80,10 @@ packages/tile/     @hexrace/tile   - la tuile : la donnée (entity/), la logique
 packages/track/    @hexrace/track  - la piste : placement sur la grille, pentes aux faces, marques de
                                      départ, validation (geometry/), fichier .track (format/),
                                      générateur à graine (generation/), TrackMeshes, TrackBodies.
+packages/car/      @hexrace/car    - la voiture : entity/ (caractéristiques, options de garage, tableau
+                                     par revêtement), drive/ (boîte, moteur, assistances, grain),
+                                     physics/ (CarBodies, CarController), render/ (caisse, traces,
+                                     particules), audio/ (les quatre couches procédurales du POC 1).
 packages/hud/      @hexrace/hud    - le seul package à composants et pipes : game/ (compte-tours,
                                      dégâts, chrono…), commons/ (cadre de canvas, cartes, pipe time),
                                      dialog/, debug/ (les services autour de lil-gui). Testé par
