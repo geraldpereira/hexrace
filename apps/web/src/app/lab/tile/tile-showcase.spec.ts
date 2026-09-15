@@ -71,6 +71,9 @@ describe('TileShowcase', () => {
 
     panelRow('Smooth shading').querySelector('input')!.click();
     expect(physics.physicsSystem.GetNumBodies()).toBe(1);
+    page.draft.outline = true;
+    page.rebuild();
+    TestBed.tick();
     page.draft.outline = false;
     page.draft.line = false;
     page.draft.entry.position = 7;

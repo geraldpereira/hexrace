@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { Vec2 } from '@hexrace/commons';
 
 import { APOTHEM, SIDE } from '@tile/entity/layout';
+import { BARRIER_BODY_METERS } from '@tile/entity/obstacles/barrier';
+import { UNIT_METERS } from '@tile/entity/units';
 import {
   BUMP,
   LEFT_BARRIER,
@@ -27,13 +29,17 @@ describe('TileObstacles', () => {
     obstacles = TestBed.inject(TileObstacles);
   });
 
-  it('lays a hazard on the road centre, along the road, level at its own s', () => {
+  it('lays a hazard on the road centre, along the road, each corner at its own s', () => {
     const { outline, body } = obstacles.footprint(STRAIGHT_SWEEP, MEDIUM_HAZARD);
     expect(Math.min(...xs(outline))).toBeCloseTo(-1, 9);
     expect(Math.max(...xs(outline))).toBeCloseTo(0, 9);
     expect(Math.min(...ys(outline))).toBeCloseTo(-1, 9);
     expect(Math.max(...ys(outline))).toBeCloseTo(1, 9);
-    expect(outline.every((p: SPoint) => p.s === 0.5)).toBe(true);
+    const ss = outline.map((p: SPoint) => p.s).sort((a: number, b: number) => a - b);
+    expect(ss[0]).toBeCloseTo(ss[1]!, 9);
+    expect(ss[2]).toBeCloseTo(ss[3]!, 9);
+    expect(ss[0]! + ss[3]!).toBeCloseTo(1, 9);
+    expect(ss[3]! - ss[0]!).toBeGreaterThan(0.1);
     expect(body).toBe(outline);
     expect(HAZARD_FOOTPRINT.large).toEqual({ length: 2, width: 2 });
   });
@@ -46,15 +52,16 @@ describe('TileObstacles', () => {
     expect(cy).toBeCloseTo(-APOTHEM + 2 * APOTHEM * 0.25, 9);
   });
 
-  it('runs a barrier from the road edge one unit outwards, face to face, with a thinner body', () => {
+  it('reserves a unit outwards for a barrier, face to face, and stands its body on the road edge', () => {
     const { outline, body } = obstacles.footprint(STRAIGHT_SWEEP, RIGHT_BARRIER);
     expect(xs(outline).every((x) => x >= 1 - 1e-9 && x <= 2 + 1e-9)).toBe(true);
     expect(Math.min(...ys(outline))).toBeCloseTo(-APOTHEM, 9);
     expect(Math.max(...ys(outline))).toBeCloseTo(APOTHEM, 9);
-    expect(xs(body).every((x) => x >= 1.84 - 1e-9)).toBe(true);
+    const thickness = BARRIER_BODY_METERS / UNIT_METERS;
+    expect(xs(body).every((x) => x >= 1 - 1e-9 && x <= 1 + thickness + 1e-9)).toBe(true);
     const left = obstacles.footprint(STRAIGHT_SWEEP, LEFT_BARRIER);
     expect(xs(left.outline).every((x) => x >= -3 - 1e-9 && x <= -2 + 1e-9)).toBe(true);
-    expect(xs(left.body).every((x) => x <= -2.84 + 1e-9)).toBe(true);
+    expect(xs(left.body).every((x) => x <= -2 + 1e-9 && x >= -2 - thickness - 1e-9)).toBe(true);
   });
 
   it('hugs the curve of a sharp turn with a road band', () => {

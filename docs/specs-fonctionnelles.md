@@ -117,12 +117,12 @@ Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 
 **Pentes et amplitude.**
 
-- La **pente maximale d'une tuile** dépend de sa sortie, parce qu'en virage le bord intérieur de la piste parcourt moins de distance que l'axe pour la même montée et se trouve donc plus raide : **20 %** en ligne droite, **15 %** en virage large, **10 %** en virage serré, mesurés le long de l'axe de la tuile. Avec l'unité à 3 m, cela fait au plus 41 pas de hauteur sur une ligne droite (axe de 13,9 unités, soit 41,6 m), 28 en virage large (12,6 unités, 37,7 m) et 12 en virage serré (8,4 unités, 25,1 m).
+- La **pente maximale d'une tuile** dépend de sa sortie, parce qu'en virage le bord intérieur de la piste parcourt moins de distance que l'axe pour la même montée et se trouve donc plus raide : **25 %** en ligne droite, **18 %** en virage large, **12 %** en virage serré, mesurés le long de l'axe de la tuile. Avec l'unité à 3 m, cela fait au plus 51 pas de hauteur sur une ligne droite (axe de 13,9 unités, soit 41,6 m), 33 en virage large (12,6 unités, 37,7 m) et 15 en virage serré (8,4 unités, 25,1 m).
 - L'**amplitude** d'une piste, du point le plus bas au plus haut, est au plus de **200 m**, soit 1000 pas.
 - Le **départ et l'arrivée ne sont pas nécessairement à l'altitude 0** : une piste peut commencer à mi-hauteur, monter puis descendre sous son point de départ, tant que l'amplitude tient dans les 200 m.
-- Le **générateur** reste plus prudent que la main : il se limite aux **trois quarts** de ces seuils, soit 15 % en ligne droite, 11 % en virage large et 7,5 % en virage serré, où la marche entre les deux tuiles voisines se concentre au sommet — au plus 31, 21 et 9 pas. Une piste faite à la main va jusqu'aux seuils pleins.
+- Le **générateur** reste plus prudent que la main : il se limite aux **trois quarts** de ces seuils, soit 18,75 % en ligne droite, 13,5 % en virage large et 9 % en virage serré, où la marche entre les deux tuiles voisines se concentre au sommet — au plus 38, 25 et 11 pas. Une piste faite à la main va jusqu'aux seuils pleins.
 
-<TODO> Les seuils de 15 % et 10 % en virage sont posés pour fixer les idées ; à confirmer en roulant. L'unité à 3 m, qui sert à convertir les pentes en pas, est calée sur la voiture du POC 1 (1,6 m de large) et sur la glisse en virage constatée à 2,5 m.
+Les seuils et l'unité de 3 m sont calés en roulant sur des pistes générées, avec la voiture du POC 1 (1,6 m de large) : 20 / 15 / 10 % donnaient des pistes trop sages, la glisse en virage demande la voie large.
 
 ### 2.4 Habillage d'une tuile
 
@@ -130,7 +130,7 @@ Un obstacle est un **bloc** qui occupe **X unités de large** dans le modèle de
 
 | Élément   | Où                                                   | Hauteur | Effet                                                      |
 | --------- | ---------------------------------------------------- | ------- | ---------------------------------------------------------- |
-| Barrière  | Sur l'unité qui borde la piste, optionnelle par côté | 1 m     | Bloque, collision avec dégâts                              |
+| Barrière  | Contre le bord de piste, sur l'unité qui le borde   | 1 m     | Bloque, collision avec dégâts                              |
 | Rampe     | Sur la piste                                         | 0,8 m   | Fait décoller                                              |
 | Dos d'âne | Sur la piste                                         | 0,3 m   | Fait sauter légèrement, déstabilise à haute vitesse        |
 | Hazard    | Sur la piste ou le bas-côté                          | 1,5 m   | Obstacle à éviter, collision avec dégâts                   |
@@ -148,7 +148,7 @@ Exemples de hazards : balle de foin, véhicule en panne, rocher, tas de troncs. 
 Deux familles :
 
 - les **hazards**, objets rigides posés à une fraction et un décalage, orientés le long de la piste. Ils n'ont pas de nom dans les données mais une **taille** : _small_ (1 × 1 unité), _medium_ (2 unités le long, 1 en travers), _large_ (2 × 2). L'environnement décide de l'aspect : une balle de foin, un rocher ou une épave sont trois habillages d'un même hazard ;
-- les **objets suivis**, qui épousent la courbe de la piste entre deux fractions : la barrière (sur l'unité qui borde la piste du côté choisi, qu'il y ait un bas-côté ou non ; elle ne contraint pas le profil, ce qui garde les jonctions simples entre une tuile avec barrière et une sans), la rampe et le dos d'âne (toute la largeur de la piste), la plaque (un décalage, une largeur et un revêtement).
+- les **objets suivis**, qui épousent la courbe de la piste entre deux fractions : la barrière (sur l'unité qui borde la piste du côté choisi, qu'il y ait un bas-côté ou non ; le mur lui-même se dresse **contre le bord de la piste**, à l'entrée de cette unité, et ce qu'elle réserve derrière est du décor : on frotte la barrière, pas un muret perdu au milieu du bas-côté ; elle ne contraint pas le profil, ce qui garde les jonctions simples entre une tuile avec barrière et une sans), la rampe et le dos d'âne (toute la largeur de la piste), la plaque (un décalage, une largeur et un revêtement).
 
 **Le relief d'un objet suivi.** La rampe et le dos d'âne sont des volumes, pas des marquages :
 
@@ -395,7 +395,7 @@ L'éditeur affiche toutes les tuiles de la piste en même temps, contrairement a
 
 Uniquement pour le mode Collapse.
 
-Sur le modèle de la forge de hexact : une **graine** (seed) et quelques **cadrans** tiennent dans une seule chaîne et définissent le caractère de la piste : plutôt tournante ou plutôt droite, environnement, ampleur des déclivités, densité d'obstacles. La même chaîne rend toujours la même piste, ce qui rend le défi quotidien possible.
+Sur le modèle de la forge de hexact : une **graine** (seed) et quelques **cadrans** tiennent dans une seule chaîne et définissent le caractère de la piste : plutôt tournante ou plutôt droite, environnement, ampleur des déclivités, densité d'obstacles. Le cadran de relief dit à la fois **combien de tuiles changent de hauteur et de combien** : à 0 la piste est plate, à 9 chaque tuile monte ou descend, de la moitié du seuil de sa sortie à la totalité. La même chaîne rend toujours la même piste, ce qui rend le défi quotidien possible.
 
 Le générateur procède **comme l'éditeur** : il ajoute une tuile après l'autre à partir de la précédente, en tirant chaque paramètre de la graine, dans le respect de 2.6 et 5.5. Il produit donc toujours une piste jouable.
 
@@ -759,6 +759,12 @@ Par ordre d'envie :
 | 2026-09-15 | Les **parois d'un objet suivi** sont orientées tranche par tranche                                        | Sur une barrière longue en virage, l'orientation d'ensemble en retournait une partie et la voiture passait au travers |
 | 2026-09-15 | L'unité monte de 2,5 m à **3 m** : les pentes se recomptent, 41, 28 et 12 pas                                            | À 2,5 m la piste restait trop étroite : la plupart des virages se prennent en glisse, la voiture a besoin de bien plus que sa largeur |
 | 2026-09-15 | Le générateur monte aux **trois quarts** des seuils de pente (31, 21 et 9 pas), au lieu de la moitié              | Avec des tuiles plus longues, la moitié donnait des pistes générées trop plates ; la main garde les seuils pleins                     |
+| 2026-09-15 | Seuils de pente portés à **25 / 18 / 12 %** selon la sortie, soit 51, 33 et 15 pas                        | À 20 / 15 / 10 % les pistes restaient sages une fois l'unité à 3 m ; confirmé en roulant                                              |
+| 2026-09-15 | Le cadran de relief commande la fréquence **et** l'ampleur : à 9 chaque tuile bouge, de la moitié du seuil à tout | Le cadran au maximum laissait 46 % de tuiles plates et une marche moyenne de 1,4 m : la piste paraissait plate            |
+| 2026-09-15 | Le mur d'une barrière se dresse contre le bord de la piste, pas au bord extérieur de son unité réservée   | À 3 m d'unité il restait 2,6 m de vide entre la piste et le mur : on ne le frottait jamais                                            |
+| 2026-09-15 | Un hazard épouse la pente de sa tuile, chaque coin à sa propre place sur l'axe                            | Posé de niveau, il flottait ou s'enfonçait dès que la tuile montait                                                                   |
+| 2026-09-15 | Les traces de pneus s'effacent à chaque remise en course, rechargement compris                            | Les traces du run précédent restaient sur la ligne de départ                                                                          |
+| 2026-09-15 | Pas de contour noir sur les tuiles ; le compteur de performance est allumé dans le lab                    | Le contour est une aide d'édition, pas un décor ; le compteur sert à chaque essai                                                     |
 | 2026-09-15 | La caméra vise une tuile devant la position continue, non le milieu de la tuile suivante                  | Le point glisse au lieu de sauter à chaque face franchie (3.9)                         |
 | 2026-09-15 | Sauter une tuile en coupant remet la voiture sur la dernière tuile parcourue                              | Un raccourci ne rapporte rien ; c'est la remise de la chute (3.8)                      |
 | 2026-09-15 | Remise à la place libre la plus proche du centre de la tuile, jamais en arrière                           | On réapparaissait dans les obstacles, posés justement au milieu (3.8)                  |

@@ -16,6 +16,7 @@ import {
   type CarSpec,
   DEFAULT_CAR_OPTIONS,
   DEFAULT_CAR_SPEC,
+  type SkidMarks,
 } from '@hexrace/car';
 import { EventBus } from '@hexrace/commons';
 import { type CameraComponent, LightComponent } from '@hexrace/engine';
@@ -113,6 +114,7 @@ export class RaceShowcase extends PhysicsLab implements OnInit, RaceBench {
   stage!: TrackStage;
   director!: RaceDirector;
   car!: CarController;
+  marks!: SkidMarks;
 
   private readonly bestTimes = inject(BestTimes);
   private readonly builder = inject(RaceScene);
@@ -184,6 +186,7 @@ export class RaceShowcase extends PhysicsLab implements OnInit, RaceBench {
   restart(): void {
     this.director.rules = { mode: this.settings.mode, laps: this.settings.laps };
     this.director.restart();
+    this.marks.clear();
     if (this.follow.started) this.follow.snap();
   }
 
@@ -211,6 +214,7 @@ export class RaceShowcase extends PhysicsLab implements OnInit, RaceBench {
     this.stage = built.stage;
     this.director = built.director;
     this.car = built.parts.car;
+    this.marks = built.parts.marks;
     built.parts.particles.camera = this.eye.camera;
     this.follow.target = this.car;
     this.dash.options = this.options;

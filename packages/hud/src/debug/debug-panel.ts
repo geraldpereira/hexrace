@@ -85,7 +85,7 @@ export class DebugPanel {
     perf.add(this.meter, 'frameMs', 0, 100, 0.1).name('Frame (ms)').listen().disable();
     perf.add(this.meter, 'stepMs', 0, 50, 0.1).name('Physics step (ms)').listen().disable();
     perf
-      .add({ corner: false }, 'corner')
+      .add({ corner: this.meter.cornerVisible() }, 'corner')
       .name('Corner overlay')
       .onChange((v: boolean) => {
         this.meter.cornerVisible.set(v);

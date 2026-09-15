@@ -19,15 +19,15 @@ describe('Slopes', () => {
     expect(slopes.steffen(0.1, 0.3, 10, 10)).toBeLessThanOrEqual(0.2 + 1e-12);
   });
 
-  it('gives the thresholds of the spec, 41, 28 and 12 steps, and half for the generator', () => {
-    expect(slopes.maxHeightSteps(12)).toBe(41);
-    expect(slopes.maxHeightSteps(2)).toBe(28);
-    expect(slopes.maxHeightSteps(4)).toBe(12);
-    expect(slopes.maxHeightSteps(12, GENERATOR_SLOPE_FACTOR)).toBe(31);
-    expect(slopes.maxHeightSteps(2, GENERATOR_SLOPE_FACTOR)).toBe(21);
-    expect(slopes.maxHeightSteps(4, GENERATOR_SLOPE_FACTOR)).toBe(9);
-    expect(slopes.slopeOf(12, 41)).toBeLessThanOrEqual(MAX_SLOPE.straight);
-    expect(slopes.slopeOf(12, 42)).toBeGreaterThan(MAX_SLOPE.straight);
+  it('gives the thresholds of the spec, 51, 33 and 15 steps, and three quarters for the generator', () => {
+    expect(slopes.maxHeightSteps(12)).toBe(51);
+    expect(slopes.maxHeightSteps(2)).toBe(33);
+    expect(slopes.maxHeightSteps(4)).toBe(15);
+    expect(slopes.maxHeightSteps(12, GENERATOR_SLOPE_FACTOR)).toBe(38);
+    expect(slopes.maxHeightSteps(2, GENERATOR_SLOPE_FACTOR)).toBe(25);
+    expect(slopes.maxHeightSteps(4, GENERATOR_SLOPE_FACTOR)).toBe(11);
+    expect(slopes.slopeOf(12, 51)).toBeLessThanOrEqual(MAX_SLOPE.straight);
+    expect(slopes.slopeOf(12, 52)).toBeGreaterThan(MAX_SLOPE.straight);
     expect(slopes.slopeOf(8, 10)).toBeLessThanOrEqual(MAX_SLOPE.sharp);
   });
 });

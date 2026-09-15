@@ -91,15 +91,15 @@ describe('TrackValidation', () => {
   });
 
   it('refuses a slope over the threshold of its exit', () => {
-    expect(messages(trackOf([tileOf(12, { height: 0 }), tileOf(12, { height: 44 })]))).toEqual([
-      'tile 1: slope of 21 % on a straight, at most 20 %',
+    expect(messages(trackOf([tileOf(12, { height: 0 }), tileOf(12, { height: 54 })]))).toEqual([
+      'tile 1: slope of 26 % on a straight, at most 25 %',
     ]);
-    expect(messages(trackOf([tileOf(2, { height: 0 }), tileOf(2, { height: 30 })]))).toContain(
-      'tile 1: slope of 16 % in a wide turn, at most 15 %',
+    expect(messages(trackOf([tileOf(2, { height: 0 }), tileOf(2, { height: 36 })]))).toContain(
+      'tile 1: slope of 19 % in a wide turn, at most 18 %',
     );
     expect(
       messages(trackOf([tileOf(12, { height: 0 }), tileOf(4, { height: 18 }), tileOf(12)])),
-    ).toContain('tile 1: slope of 14 % in a sharp turn, at most 10 %');
+    ).toContain('tile 1: slope of 14 % in a sharp turn, at most 12 %');
   });
 
   it('refuses a track taller than two hundred metres', () => {

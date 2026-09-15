@@ -58,6 +58,7 @@ export abstract class PhysicsLab {
   private alive = true;
 
   protected load(): void {
+    this.meter.cornerVisible.set(true);
     void this.physics.load().then(() => {
       if (this.alive) this.begin();
     });

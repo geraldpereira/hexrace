@@ -46,6 +46,8 @@ export class TrackStage extends GameComponent {
   behind = TILES_BEHIND;
   /** Smooth shading rather than facets, as the track showcase offers. */
   smooth = false;
+  /** The hexagon's edge drawn on the ground; off in play, it is an editing aid. */
+  outlines = false;
 
   private readonly bodies = inject(TrackBodies);
   private readonly environments = inject(EnvironmentCatalog);
@@ -141,7 +143,7 @@ export class TrackStage extends GameComponent {
     const build = laid.builds[index]!;
     const triangles = this.triangles.build(build);
     const mesh = this.scene.instantiate(MeshComponent);
-    mesh.object = this.meshes.tile(build, laid.environment, { smooth: this.smooth, triangles });
+    mesh.object = this.meshes.tile(build, laid.environment, { smooth: this.smooth, outline: this.outlines, triangles });
     const body = this.scene.instantiate(BodyComponent);
     body.body = this.bodies.create(build, triangles);
     const object = this.scene.spawn(`tile-${String(index)}`);

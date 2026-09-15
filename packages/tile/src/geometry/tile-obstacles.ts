@@ -11,6 +11,7 @@ import { type Hazard, HAZARD_FOOTPRINT } from '@tile/entity/obstacles/hazard';
 import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type SPoint } from '@tile/entity/slice';
 import { type Boundaries, type TileSweep } from '@tile/entity/sweep';
+import { TilePaths } from '@tile/geometry/tile-paths';
 import { TileSweeper } from '@tile/geometry/tile-sweeper';
 import { Units } from '@tile/geometry/units';
 
@@ -20,6 +21,7 @@ export class TileObstacles {
   /** Samples along a band; more keeps a long barrier round in a sharp turn. */
   bandSamples = 12;
 
+  private readonly paths = inject(TilePaths);
   private readonly sweeper = inject(TileSweeper);
   private readonly units = inject(Units);
 
@@ -64,7 +66,7 @@ export class TileObstacles {
       center.add(along).sub(across),
       center.sub(along).sub(across),
       center.sub(along).add(across),
-    ].map((at) => ({ at, s: obstacle.at }));
+    ].map((at) => ({ at, s: this.paths.axisParameter(sweep.center, sweep.heading, sweep.exit, at) }));
     return { obstacle, outline, body: outline };
   }
 
@@ -77,8 +79,8 @@ export class TileObstacles {
       b[edge].add(b.right.scale(out * BARRIER_FOOTPRINT_WIDTH)),
     ]);
     const body = this.band(sweep, obstacle, (b) => [
-      b[edge].add(b.right.scale(out * (BARRIER_FOOTPRINT_WIDTH - thickness))),
-      b[edge].add(b.right.scale(out * BARRIER_FOOTPRINT_WIDTH)),
+      b[edge],
+      b[edge].add(b.right.scale(out * thickness)),
     ]);
     return { obstacle, outline, body };
   }

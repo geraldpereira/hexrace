@@ -22,6 +22,8 @@ import { clamp } from 'lodash-es';
 
 import { type Dials } from '@track/entity/generation';
 
+const RELIEF_FLOOR = 0.5;
+
 /** The lowest and highest face the track has reached, in steps: the amplitude to stay under. */
 export interface HeightRange {
   min: number;
@@ -41,10 +43,11 @@ export interface ProfileStep {
 type Block = Pick<Profile, 'roadWidth' | 'position' | 'leftShoulder' | 'rightShoulder'>;
 
 /**
- * The exit profile drawn from the entry one: small steps of width, position and types, and a
- * height whose slope stays under three quarters of the threshold of the exit (functional spec 2.3), following
- * the trend so that climbs are steady, and inside the track's amplitude. In a hairpin only the
- * types and the height move: shifting the road on an arc of radius four would twist it.
+ * The exit profile drawn from the entry one: small steps of width, position and types, and a height
+ * under three quarters of the exit's threshold (functional spec 2.3), following the trend so that
+ * climbs are steady and inside the track's amplitude. The relief dial says both how often the height
+ * moves and how far: at 9 every tile climbs or drops, by half the threshold to all of it. In a
+ * hairpin only the types and the height move; shifting the road on an arc of radius four twists it.
  */
 @Injectable({ providedIn: 'root' })
 export class ProfileSteps {
@@ -103,9 +106,11 @@ export class ProfileSteps {
 
   private height(step: ProfileStep): number {
     const { rng, dials, entry, range } = step;
-    if (!rng.chance(dials.relief * 0.55)) return entry.height;
+    if (!rng.chance(dials.relief)) return entry.height;
     const limit = this.slopes.maxHeightSteps(step.exit, GENERATOR_SLOPE_FACTOR);
-    const magnitude = Math.min(limit, 1 + rng.int(Math.max(1, Math.round(limit * dials.relief))));
+    const reach = limit * dials.relief;
+    const spread = RELIEF_FLOOR + (1 - RELIEF_FLOOR) * rng.next();
+    const magnitude = clamp(Math.round(reach * spread), 1, limit);
     const trending = step.trend !== 0 && rng.chance(0.7);
     const drawn = rng.chance(0.5) ? 1 : -1;
     const direction = trending ? step.trend : drawn;

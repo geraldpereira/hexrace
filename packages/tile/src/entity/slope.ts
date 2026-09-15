@@ -2,9 +2,9 @@ import { type TurnKind } from '@tile/entity/face';
 
 /** The most a tile may climb by exit, along the axis; a turn's inner edge is steeper (spec 2.3). */
 export const MAX_SLOPE: Readonly<Record<TurnKind, number>> = {
-  straight: 0.2,
-  wide: 0.15,
-  sharp: 0.1,
+  straight: 0.25,
+  wide: 0.18,
+  sharp: 0.12,
 };
 
 /** The generator stays below the hand: three quarters of the threshold. */

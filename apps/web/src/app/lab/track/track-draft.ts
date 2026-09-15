@@ -41,7 +41,7 @@ export class TrackDraft {
   /** Where the player stands along the track: whole part the tile, fraction the progress on it. */
   position = 0;
   smooth = false;
-  outline = true;
+  outline = false;
   follow = true;
   map = true;
 
