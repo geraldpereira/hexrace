@@ -1,9 +1,7 @@
-- Grosses vibrations/ondulations à ajouter aux landscape (avec une fréquence longue pour de grosses bosses trous) => y rouler doit être très pénalisant
-- Affichage de la rugosité de la piste sur la 'texture' => Possibilité d'ajouter un bruit généré à partir des mêmes paramètres ?
-
-- Propositions de styles graphiques
-- Modélisation de voiture dans blender (MCP)
+- Modélisation de voiture dans blender (MCP) => bas polygone, caisse 1,6 x 3,8 m, une unité = 3 m
+- Rendre la résolution de rendu réglable (ThreeRenderer + panneau debug) pour juger la basse résolution en course
 - Modélisation d'obstacle
+- Entrée lab dédiée pour éprouver tout ça : charger un modèle, régler la résolution de rendu, comparer les styles
 
 - Sons
   - Sons de déplacement sélection dans les menus

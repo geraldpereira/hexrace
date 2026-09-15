@@ -600,7 +600,7 @@ Low poly. Textures pixelisées ou flat shading, ou un rendu plus daté genre _De
 
 **Le gameplay passe avant la beauté graphique.** Quel que soit le style retenu, il ne doit **jamais dégrader la lisibilité de la piste** : depuis la caméra de la spec (voir 3.9), à la vitesse de pointe, on doit distinguer la piste du bas-côté et du paysage, reconnaître le revêtement (voir 8.2), voir venir un obstacle, une plaque ou une rampe à temps pour réagir. Un post-traitement qui floute, tremble, assombrit ou noie la piste sous un effet est refusé, même s'il est beau. On juge un style d'abord à la lisibilité en course, sur mobile, ensuite à son cachet.
 
-<CHOIX> Flat shading pur, textures pixelisées avec un post-traitement, ou rendu à la PlayStation. À trancher en testant directement dans le POC 1, sur mobile, au niveau de performance visé, avec la lisibilité comme premier critère.
+<CHOIX> Flat shading pur, textures pixelisées avec un post-traitement, ou rendu à la PlayStation. À trancher en roulant, sur mobile, au niveau de performance visé, avec la lisibilité comme premier critère. Cinq rendus ont été maquettés et chiffrés le 2026-09-15 dans `docs/direction-artistique.md` ; la basse résolution y tient la corde, elle seule rendant de la performance au lieu d'en prendre.
 
 ### 8.2 Lisibilité des surfaces
 

@@ -17,6 +17,7 @@ _coder_ ici ; il ne raconte pas l'architecture et ne répète rien qu'un autre f
 | Seuils de couverture, plafond de duplication ?    | 100 % partout : `packages/*/vitest.config.ts`, `angular.json` ; `.jscpd.json` |
 | Comment les écrans du jeu sont routés et montés ? | `docs/specs-techniques.md` 8.1, et `apps/web/src/app/game/game.routes.ts`     |
 | Où sont les pistes livrées, et leur menu ?        | `apps/web/public/tracks/` : un `.track` par piste, `catalogue.json` pour les menus |
+| Quel style graphique, et à quel prix ?            | `docs/direction-artistique.md`, cinq rendus chiffrés ; la spec 8.1 tranchera     |
 
 ## Commandes
 
