@@ -21,17 +21,18 @@ import { RaceHud } from '@ui/scene/race-hud';
 
 const PRESSED = 0.5;
 
-const QUIT_CHOICES: readonly MenuItem[] = [
+const RACE_CHOICES: readonly MenuItem[] = [
   { id: 'resume', label: 'Resume', icon: 'play_arrow' },
-  { id: 'quit', label: 'Quit', icon: 'home' },
+  { id: 'retry', label: 'Retry', icon: 'replay' },
+  { id: 'home', label: 'Home', icon: 'home' },
 ];
 
 /**
  * The race itself (functional spec 4.2 and 4.3): the track the address names laid in the stage,
  * the car on its start line, the countdown, the chrono, the laps of a Track loop or the finish
- * line of a Rally, and the results box at the flag, from which Retry runs the same track again
- * and Home leaves for the front page. There is no pause (4.1): back only asks whether to quit,
- * and the race runs on behind the question, so that no stray press ever loses a run.
+ * line of a Rally, and the results box at the flag. There is no pause (4.1): back opens a menu
+ * offering the same three ways out, Resume, Retry and Home, and the race runs on behind it, so
+ * that no stray press ever loses a run.
  */
 @Component({
   selector: 'hr-race-page',
@@ -42,7 +43,7 @@ const QUIT_CHOICES: readonly MenuItem[] = [
 })
 export class RacePage extends DrivingPage implements OnInit {
   readonly touch = inject(TouchSource);
-  readonly quitChoices = QUIT_CHOICES;
+  readonly quitChoices = RACE_CHOICES;
   readonly quitting = signal(false);
 
   private readonly document = inject(DOCUMENT);
@@ -72,9 +73,10 @@ export class RacePage extends DrivingPage implements OnInit {
     this.follow.snap();
   }
 
-  /** What the quit question answered: anything but Quit puts the player back in the race. */
+  /** What the race menu answered: Retry starts over, Home leaves, anything else drives on. */
   quitChose(choice: string): void {
-    if (choice === 'quit') this.home();
+    if (choice === 'home') this.home();
+    else if (choice === 'retry') this.restart();
     else this.quitting.set(false);
   }
 

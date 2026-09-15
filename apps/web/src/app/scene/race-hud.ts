@@ -9,9 +9,9 @@ import { type RaceReadout } from '@ui/scene/race-readout';
 
 /**
  * Everything a race hangs over its canvas (functional spec 7.2), in the corners the game and the
- * showcase both use: the dashboard bottom left, the timer, the wrong way, the assist lamps and
- * the reset ring top right, the countdown across the middle. It takes no pointer and reads two
- * plain objects a page fills each frame, so nothing here waits on change detection.
+ * showcase both use: the dashboard top left, against the sky rather than the snow, the timer, the
+ * wrong way, the assist lamps and the reset ring top right, the countdown across the middle. It
+ * reads two plain objects a page fills each frame, so nothing here waits on change detection.
  */
 @Component({
   selector: 'hr-race-hud',
@@ -37,7 +37,7 @@ import { type RaceReadout } from '@ui/scene/race-readout';
     }
     .dashboard {
       left: 1rem;
-      bottom: 1rem;
+      top: 1rem;
     }
     .sidebar {
       right: 1rem;

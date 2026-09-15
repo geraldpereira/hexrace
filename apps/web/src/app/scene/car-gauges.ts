@@ -21,7 +21,7 @@ import { type CarDash } from '@ui/scene/car-dash';
   styles: `
     :host {
       display: flex;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 1rem;
     }
   `,

@@ -92,7 +92,7 @@ describe('GamepadSource', () => {
     expect(source.actions.steer).toBe(0);
   });
 
-  it('navigates with the right stick or the D-pad', () => {
+  it('navigates with the D-pad, either stick, or the triggers', () => {
     const p = pad(0);
     p.buttons[15] = { pressed: true, value: 1 };
     p.buttons[12] = { pressed: true, value: 1 };
@@ -101,6 +101,26 @@ describe('GamepadSource', () => {
     source.poll();
     expect(source.actions.navigateX).toBe(1);
     expect(source.actions.navigateY).toBe(-1);
+
+    const left = pad(0);
+    left.axes[0] = 1;
+    left.axes[1] = 1;
+    pads = [left];
+    connect(left);
+    source.poll();
+    expect(source.actions.navigateX).toBe(1);
+    expect(source.actions.navigateY).toBe(1);
+
+    const triggers = pad(0);
+    triggers.buttons[7] = { pressed: true, value: 1 };
+    pads = [triggers];
+    connect(triggers);
+    source.poll();
+    expect(source.actions.navigateY).toBe(-1);
+    triggers.buttons[7] = { pressed: false, value: 0 };
+    triggers.buttons[6] = { pressed: true, value: 1 };
+    source.poll();
+    expect(source.actions.navigateY).toBe(1);
   });
 
   it('moves to the next gamepad when its own is unplugged', () => {

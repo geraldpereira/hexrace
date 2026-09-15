@@ -3,7 +3,7 @@
   <hr-race-hud [dash]="dash" [spec]="spec" [readout]="readout" />
   @if (quitting()) {
     <div class="quit">
-      <p>Quit the race?</p>
+      <p>Race menu</p>
       <hr-menu-list
         [items]="quitChoices"
         (chosen)="quitChose($event)"

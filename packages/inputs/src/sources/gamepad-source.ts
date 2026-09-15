@@ -17,6 +17,7 @@ const DPAD_DOWN = 13;
 const DPAD_LEFT = 14;
 const DPAD_RIGHT = 15;
 const AXIS_LX = 0;
+const AXIS_LY = 1;
 const AXIS_RX = 2;
 const AXIS_RY = 3;
 
@@ -27,8 +28,8 @@ const TRIGGER_DEADZONE = 0.05;
  * The gamepad in the Gamepad API's standard (Xbox) layout, mapped as the functional spec 3.3 says:
  * right trigger throttles, left trigger brakes, right stick steers (the left one is accepted too,
  * summed and clamped), A is the hand brake, RB and LB shift up and down, Y resets; in menus A
- * confirms, B goes back, right stick or D-pad navigates. The first gamepad plugged in is the one
- * heard; if it leaves, the next takes over.
+ * confirms, B goes back, and either stick, the D-pad or the triggers navigate, so that whatever
+ * the hand is already on answers. The first gamepad plugged in is heard; if it leaves, the next.
  */
 @Injectable({ providedIn: 'root' })
 export class GamepadSource implements InputSource {
@@ -68,9 +69,14 @@ export class GamepadSource implements InputSource {
     a.reset = this.button(pad, BUTTON_Y);
     a.gearUp = this.button(pad, BUTTON_RB);
     a.gearDown = this.button(pad, BUTTON_LB);
-    a.navigateX = clamp(rx + this.button(pad, DPAD_RIGHT) - this.button(pad, DPAD_LEFT), -1, 1);
+    a.navigateX = clamp(rx + lx + this.button(pad, DPAD_RIGHT) - this.button(pad, DPAD_LEFT), -1, 1);
     a.navigateY = clamp(
-      this.axis(pad, AXIS_RY) + this.button(pad, DPAD_DOWN) - this.button(pad, DPAD_UP),
+      this.axis(pad, AXIS_RY) +
+        this.axis(pad, AXIS_LY) +
+        this.button(pad, DPAD_DOWN) -
+        this.button(pad, DPAD_UP) +
+        a.brake -
+        a.throttle,
       -1,
       1,
     );

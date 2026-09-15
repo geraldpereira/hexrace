@@ -160,7 +160,7 @@ describe('RacePage', () => {
     again.destroy();
   });
 
-  it('asks before quitting, runs on behind the question, and resumes or leaves', async () => {
+  it('opens a menu, runs on behind it, and resumes, starts over or leaves', async () => {
     const { host, page, destroy } = await loaded();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     go();
@@ -178,7 +178,19 @@ describe('RacePage', () => {
     page.quitChose('resume');
     TestBed.tick();
     expect(host.querySelector('.quit')).toBeNull();
-    page.quitChose('quit');
+
+    source.actions.back = 0;
+    capture.tick(2, 50);
+    source.actions.back = 1;
+    capture.tick(2, 50);
+    TestBed.tick();
+    expect(host.querySelector('.quit')).not.toBeNull();
+    page.quitChose('retry');
+    TestBed.tick();
+    expect(host.querySelector('.quit')).toBeNull();
+    expect(page.race.director.state.phase).toBe('countdown');
+
+    page.quitChose('home');
     expect(navigate).toHaveBeenCalledWith(['/']);
     destroy();
   });
