@@ -45,6 +45,21 @@ describe('TrackGenerator', () => {
     expect([4, 8]).not.toContain(track.tiles.at(-1)?.exit);
   });
 
+  it('closes a loop, lays it back on its start, and gives it the Track mode', () => {
+    for (const length of [8, 12, 20, 30]) {
+      const track = generator.generate({ ...DEFAULT_GENERATOR, length, mode: 'track' });
+      expect(track.mode).toBe('track');
+      expect(track.tiles).toHaveLength(length);
+      expect(validation.validate(track).issues).toEqual([]);
+    }
+  });
+
+  it('falls back on a Rally line when the loop is too short to come back', () => {
+    const track = generator.generate({ ...DEFAULT_GENERATOR, length: 4, mode: 'track' });
+    expect(track.mode).toBe('rally');
+    expect(validation.validate(track).issues).toEqual([]);
+  });
+
   it.each(PRESETS)('makes valid tracks for many seeds with the dials %o', (dials: Dials) => {
     let obstacles = 0;
     for (let i = 0; i < 25; i++) {
@@ -53,6 +68,7 @@ describe('TrackGenerator', () => {
         seed: `seed-${String(i)}`,
         dials,
         length: 40,
+        mode: 'rally',
       };
       const track = generator.generate(config);
       expect(validation.validate(track).issues, configs.format(config)).toEqual([]);

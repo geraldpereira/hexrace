@@ -6,6 +6,7 @@ import {
   type TrackFileError,
   type TrackFiles,
   type TrackGenerator,
+  type TrackMode,
   DEFAULT_GENERATOR,
 } from '@hexrace/track';
 
@@ -35,6 +36,7 @@ export class TrackDraft {
   relief = DEFAULT_GENERATOR.dials.relief;
   variety = DEFAULT_GENERATOR.dials.variety;
   length = DEFAULT_GENERATOR.length;
+  shape: TrackMode = DEFAULT_GENERATOR.mode;
   obstacles = DEFAULT_GENERATOR.dials.obstacles;
   ahead = 4;
   behind = 2;
@@ -57,6 +59,7 @@ export class TrackDraft {
         obstacles: this.obstacles,
       },
       length: this.length,
+      mode: this.shape,
     };
   }
 

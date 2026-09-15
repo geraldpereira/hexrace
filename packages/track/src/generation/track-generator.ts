@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Random, type Rng } from '@hexrace/commons';
 import {
+  type Cell,
   type ExitFace,
   type Pose,
   type Profile,
@@ -17,8 +18,17 @@ import { ORIGIN } from '@track/entity/placement';
 import { type Track } from '@track/entity/track';
 import { ExitChoices } from '@track/generation/exit-choices';
 import { GeneratorConfigs } from '@track/generation/generator-configs';
-import { type HeightRange, ProfileSteps } from '@track/generation/profile-steps';
+import { LoopClosing } from '@track/generation/loop-closing';
 import { ObstacleSeeder } from '@track/generation/obstacle-seeder';
+import { type HeightRange, ProfileSteps } from '@track/generation/profile-steps';
+
+const TIGHT_SLACK = 18;
+
+interface Landing {
+  readonly exit: ExitFace;
+  readonly cell: Cell;
+  readonly slack: number;
+}
 
 interface Step {
   readonly tile: Tile;
@@ -31,6 +41,8 @@ interface Step {
 
 interface Run {
   readonly config: GeneratorConfig;
+  readonly loop: boolean;
+  readonly home: Profile;
   readonly dials: Dials;
   readonly rng: Rng;
   readonly maxSharpRun: number;
@@ -48,13 +60,16 @@ interface Run {
 /**
  * The track generator (functional spec 5.3): one tile after another from the previous one, every
  * parameter drawn from the seed, joining true by construction and the grid test of 5.5 held by a
- * bounded backtracking. The first tile is straight and the last is never a hairpin (spec 2.5), so
- * a generated track always passes the validation. It only makes open tracks: that is Collapse.
+ * bounded backtracking. The first tile is straight, so a generated track always passes the
+ * validation. A Rally line goes where it likes; a Track loop is steered home by `LoopClosing`
+ * and falls back to Rally when the backtracking cannot close it inside its budget.
  */
 @Injectable({ providedIn: 'root' })
 export class TrackGenerator {
   /** How many attempts per tile before giving up on a track that will not grow. */
   attemptsPerTile = 500;
+  /** A loop searches against a whole budget, not one per tile: a long one is hard however long. */
+  loopBudget = 12_000;
 
   private readonly configs = inject(GeneratorConfigs);
   private readonly environments = inject(EnvironmentCatalog);
@@ -62,12 +77,19 @@ export class TrackGenerator {
   private readonly faces = inject(Faces);
   private readonly grid = inject(Grid);
   private readonly layout = inject(Layout);
+  private readonly loops = inject(LoopClosing);
   private readonly profiles = inject(ProfileSteps);
   private readonly random = inject(Random);
   private readonly seeder = inject(ObstacleSeeder);
 
   /** A track of `length` tiles, or fewer when the grid blocks despite backtracking, which is rare. */
   generate(config: GeneratorConfig): Track {
+    const loop = config.mode === 'track' ? this.walk(config) : null;
+    if (loop && this.closed(loop)) return this.trackOf(config, loop.steps, true);
+    return this.trackOf(config, this.walk({ ...config, mode: 'rally' }).steps, false);
+  }
+
+  private walk(config: GeneratorConfig): Run {
     const run = this.begin(config);
     while (run.steps.length < config.length && run.budget-- > 0) {
       const exit = run.candidates.shift();
@@ -75,7 +97,12 @@ export class TrackGenerator {
         if (!this.backtrack(run)) break;
       } else this.push(run, exit);
     }
-    return this.trackOf(config, run.steps);
+    return run;
+  }
+
+  private closed(run: Run): boolean {
+    if (run.steps.length < run.config.length) return false;
+    return this.grid.samePose(run.pose, ORIGIN);
   }
 
   private begin(config: GeneratorConfig): Run {
@@ -84,6 +111,8 @@ export class TrackGenerator {
     const profile = this.profiles.start(rng);
     const run: Run = {
       config,
+      loop: config.mode === 'track',
+      home: profile,
       dials,
       rng,
       maxSharpRun: this.sharpRunLimit(dials.sharpness),
@@ -95,7 +124,8 @@ export class TrackGenerator {
       trend: 0,
       sharpRun: 0,
       candidates: [],
-      budget: config.length * this.attemptsPerTile,
+      budget:
+        config.mode === 'track' ? this.loopBudget : config.length * this.attemptsPerTile,
     };
     run.candidates = this.choices(run);
     return run;
@@ -109,16 +139,7 @@ export class TrackGenerator {
   private push(run: Run, exit: ExitFace): void {
     const first = run.steps.length === 0;
     const last = run.steps.length === run.config.length - 1;
-    const profile = first
-      ? run.profile
-      : this.profiles.next({
-          rng: run.rng,
-          dials: run.dials,
-          entry: run.profile,
-          exit,
-          trend: run.trend,
-          range: run.range,
-        });
+    const profile = this.profileOf(run, exit, first, last);
     const climb = first ? run.trend : profile.height - run.profile.height;
     const sweep: TileSweep = {
       center: this.layout.cellToWorld(run.pose.cell),
@@ -148,6 +169,22 @@ export class TrackGenerator {
     run.candidates = this.choices(run);
   }
 
+  private profileOf(run: Run, exit: ExitFace, first: boolean, last: boolean): Profile {
+    if (first) return run.profile;
+    if (last && run.loop) return run.home;
+    return this.profiles.next({
+      rng: run.rng,
+      dials: run.dials,
+      entry: run.profile,
+      exit,
+      trend: run.trend,
+      range: run.range,
+      ...(run.loop
+        ? { home: { height: run.home.height, remaining: run.config.length - run.steps.length } }
+        : {}),
+    });
+  }
+
   private backtrack(run: Run): boolean {
     const last = run.steps.pop();
     if (!last) return false;
@@ -162,7 +199,9 @@ export class TrackGenerator {
   }
 
   private choices(run: Run): ExitFace[] {
-    return this.exits.ranked({
+    const remaining = run.config.length - run.steps.length;
+    if (run.loop && remaining === 1) return this.loops.closingExits(run.pose);
+    const ranked = this.exits.ranked({
       rng: run.rng,
       dials: run.dials,
       pose: run.pose,
@@ -170,17 +209,36 @@ export class TrackGenerator {
       sharpRun: run.sharpRun,
       maxSharpRun: run.maxSharpRun,
       straightOnly: run.steps.length === 0,
-      noSharp: run.steps.length === run.config.length - 1,
+      noSharp: !run.loop && remaining === 1,
     });
+    return run.loop ? this.steered(run, ranked, remaining) : ranked;
   }
 
-  private trackOf(config: GeneratorConfig, steps: readonly Step[]): Track {
+  private steered(run: Run, ranked: readonly ExitFace[], remaining: number): ExitFace[] {
+    const open = ranked
+      .map((exit: ExitFace) => this.landingOf(run, exit, remaining))
+      .filter((one: Landing) => one.slack >= 0);
+    if (open.some((one: Landing) => one.slack > TIGHT_SLACK)) {
+      return open.map((one: Landing) => one.exit);
+    }
+    return open
+      .filter((one: Landing) => this.loops.canReach(one.cell, run.occupied, remaining))
+      .sort((a: Landing, b: Landing) => a.slack - b.slack)
+      .map((one: Landing) => one.exit);
+  }
+
+  private landingOf(run: Run, exit: ExitFace, remaining: number): Landing {
+    const cell = this.grid.neighbor(run.pose.cell, this.grid.exitHeading(run.pose.heading, exit));
+    return { exit, cell, slack: this.loops.slack(cell, remaining) };
+  }
+
+  private trackOf(config: GeneratorConfig, steps: readonly Step[], closed: boolean): Track {
     const text = this.configs.format(config);
     return {
       id: `gen-${text.replace(/[^A-Za-z0-9]+/g, '-')}`,
       name: `Seed ${config.seed}`,
       environment: config.environment,
-      mode: 'rally',
+      mode: closed ? 'track' : 'rally',
       tiles: steps.map((step: Step) => step.tile),
     };
   }

@@ -1,3 +1,7 @@
+- Navigation dans les menus à la manette: flèches mais aussi stick et accélérateur
+- Carte north pas vraiment jouable car trop glissante
+- Grosses vibrations/ondulations à ajouter aux landscape (avec une fréquence longue pour de grosses bosses trous) => y rouler doit être très pénalisant
+- Affichage de la rugosité de la piste sur la 'texture' => Possibilité d'ajouter un bruit généré à partir des mêmes paramètres ?
 - Compte tour/ vitesse => en haut à gauche
 - Propositions de styles graphiques
 - Sons à partir de samples plutôt que générés

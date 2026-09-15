@@ -23,11 +23,18 @@ import { clamp } from 'lodash-es';
 import { type Dials } from '@track/entity/generation';
 
 const RELIEF_FLOOR = 0.5;
+const SHARPEST_EXIT = 4;
 
 /** The lowest and highest face the track has reached, in steps: the amplitude to stay under. */
 export interface HeightRange {
   min: number;
   max: number;
+}
+
+
+interface LoopHome {
+  readonly height: number;
+  readonly remaining: number;
 }
 
 /** One step of the generator: what the next exit profile is drawn from. */
@@ -38,6 +45,8 @@ export interface ProfileStep {
   readonly exit: ExitFace;
   readonly trend: number;
   readonly range: HeightRange;
+  /** The height a loop has to come back to, and how many tiles are left to do it in. */
+  readonly home?: LoopHome;
 }
 
 type Block = Pick<Profile, 'roadWidth' | 'position' | 'leftShoulder' | 'rightShoulder'>;
@@ -106,7 +115,8 @@ export class ProfileSteps {
 
   private height(step: ProfileStep): number {
     const { rng, dials, entry, range } = step;
-    if (!rng.chance(dials.relief)) return entry.height;
+    const stay = this.homeward(step, entry.height);
+    if (!rng.chance(dials.relief)) return stay;
     const limit = this.slopes.maxHeightSteps(step.exit, GENERATOR_SLOPE_FACTOR);
     const reach = limit * dials.relief;
     const spread = RELIEF_FLOOR + (1 - RELIEF_FLOOR) * rng.next();
@@ -114,9 +124,18 @@ export class ProfileSteps {
     const trending = step.trend !== 0 && rng.chance(0.7);
     const drawn = rng.chance(0.5) ? 1 : -1;
     const direction = trending ? step.trend : drawn;
-    const candidate = clamp(entry.height + direction * magnitude, MIN_HEIGHT, MAX_HEIGHT);
+    const wanted = entry.height + direction * magnitude;
+    const candidate = clamp(this.homeward(step, wanted), MIN_HEIGHT, MAX_HEIGHT);
     const amplitude = Math.max(range.max, candidate) - Math.min(range.min, candidate);
-    return amplitude <= MAX_AMPLITUDE_STEPS ? candidate : entry.height;
+    return amplitude <= MAX_AMPLITUDE_STEPS ? candidate : stay;
+  }
+
+  private homeward(step: ProfileStep, height: number): number {
+    const home = step.home;
+    if (!home) return height;
+    const perTile = this.slopes.maxHeightSteps(SHARPEST_EXIT, GENERATOR_SLOPE_FACTOR);
+    const slack = (home.remaining - 1) * perTile;
+    return clamp(height, home.height - slack, home.height + slack);
   }
 
   private flip(width: ShoulderWidth): ShoulderWidth {

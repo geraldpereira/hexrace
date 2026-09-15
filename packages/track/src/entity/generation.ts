@@ -1,5 +1,7 @@
 import { type EnvironmentId } from '@hexrace/tile';
 
+import { type TrackMode } from '@track/entity/track';
+
 /** The dials of the generator, 0 to 9 each (functional spec 5.3). */
 export interface Dials {
   /** Share of the tiles that turn. */
@@ -20,6 +22,8 @@ export interface GeneratorConfig {
   readonly seed: string;
   readonly dials: Dials;
   readonly length: number;
+  /** A loop in Track mode, a point to point in Rally; a loop that will not close falls back. */
+  readonly mode: TrackMode;
 }
 
 export const DEFAULT_GENERATOR: GeneratorConfig = {
@@ -27,6 +31,7 @@ export const DEFAULT_GENERATOR: GeneratorConfig = {
   seed: 'hexrace',
   dials: { turning: 5, sharpness: 3, relief: 4, variety: 4, obstacles: 3 },
   length: 30,
+  mode: 'rally',
 };
 
 /** The most tiles one string may ask for. */

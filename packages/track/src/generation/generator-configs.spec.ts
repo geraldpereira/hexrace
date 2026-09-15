@@ -11,6 +11,13 @@ describe('GeneratorConfigs', () => {
     configs = TestBed.inject(GeneratorConfigs);
   });
 
+  it('marks a loop with l and a line with n', () => {
+    const loop = { ...DEFAULT_GENERATOR, mode: 'track' as const };
+    expect(configs.format(loop)).toBe('europe:hexrace:t5s3r4v4o3:l30');
+    expect(configs.parse(configs.format(loop))).toEqual(loop);
+    expect(configs.format(DEFAULT_GENERATOR)).toContain(':n30');
+  });
+
   it('writes and reads the setting string back', () => {
     const text = configs.format(DEFAULT_GENERATOR);
     expect(text).toBe('europe:hexrace:t5s3r4v4o3:n30');

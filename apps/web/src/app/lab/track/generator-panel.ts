@@ -2,7 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { type DebugFolder } from '@hexrace/hud';
 import { EnvironmentCatalog } from '@hexrace/tile';
 
+import { type TrackMode } from '@hexrace/track';
+
 import { type TrackDraft } from '@ui/lab/track/track-draft';
+
+const SHAPES: readonly TrackMode[] = ['rally', 'track'];
 
 const DIALS: readonly [keyof TrackDraft, string][] = [
   ['turning', 'Turning'],
@@ -26,6 +30,7 @@ export class GeneratorPanel {
     folder.add(draft, 'environment', [...this.environments.ids]).name('Environment');
     for (const [key, label] of DIALS) folder.add(draft, key, 0, 9, 1).name(label);
     folder.add(draft, 'length', 3, 120, 1).name('Tiles');
+    folder.add(draft, 'shape', SHAPES).name('Shape');
     folder.add({ generate }, 'generate').name('Generate');
   }
 }
