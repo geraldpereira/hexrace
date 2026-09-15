@@ -16,6 +16,7 @@ import {
 import { type Dials } from '@track/entity/generation';
 
 const SIZES: readonly HazardSize[] = ['small', 'medium', 'large'];
+const ROAD_TYPES: readonly RoadType[] = [1, 2, 3];
 const STEP = 0.5;
 const EPSILON = 1e-9;
 const MIN_PASSAGE = 1;
@@ -61,12 +62,17 @@ export class ObstacleSeeder {
   private patch(rng: Rng, sweep: TileSweep): Obstacle {
     return {
       kind: 'patch',
-      road: ((sweep.exitProfile.road % 3) + 1) as RoadType,
+      road: this.otherRoad(rng, sweep.exitProfile.road),
       from: 0.3,
       to: 0.7,
       offset: 0,
       width: Math.min(sweep.exitProfile.roadWidth, 1 + rng.int(2)),
     };
+  }
+
+  private otherRoad(rng: Rng, road: RoadType): RoadType {
+    const others = ROAD_TYPES.filter((one: RoadType) => one !== road);
+    return others[rng.int(others.length)]!;
   }
 
   private hazard(rng: Rng, sweep: TileSweep): Obstacle {

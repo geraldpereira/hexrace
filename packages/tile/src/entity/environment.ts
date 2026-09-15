@@ -17,6 +17,8 @@ export interface Environment {
     readonly shoulder: readonly [string, string, string];
     readonly landscape: readonly [string, string];
   };
+  /** How many road ranks may pave a whole face; the ranks above only ever come as a patch. */
+  readonly faceRoads: 2 | 3;
   /** The fraction of the axis over which width, position and types change (functional spec 2.2). */
   readonly transition: TransitionSpan;
 }

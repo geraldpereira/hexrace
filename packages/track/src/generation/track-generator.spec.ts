@@ -45,6 +45,25 @@ describe('TrackGenerator', () => {
     expect([4, 8]).not.toContain(track.tiles.at(-1)?.exit);
   });
 
+  it('keeps the slipperiest road of the North off the faces, and lets a patch carry it', () => {
+    const faces = new Set<number>();
+    const patches = new Set<number>();
+    for (let i = 0; i < 25; i++) {
+      const track = generator.generate({
+        ...DEFAULT_GENERATOR,
+        environment: 'north',
+        seed: `ice-${String(i)}`,
+        dials: { ...DEFAULT_GENERATOR.dials, variety: 9, obstacles: 9 },
+      });
+      for (const tile of track.tiles) {
+        faces.add(tile.profile.road);
+        for (const one of tile.obstacles ?? []) if (one.kind === 'patch') patches.add(one.road);
+      }
+    }
+    expect([...faces].sort((a: number, b: number) => a - b)).toEqual([1, 2]);
+    expect(patches.has(3)).toBe(true);
+  });
+
   it('closes a loop, lays it back on its start, and gives it the Track mode', () => {
     for (const length of [8, 12, 20, 30]) {
       const track = generator.generate({ ...DEFAULT_GENERATOR, length, mode: 'track' });

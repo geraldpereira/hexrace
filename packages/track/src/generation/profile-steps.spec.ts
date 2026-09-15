@@ -26,6 +26,7 @@ describe('ProfileSteps', () => {
       exit: 12,
       trend: 0,
       range: { min: 0, max: 0 },
+      faceRoads: 3,
       ...changes,
     };
   }

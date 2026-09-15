@@ -179,6 +179,7 @@ export class TrackGenerator {
       exit,
       trend: run.trend,
       range: run.range,
+      faceRoads: this.environments.of(run.config.environment).faceRoads,
       ...(run.loop
         ? { home: { height: run.home.height, remaining: run.config.length - run.steps.length } }
         : {}),

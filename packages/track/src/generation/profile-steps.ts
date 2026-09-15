@@ -47,6 +47,8 @@ export interface ProfileStep {
   readonly range: HeightRange;
   /** The height a loop has to come back to, and how many tiles are left to do it in. */
   readonly home?: LoopHome;
+  /** How many road ranks the environment lets pave a whole face (functional spec 2.2). */
+  readonly faceRoads: number;
 }
 
 type Block = Pick<Profile, 'roadWidth' | 'position' | 'leftShoulder' | 'rightShoulder'>;
@@ -83,7 +85,7 @@ export class ProfileSteps {
     const sharp = Math.abs(this.faces.turnOf(step.exit)) === 2;
     const block = sharp ? entry : this.block(step);
     const shoulder = !sharp && rng.chance(dials.variety * 0.1) ? this.rank(rng, 3) : entry.shoulder;
-    const road = rng.chance(dials.variety * 0.2) ? this.rank(rng, 3) : entry.road;
+    const road = rng.chance(dials.variety * 0.2) ? this.rank(rng, step.faceRoads) : entry.road;
     return {
       ...block,
       height: this.height(step),
