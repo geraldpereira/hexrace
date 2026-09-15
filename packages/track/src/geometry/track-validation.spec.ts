@@ -32,6 +32,9 @@ describe('TrackValidation', () => {
     'europe-relief-01',
     'europe-curves-01',
     'north-catalog-01',
+    'europe-surfaces-01',
+    'north-borders-01',
+    'africa-bends-01',
   ])('accepts %s', (id: string) => {
     const review = validation.validate(example(id));
     expect(review.issues).toEqual([]);

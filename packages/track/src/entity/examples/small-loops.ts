@@ -29,15 +29,15 @@ mode: track
 # h height in steps · t road/shoulder/landscape ranks · obs obstacles (see obstacle-text.ts)
 
 [tiles]
-start  exit=10  pos=3  w=2  sh=1,1  h=24  t=2/2/2
-       exit=10  pos=3  w=2  sh=1,1  h=32  t=2/2/2
-       exit=10  pos=3  w=2  sh=1,1  h=32  t=2/2/2
-       exit=10  pos=3  w=2  sh=1,1  h=24  t=2/2/2
+start  exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=32  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=32  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
        exit=10  pos=2  w=3  sh=1,1  h=24  t=2/2/2
-       exit=10  pos=3  w=2  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
 `;
 
-/** A straight Rally with a narrowing in the middle and the steepest legal climb. */
+/** A straight Rally narrowing from four units to two in the middle, and the steepest legal climb. */
 export const STRAIGHT_LINE_FILE = `hexrace-track 1
 
 id: europe-line-01
@@ -50,10 +50,10 @@ mode: rally
 # h height in steps · t road/shoulder/landscape ranks · obs obstacles (see obstacle-text.ts)
 
 [tiles]
-start  exit=12  pos=3  w=2  sh=1,1  h=24  t=2/2/2
-       exit=12  pos=4  w=1  sh=0,1  h=32  t=2/2/2
-       exit=12  pos=3  w=2  sh=1,1  h=55  t=2/2/2
-       exit=12  pos=3  w=2  sh=1,1  h=55  t=2/2/2
+start  exit=12  pos=2  w=4  sh=1,1  h=24  t=2/2/2
+       exit=12  pos=4  w=2  sh=0,1  h=32  t=2/2/2
+       exit=12  pos=2  w=4  sh=1,1  h=55  t=2/2/2
+       exit=12  pos=2  w=4  sh=1,1  h=55  t=2/2/2
 `;
 
 /** Six wide turns then a straight: the seventh tile lands on the first. */

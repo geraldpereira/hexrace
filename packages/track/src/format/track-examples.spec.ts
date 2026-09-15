@@ -11,11 +11,14 @@ describe('TrackExamples', () => {
     examples = TestBed.inject(TrackExamples);
   });
 
-  it('reads the nine tracks the module ships with', () => {
+  it('reads the twelve tracks the module ships with', () => {
     expect(examples.ids()).toEqual([
       'europe-ring-01',
       'europe-curves-01',
       'north-catalog-01',
+      'europe-surfaces-01',
+      'north-borders-01',
+      'africa-bends-01',
       'europe-relief-01',
       'europe-line-01',
       'north-ring-01',

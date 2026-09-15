@@ -1,0 +1,4 @@
+- Compte tour/ vitesse => en haut à gauche
+- Propositions de styles graphiques
+- Sons à partir de samples plutôt que générés
+- WebGl => Alternative pour plus de perf ?
