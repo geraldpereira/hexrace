@@ -15,7 +15,7 @@ export type ShoulderWidth = 0 | 1;
 
 /**
  * The profile of a face (functional spec 2.1): left to right, landscape, maybe a shoulder, the
- * road, maybe a shoulder, landscape. Everything counts in units, one unit being a car width, and
+ * road, maybe a shoulder, landscape. Everything counts in units, one unit being a lane width, and
  * a face is eight units. Surface types are ranks in the environment's palette (spec 2.2).
  */
 export interface Profile {

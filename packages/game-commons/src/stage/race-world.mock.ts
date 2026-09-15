@@ -17,7 +17,8 @@ export interface RaceWorld {
   inputs: Inputs;
   tiles: GameObject;
   step(times?: number): void;
-  teleport(position: number, turn?: number): void;
+  teleport(position: number, turn?: number, offset?: number): void;
+  jump(position: number, turn?: number, offset?: number): void;
   drop(depth: number): void;
   destroy(): void;
 }
@@ -36,11 +37,44 @@ function buildCar(scene: Scene): CarController {
   return car;
 }
 
+interface Rails {
+  readonly track: Track | null;
+  readonly stage: TrackStage;
+  readonly car: CarController;
+  readonly director: RaceDirector;
+  readonly step: () => void;
+}
+
+type Mover = Pick<RaceWorld, 'jump' | 'teleport'>;
+
+function mover(rails: Rails): Mover {
+  const window = TestBed.inject(TrackWindow);
+  const { track, stage, car, director, step } = rails;
+  function jump(position: number, turn = 0, offset = 0): void {
+    const pose = track && window.playerPose(track, stage.placement, position);
+    if (!pose) return;
+    const across = pose.travel.right().scale(offset);
+    car.home = stage.metres(pose.point.add(across), pose.height);
+    car.homeHeading = Math.atan2(pose.travel.x, -pose.travel.y) + turn;
+    car.reset();
+    step();
+  }
+  return {
+    jump,
+    teleport(position: number, turn = 0, offset = 0): void {
+      const from = director.state.position;
+      const hops = Math.max(1, Math.ceil(Math.abs(position - from)));
+      for (let hop = 1; hop <= hops; hop++) {
+        jump(from + ((position - from) * hop) / hops, turn, offset);
+      }
+    },
+  };
+}
+
 export async function raceWorld(track: Track | null, rules?: RaceRules): Promise<RaceWorld> {
   const physics = TestBed.inject(JoltPhysics);
   await physics.load();
   const scene = TestBed.inject(Scenes).create();
-  const window = TestBed.inject(TrackWindow);
   const { stage, tiles } = buildStage(scene, track);
 
   const director = scene.instantiate(RaceDirector);
@@ -68,14 +102,7 @@ export async function raceWorld(track: Track | null, rules?: RaceRules): Promise
     tiles,
     inputs: TestBed.inject(Inputs),
     step,
-    teleport(position: number, turn = 0): void {
-      const pose = track && window.playerPose(track, stage.placement, position);
-      if (!pose) return;
-      car.home = stage.metres(pose.point, pose.height);
-      car.homeHeading = Math.atan2(pose.travel.x, -pose.travel.y) + turn;
-      car.reset();
-      step();
-    },
+    ...mover({ track, stage, car, director, step }),
     drop(depth: number): void {
       car.home = { x: car.position.x, y: depth, z: car.position.z };
       car.reset();

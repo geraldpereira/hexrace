@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { Clock, EventBus } from '@hexrace/commons';
+import { TileSurfaces } from '@hexrace/tile';
 import { type Track, TrackExamples } from '@hexrace/track';
 
-import { type RaceFall } from '@game-commons/entity/race-events';
+import { type RaceCut, type RaceFall } from '@game-commons/entity/race-events';
 import { rallyTrack } from '@game-commons/entity/track.mock';
 import { FakeClock } from '@game-commons/race/clock.mock';
 import { type RaceWorld, raceWorld } from '@game-commons/stage/race-world.mock';
@@ -11,6 +12,7 @@ describe('RaceDirector', () => {
   let clock: FakeClock;
   let world: RaceWorld;
   const falls: RaceFall[] = [];
+  const cuts: RaceCut[] = [];
 
   beforeEach(() => {
     localStorage.clear();
@@ -18,7 +20,9 @@ describe('RaceDirector', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: [{ provide: Clock, useValue: clock }] });
     falls.length = 0;
+    cuts.length = 0;
     TestBed.inject(EventBus).on('race/fall', (event: RaceFall) => falls.push(event));
+    TestBed.inject(EventBus).on('race/cut', (event: RaceCut) => cuts.push(event));
   });
 
   afterEach(() => {
@@ -138,6 +142,79 @@ describe('RaceDirector', () => {
     world.step();
     expect(world.director.state.position).toBeCloseTo(0.52, 1);
     expect(world.car.state.speedKmh).toBeLessThan(1);
+  });
+
+  it('puts the car back where it was when it skipped a tile rather than drove it', async () => {
+    world = await raceWorld(rallyTrack(8));
+    go();
+    world.teleport(2.5);
+    expect(world.director.state.position).toBeCloseTo(2.5, 1);
+    world.jump(4.5);
+    expect(cuts).toEqual([{ from: 2, to: 4 }]);
+    expect(falls).toEqual([]);
+    world.step();
+    expect(world.director.state.position).toBeCloseTo(2.5, 1);
+  });
+
+  it('takes the next tile, the one before, and the wrap of a loop, as driven', async () => {
+    world = await raceWorld(ring());
+    go();
+    world.teleport(2.5);
+    world.jump(3.5);
+    world.jump(2.5);
+    expect(cuts).toEqual([]);
+    const last = world.stage.track!.tiles.length - 1;
+    world.teleport(last + 0.5);
+    world.jump(0.5);
+    expect(cuts).toEqual([]);
+    expect(world.director.state.position).toBeCloseTo(0.5, 1);
+  });
+
+  it('calls a cut on a loop when the short way round skips a tile', async () => {
+    world = await raceWorld(ring());
+    go();
+    world.teleport(1.5);
+    const last = world.stage.track!.tiles.length - 1;
+    world.jump(last + 0.5);
+    expect(cuts).toEqual([{ from: 1, to: last }]);
+  });
+
+  it('calls a fall and not a cut when the car is fished out of the void', async () => {
+    world = await raceWorld(rallyTrack(6));
+    go();
+    world.teleport(3.5);
+    world.drop(-200);
+    world.step(2);
+    expect(falls).toEqual([{ tile: 3 }]);
+    expect(cuts).toEqual([]);
+  });
+
+  it('aims a tile ahead of where the car stands, and slides the point with it', async () => {
+    world = await raceWorld(rallyTrack(6));
+    go();
+    world.teleport(1.99);
+    const before = world.car.nextTile!;
+    world.jump(2.01);
+    const after = world.car.nextTile!;
+    const moved = Math.hypot(after.x - before.x, after.z - before.z);
+    world.jump(3.01);
+    const far = world.car.nextTile!;
+    expect(moved).toBeLessThan(Math.hypot(far.x - after.x, far.z - after.z) / 4);
+  });
+
+  it('counts the finish line crossed off the road, anywhere across the hexagon', async () => {
+    world = await raceWorld(rallyTrack(6));
+    go();
+    world.teleport(5.45, 0, 3.5);
+    const build = world.stage.builds[5]!;
+    const under = TestBed.inject(TileSurfaces).at(
+      build.sweep,
+      world.stage.plane(world.car.position),
+    );
+    expect(under?.zone).toBe('landscape');
+    expect(world.director.state.phase).toBe('racing');
+    world.jump(5.55, 0, 3.5);
+    expect(world.director.state.phase).toBe('finished');
   });
 
   it('stands by while no track is laid, and spawns nowhere on a track without a tile', async () => {

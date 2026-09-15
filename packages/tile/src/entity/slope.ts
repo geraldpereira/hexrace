@@ -7,5 +7,5 @@ export const MAX_SLOPE: Readonly<Record<TurnKind, number>> = {
   sharp: 0.1,
 };
 
-/** The generator stays below the hand: half the threshold. */
-export const GENERATOR_SLOPE_FACTOR = 0.5;
+/** The generator stays below the hand: three quarters of the threshold. */
+export const GENERATOR_SLOPE_FACTOR = 0.75;

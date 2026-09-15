@@ -3,7 +3,7 @@ import { type Vec2 } from '@hexrace/commons';
 
 import {
   type Barrier,
-  BARRIER_BODY_WIDTH,
+  BARRIER_BODY_METERS,
   BARRIER_FOOTPRINT_WIDTH,
 } from '@tile/entity/obstacles/barrier';
 import { type Footprint } from '@tile/entity/obstacles/footprint';
@@ -12,6 +12,7 @@ import { type Obstacle } from '@tile/entity/obstacles/obstacle';
 import { type SPoint } from '@tile/entity/slice';
 import { type Boundaries, type TileSweep } from '@tile/entity/sweep';
 import { TileSweeper } from '@tile/geometry/tile-sweeper';
+import { Units } from '@tile/geometry/units';
 
 /** Lays obstacles on a swept tile: where each sits in the plane, as an outline and a body. */
 @Injectable({ providedIn: 'root' })
@@ -20,6 +21,7 @@ export class TileObstacles {
   bandSamples = 12;
 
   private readonly sweeper = inject(TileSweeper);
+  private readonly units = inject(Units);
 
   footprint(sweep: TileSweep, obstacle: Obstacle): Footprint {
     switch (obstacle.kind) {
@@ -42,6 +44,15 @@ export class TileObstacles {
     }
   }
 
+  /** A band's body read back as slices, each the left then the right point of one sample. */
+  slices(body: readonly SPoint[]): [SPoint, SPoint][] {
+    const count = body.length / 2;
+    return Array.from({ length: count }, (_, i): [SPoint, SPoint] => [
+      body[i]!,
+      body[2 * count - 1 - i]!,
+    ]);
+  }
+
   private hazardFootprint(sweep: TileSweep, obstacle: Hazard): Footprint {
     const { length, width } = HAZARD_FOOTPRINT[obstacle.size];
     const b = this.sweeper.boundariesAt(sweep, obstacle.at);
@@ -60,12 +71,13 @@ export class TileObstacles {
   private barrierFootprint(sweep: TileSweep, obstacle: Barrier): Footprint {
     const out = obstacle.side === 'left' ? -1 : 1;
     const edge = obstacle.side === 'left' ? 'roadLeft' : 'roadRight';
+    const thickness = this.units.metersToUnits(BARRIER_BODY_METERS);
     const outline = this.band(sweep, obstacle, (b) => [
       b[edge],
       b[edge].add(b.right.scale(out * BARRIER_FOOTPRINT_WIDTH)),
     ]);
     const body = this.band(sweep, obstacle, (b) => [
-      b[edge].add(b.right.scale(out * (BARRIER_FOOTPRINT_WIDTH - BARRIER_BODY_WIDTH))),
+      b[edge].add(b.right.scale(out * (BARRIER_FOOTPRINT_WIDTH - thickness))),
       b[edge].add(b.right.scale(out * BARRIER_FOOTPRINT_WIDTH)),
     ]);
     return { obstacle, outline, body };

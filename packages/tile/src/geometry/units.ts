@@ -4,7 +4,7 @@ import { type Vec2, Vec3 } from '@hexrace/commons';
 import { HEIGHT_UNIT, UNIT_METERS } from '@tile/entity/units';
 
 /**
- * Conversions between the model's units (car widths, height steps) and the 3D world's metres
+ * Conversions between the model's units (lane widths, height steps) and the 3D world's metres
  * (functional spec 2.1 and 2.3). `toWorld` is the last step before three.js and Jolt: the plane's
  * x stays x, its north becomes -z, the height becomes y, all in metres.
  */

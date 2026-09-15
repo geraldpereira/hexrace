@@ -67,4 +67,12 @@ describe('RigSolver', () => {
     tuning.anticipation = 0;
     expect(solver.solve(target, tuning).heading).toBe(0);
   });
+
+  it('slides the heading as the aimed point slides, with no step of its own', () => {
+    tuning.anticipation = 1;
+    const target = { position: ORIGIN, heading: 0, speed: 0 };
+    const near = solver.solve({ ...target, nextTile: { x: 1, y: 0, z: 20 } }, tuning).heading;
+    const next = solver.solve({ ...target, nextTile: { x: 1.1, y: 0, z: 20 } }, tuning).heading;
+    expect(Math.abs(next - near)).toBeLessThan(0.01);
+  });
 });

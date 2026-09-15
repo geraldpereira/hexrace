@@ -58,7 +58,7 @@ Ce qu'on ne leur emprunte pas : la profondeur de simulation, les réglages fins,
 
 Un **hexagone** (ou **tuile**) est l'unité de construction d'une piste. Il est défini par ses paramètres, jamais dessiné à la main : c'est ce qui permet de générer des pistes procéduralement et d'assurer que deux tuiles se raccordent.
 
-**L'unité de mesure est la largeur d'une voiture.** Tout ce qui suit se compte en unités.
+**L'unité de mesure est la largeur d'une voie**, soit **3 m**. Tout ce qui suit se compte en unités. Une voiture fait 1,6 m de large : l'unité n'est pas sa largeur mais la voie où elle roule, marges comprises, et la plupart des virages se prennent en glisse, ce qui demande bien plus que la largeur de la caisse. Une piste de 3 unités laisse donc de quoi déborder de sa trajectoire, et un obstacle d'une unité de large a la taille d'un vrai obstacle.
 
 - **Orientation** : **côté plat vers l'avant**. Une tuile a donc une face devant, une face derrière, et deux faces de chaque côté.
 - **Échelle** : un côté d'hexagone mesure **8 unités**. Cette largeur laisse de la marge pour qu'une légère sortie sur le bas-côté au passage d'une tuile à l'autre ne fasse pas tomber le joueur du terrain.
@@ -69,7 +69,7 @@ Un **hexagone** (ou **tuile**) est l'unité de construction d'une piste. Il est 
   - piste plus bas-côtés font **6 unités au plus**, de sorte qu'il reste **au moins 1 unité de paysage de chaque côté**. Une piste de 5 unités n'a donc qu'un bas-côté au plus ;
   - la **position** du bloc piste plus bas-côtés sur la face se donne en unités depuis la gauche.
 - **Variation dans la tuile** : largeur, position et types peuvent différer entre l'entrée et la sortie. La piste se resserre, s'élargit ou se décale dans la tuile, le long de son axe, sur une **étendue de transition** fixée par l'environnement (voir 2.2) ; aux faces, le profil est exactement celui écrit. Une piste étroite peut entrer à gauche d'une face et sortir à droite d'une autre.
-- **Hauteur** : chaque tuile porte une hauteur d'entrée et une hauteur de sortie, entières, en **pas de 20 cm**, de 0 à 1000 (voir 2.3 pour l'amplitude et les pentes). Leur différence est la **déclivité** de la tuile, positive, négative ou nulle. Contrairement aux longueurs, la hauteur se compte en mètres et non en largeurs de voiture : le relief d'une piste est le même quelle que soit la voiture.
+- **Hauteur** : chaque tuile porte une hauteur d'entrée et une hauteur de sortie, entières, en **pas de 20 cm**, de 0 à 1000 (voir 2.3 pour l'amplitude et les pentes). Leur différence est la **déclivité** de la tuile, positive, négative ou nulle. Contrairement aux longueurs, la hauteur se compte en mètres et non en unités : le relief d'une piste ne bouge pas si l'unité change.
 - **Obstacles** : une tuile peut porter des obstacles le long de la piste (voir 2.4).
 
 **Nommage des faces.** Les six faces sont nommées par les **heures d'une horloge** : avec le côté plat vers l'avant, la face de devant est 12, celle de derrière 6, et les quatre faces latérales 2, 4, 8 et 10. Dans le fichier de piste, l'entrée d'une tuile est toujours la face 6 par convention (on vient de derrière), et seule la face de sortie est écrite : 12 pour une droite, 10 ou 2 pour un virage à 60°, 8 ou 4 pour un virage à 120°. L'orientation absolue d'une tuile se déduit de celle de la précédente.
@@ -117,24 +117,26 @@ Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 
 **Pentes et amplitude.**
 
-- La **pente maximale d'une tuile** dépend de sa sortie, parce qu'en virage le bord intérieur de la piste parcourt moins de distance que l'axe pour la même montée et se trouve donc plus raide : **20 %** en ligne droite, **15 %** en virage large, **10 %** en virage serré, mesurés le long de l'axe de la tuile. Avec une largeur de voiture de 1,7 m, cela fait au plus 23 pas de hauteur sur une ligne droite (axe de 23,6 m), 16 en virage large (21,4 m) et 7 en virage serré (14,2 m).
+- La **pente maximale d'une tuile** dépend de sa sortie, parce qu'en virage le bord intérieur de la piste parcourt moins de distance que l'axe pour la même montée et se trouve donc plus raide : **20 %** en ligne droite, **15 %** en virage large, **10 %** en virage serré, mesurés le long de l'axe de la tuile. Avec l'unité à 3 m, cela fait au plus 41 pas de hauteur sur une ligne droite (axe de 13,9 unités, soit 41,6 m), 28 en virage large (12,6 unités, 37,7 m) et 12 en virage serré (8,4 unités, 25,1 m).
 - L'**amplitude** d'une piste, du point le plus bas au plus haut, est au plus de **200 m**, soit 1000 pas.
 - Le **départ et l'arrivée ne sont pas nécessairement à l'altitude 0** : une piste peut commencer à mi-hauteur, monter puis descendre sous son point de départ, tant que l'amplitude tient dans les 200 m.
-- Le **générateur** reste plus prudent que la main : il se limite à la **moitié** de ces seuils, soit 10 % en ligne droite, 7,5 % en virage large et 5 % en virage serré, où la marche entre les deux tuiles voisines se concentre au sommet. Une piste faite à la main va jusqu'aux seuils pleins.
+- Le **générateur** reste plus prudent que la main : il se limite aux **trois quarts** de ces seuils, soit 15 % en ligne droite, 11 % en virage large et 7,5 % en virage serré, où la marche entre les deux tuiles voisines se concentre au sommet — au plus 31, 21 et 9 pas. Une piste faite à la main va jusqu'aux seuils pleins.
 
-<TODO> Les seuils de 15 % et 10 % en virage, et la largeur de voiture en mètres qui sert à convertir les pentes en pas, sont posés pour fixer les idées ; à confirmer en roulant au POC 3.
+<TODO> Les seuils de 15 % et 10 % en virage sont posés pour fixer les idées ; à confirmer en roulant. L'unité à 3 m, qui sert à convertir les pentes en pas, est calée sur la voiture du POC 1 (1,6 m de large) et sur la glisse en virage constatée à 2,5 m.
 
 ### 2.4 Habillage d'une tuile
 
 Un obstacle est un **bloc** qui occupe **X unités de large** dans le modèle de données de la tuile, placé **le long du tracé de la piste**. Son modèle physique peut être plus petit que son emprise dans les données : une rambarde est plus étroite qu'un talus de neige, mais les deux réservent la même place.
 
-| Élément   | Où                                                   | Effet                                                      |
-| --------- | ---------------------------------------------------- | ---------------------------------------------------------- |
-| Barrière  | Sur l'unité qui borde la piste, optionnelle par côté | Bloque, collision avec dégâts                              |
-| Rampe     | Sur la piste                                         | Fait décoller                                              |
-| Dos d'âne | Sur la piste                                         | Fait sauter légèrement, déstabilise à haute vitesse        |
-| Hazard    | Sur la piste ou le bas-côté                          | Obstacle à éviter, collision avec dégâts                   |
-| Plaque    | Sur la piste                                         | Zone d'un autre revêtement, change le grip, sans collision |
+| Élément   | Où                                                   | Hauteur | Effet                                                      |
+| --------- | ---------------------------------------------------- | ------- | ---------------------------------------------------------- |
+| Barrière  | Sur l'unité qui borde la piste, optionnelle par côté | 1 m     | Bloque, collision avec dégâts                              |
+| Rampe     | Sur la piste                                         | 0,8 m   | Fait décoller                                              |
+| Dos d'âne | Sur la piste                                         | 0,3 m   | Fait sauter légèrement, déstabilise à haute vitesse        |
+| Hazard    | Sur la piste ou le bas-côté                          | 1,5 m   | Obstacle à éviter, collision avec dégâts                   |
+| Plaque    | Sur la piste                                         | à plat  | Zone d'un autre revêtement, change le grip, sans collision |
+
+**Les hauteurs sont en mètres, pas en unités** : une barrière doit arriver à hauteur de portière et un hazard masquer la vue, quelle que soit la largeur d'une voie.
 
 Exemples de hazards : balle de foin, véhicule en panne, rocher, tas de troncs. Exemples de plaques : flaque de boue sur une piste en gravier, plaque de glace sur une piste en neige, gravillons sur une piste en asphalte. La plaque prend son revêtement dans la palette de l'environnement (voir 2.2), c'est un piège de grip là où on ne l'attend pas. L'environnement décide de l'apparence de chaque élément : une barrière est une rambarde en Europe, un talus de neige dans le Nord.
 
@@ -148,7 +150,15 @@ Deux familles :
 - les **hazards**, objets rigides posés à une fraction et un décalage, orientés le long de la piste. Ils n'ont pas de nom dans les données mais une **taille** : _small_ (1 × 1 unité), _medium_ (2 unités le long, 1 en travers), _large_ (2 × 2). L'environnement décide de l'aspect : une balle de foin, un rocher ou une épave sont trois habillages d'un même hazard ;
 - les **objets suivis**, qui épousent la courbe de la piste entre deux fractions : la barrière (sur l'unité qui borde la piste du côté choisi, qu'il y ait un bas-côté ou non ; elle ne contraint pas le profil, ce qui garde les jonctions simples entre une tuile avec barrière et une sans), la rampe et le dos d'âne (toute la largeur de la piste), la plaque (un décalage, une largeur et un revêtement).
 
+**Le relief d'un objet suivi.** La rampe et le dos d'âne sont des volumes, pas des marquages :
+
+- la **rampe** est un plan incliné : son dessus part du sol au début de son emprise et monte régulièrement jusqu'à 0,8 m à la fin, où une paroi verticale le ramène au sol. On la monte dans le sens de la piste et on décolle au bout ; la prendre à l'envers, c'est heurter un mur de 0,8 m. Sur une ligne droite, une rampe de 0,4 à 0,55 fait environ 5 m de long, soit une pente d'à peu près 16 % ;
+- le **dos d'âne** est une bosse arrondie, nulle à ses deux bouts et haute de 0,3 m au milieu, qu'on franchit dans les deux sens ;
+- la **barrière** réserve 1 unité de large dans les données mais son mur n'en fait que 0,4 m, collé au bord extérieur de cette emprise : entre la piste et le mur il reste donc un bas-côté praticable.
+
 Un obstacle doit tenir dans sa tuile. La longueur réelle d'un objet suivi se déduit de la fraction et de la longueur de l'axe : c'est l'éditeur ou le générateur qui fait la conversion, le fichier stocke la fraction.
+
+Le modèle n'interdit pas de barrer la piste avec un hazard : c'est à l'éditeur de le vouloir. Le générateur, lui, laisse toujours un passage (voir 5.3).
 
 <TODO> Confirmer les tailles des hazards et les longueurs de rampe et de dos d'âne en roulant dessus (POC 3).
 
@@ -160,7 +170,7 @@ Il n'y a **aucun décor** hors des tuiles : le monde se limite aux hexagones, é
 
 Deux seulement : **départ** et **arrivée**. Pas de checkpoint, pas de ligne de secteur, pas de zone de respawn dédiée (le respawn se fait sur la dernière tuile parcourue, voir 3.8).
 
-La tuile de départ est la première de la liste ; en mode Track elle porte aussi la ligne d'arrivée, en Rally l'arrivée est la dernière tuile. Ces deux tuiles peuvent tourner large et monter, mais **jamais en épingle**. La **ligne** est au milieu de la tuile, en travers de la piste, dessinée en damier ; en mode Track, c'est la même ligne qui donne le départ et compte les tours.
+La tuile de départ est la première de la liste ; en mode Track elle porte aussi la ligne d'arrivée, en Rally l'arrivée est la dernière tuile. Ces deux tuiles peuvent tourner large et monter, mais **jamais en épingle**. La **ligne** est au milieu de la tuile, en travers de la piste, dessinée en damier ; en mode Track, c'est la même ligne qui donne le départ et compte les tours. C'est de la **peinture sur la route** : elle est posée deux centimètres au-dessus du revêtement pour qu'on la voie, et la voiture ne la touche pas — franchir la ligne ne doit ni secouer ni faire sauter.
 
 ### 2.6 Règles d'assemblage
 
@@ -304,10 +314,14 @@ Les dégâts sont **remis à zéro à chaque course**. Si un mode Campagne voit 
 
 - **Reset manuel** : un bouton maintenu **trois secondes** remet la voiture au centre de la dernière tuile parcourue, dans le sens de la piste, à l'arrêt. Le chrono continue.
 - **Sortie du terrain** : remise immédiate au centre de la dernière tuile, à l'arrêt, en Track et Rally. En Collapse, la partie est perdue.
+- **Raccourci** : couper assez large pour sauter une tuile entière n'avance à rien ; la voiture est remise sur la dernière tuile parcourue, comme après une sortie de terrain. Passer sur la tuile voisine, en avant comme en arrière, reste normal.
+- **Où, exactement** : au centre de la tuile quand la place y est libre, sinon **à la place libre la plus proche du centre** — décalée en travers de la piste, ou un peu plus loin sur son axe, jamais en arrière. On ne réapparaît donc pas dans un obstacle. Si la tuile est entièrement barrée, on revient au centre.
 
 ### 3.9 Caméra
 
 Vue **du dessus**, qui suit l'orientation de la voiture. Sa **hauteur varie avec la vitesse** : plus on va vite, plus on voit loin. Elle pourra s'orienter légèrement vers la prochaine tuile pour aider à anticiper.
+
+Le point visé devant la voiture **glisse avec elle** : il se tient une tuile devant sa position le long de la piste, et non au milieu de la tuile suivante. Le regard tourne donc de façon continue, sans à-coup au franchissement d'une face.
 
 ---
 
@@ -384,6 +398,8 @@ Uniquement pour le mode Collapse.
 Sur le modèle de la forge de hexact : une **graine** (seed) et quelques **cadrans** tiennent dans une seule chaîne et définissent le caractère de la piste : plutôt tournante ou plutôt droite, environnement, ampleur des déclivités, densité d'obstacles. La même chaîne rend toujours la même piste, ce qui rend le défi quotidien possible.
 
 Le générateur procède **comme l'éditeur** : il ajoute une tuile après l'autre à partir de la précédente, en tirant chaque paramètre de la graine, dans le respect de 2.6 et 5.5. Il produit donc toujours une piste jouable.
+
+**Un hazard généré laisse toujours passer.** À l'endroit où il se pose, il reste au moins **une unité de piste libre d'un côté ou de l'autre** — de la piste seule, le bas-côté ne comptant pas. Le générateur ne tire donc pas un décalage au hasard : il tire parmi les seuls décalages qui tiennent cette promesse, ce qui laisse le hazard se poser aussi bien au milieu d'une large piste que contre un bord, ou sur un bas-côté, mais jamais au-delà du bloc piste + bas-côtés. Si la taille tirée ne rentre nulle part, il descend d'une taille (_large_, puis _medium_, puis _small_) ; si même _small_ boucherait la piste — une piste d'une unité sans bas-côté —, il pose une plaque à la place, qui ne bloque personne.
 
 Le **nombre de tuiles** à générer se déduit de la distance que parcourt la voiture la plus rapide du jeu en ligne droite pendant la durée maximale d'une partie.
 
@@ -604,6 +620,8 @@ Navigateurs récents sur PC et mobile.
 
 Dans tous les modes, **seules les tuiles autour du joueur sont affichées** : X tuiles devant, Y tuiles derrière, comme en Collapse mais sans disparition. Cela borne le nombre de polygones à l'écran quelle que soit la longueur de la piste.
 
+Une tuile qui entre dans cette fenêtre **apparaît en fondu** en 0,4 s, et celle qui en sort disparaît de la même façon avant d'être libérée : rien n'apparaît ni ne s'efface d'un coup au bord du champ. Une tuile reprise par la fenêtre pendant son fondu repart de là où elle en est.
+
 ### 9.3 Connexion
 
 Entièrement hors ligne pour commencer.
@@ -732,6 +750,19 @@ Par ordre d'envie :
 | 2026-09-12 | Départ et arrivée à n'importe quelle altitude ; jupe visible sous chaque tuile même à 0                   | Une piste peut descendre sous son départ ; le monde n'a pas de sol                     |
 | 2026-09-12 | Tuiles de départ et d'arrivée jamais en épingle, ligne en damier au milieu                                | Une ligne lisible en travers de la piste                                               |
 | 2026-09-12 | Côté d'hexagone de 8 unités confirmé au POC 2                                                             | Le profil tient, les transitions restent lisibles, les virages ont des rayons jouables |
+| 2026-09-15 | Un hazard généré laisse toujours 1 unité de piste libre d'un côté, sinon il rétrécit ou devient une plaque | Sur une piste étroite, un hazard large bouchait tout ; l'éditeur reste libre de le faire |
+| 2026-09-15 | Rampes et dos d'âne un peu plus fréquents sur les lignes droites                                          | On ne les voyait presque jamais ; hazards et barrières restent majoritaires            |
+| 2026-09-15 | L'unité passe de 1,7 m à **2,5 m** : ce n'est plus une largeur de voiture mais une largeur de voie        | La voiture fait 1,6 m ; à 1,7 m la piste, les bas-côtés et les obstacles étaient à l'étroit. Les pentes se recomptent : 34, 23 et 10 pas |
+| 2026-09-15 | Les hauteurs d'obstacles s'écrivent en **mètres** : hazard 1,5 m, barrière 1 m, rampe 0,8 m, dos d'âne 0,3 m | Une hauteur en unités grandissait avec l'unité ; un hazard aurait fait 2,5 m de haut   |
+| 2026-09-15 | La **rampe et le dos d'âne sont des volumes** : plan incliné à paroi arrière, bosse arrondie              | Dessinés à plat ils étaient invisibles et inertes, alors que 2.4 leur demande de faire décoller |
+| 2026-09-15 | La **ligne de départ et d'arrivée est de la peinture** : 2 cm au-dessus de la route, sans collision       | Relevée de 10 cm et solide, elle faisait un ralentisseur qui faisait sauter la voiture  |
+| 2026-09-15 | Les **parois d'un objet suivi** sont orientées tranche par tranche                                        | Sur une barrière longue en virage, l'orientation d'ensemble en retournait une partie et la voiture passait au travers |
+| 2026-09-15 | L'unité monte de 2,5 m à **3 m** : les pentes se recomptent, 41, 28 et 12 pas                                            | À 2,5 m la piste restait trop étroite : la plupart des virages se prennent en glisse, la voiture a besoin de bien plus que sa largeur |
+| 2026-09-15 | Le générateur monte aux **trois quarts** des seuils de pente (31, 21 et 9 pas), au lieu de la moitié              | Avec des tuiles plus longues, la moitié donnait des pistes générées trop plates ; la main garde les seuils pleins                     |
+| 2026-09-15 | La caméra vise une tuile devant la position continue, non le milieu de la tuile suivante                  | Le point glisse au lieu de sauter à chaque face franchie (3.9)                         |
+| 2026-09-15 | Sauter une tuile en coupant remet la voiture sur la dernière tuile parcourue                              | Un raccourci ne rapporte rien ; c'est la remise de la chute (3.8)                      |
+| 2026-09-15 | Remise à la place libre la plus proche du centre de la tuile, jamais en arrière                           | On réapparaissait dans les obstacles, posés justement au milieu (3.8)                  |
+| 2026-09-15 | Fondu de 0,4 s des tuiles qui entrent dans la fenêtre et de celles qui en sortent                         | Le bord du champ sautait à l'œil en mode Rally (9.2)                                   |
 
 ### 11.2 Questions ouvertes
 
@@ -745,7 +776,7 @@ Par ordre d'envie :
 
 ### A. Glossaire
 
-- **Unité** : une largeur de voiture. Toutes les dimensions d'une tuile se comptent en unités.
+- **Unité** : une largeur de voie, 3 m. Toutes les dimensions d'une tuile se comptent en unités ; les hauteurs, elles, se comptent en mètres.
 - **Tuile / hexagone** : unité de construction d'une piste, 8 unités de côté, définie par ses paramètres.
 - **Face** : un des six côtés d'une tuile, nommé par une heure d'horloge. La piste entre par la face 6 et sort par une autre.
 - **Profil** : sur une face, la largeur, la position, la hauteur et les types de piste, de bas-côté et de paysage. Deux tuiles s'enchaînent si leurs profils coïncident.

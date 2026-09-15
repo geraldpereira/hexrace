@@ -1,10 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Polygons, Vec3 } from '@hexrace/commons';
 
+import { type Hazard } from '@tile/entity/obstacles/hazard';
 import { type Obstacle } from '@tile/entity/obstacles/obstacle';
+import { type Patch } from '@tile/entity/obstacles/patch';
 import { type SPoint } from '@tile/entity/slice';
 import { type TileSweep } from '@tile/entity/sweep';
 import { type Paint, type TileBuild, type Triangle3 } from '@tile/entity/triangle';
+import { TileBands } from '@tile/geometry/tile-bands';
+import { TileFacets } from '@tile/geometry/tile-facets';
 import { TileGeometry } from '@tile/geometry/tile-geometry';
 import { TileLines } from '@tile/geometry/tile-lines';
 import { TileObstacles } from '@tile/geometry/tile-obstacles';
@@ -12,22 +16,27 @@ import { Units } from '@tile/geometry/units';
 
 type HeightAt = (p: SPoint) => number;
 
+const SKIRT: Paint = { kind: 'skirt' };
+
 /**
  * The triangles of one tile in metres, the same list for the mesh and the collider (technical
- * spec 3.5): zone quads fanned, obstacles as volumes whose top follows the ground and whose sides
- * drop to it (flat ones as one lifted face until driven), the chequered line, and the skirt down
- * to `skirtBase` (spec 2.7). Every triangle is wound with its normal up or outwards, for Jolt.
+ * spec 3.5): zone quads fanned, hazards as boxes and bands as relief (`TileBands`), a patch as one
+ * lifted face, the chequered line barely off the ground, and the skirt down to `skirtBase`
+ * (spec 2.7). Every triangle is wound with its normal up or outwards, for Jolt; the line alone is
+ * dropped from the collider, by `TileBodies`, so it is paint and not a speed bump.
  */
 @Injectable({ providedIn: 'root' })
 export class TileTriangles {
-  /** How high a hazard and a barrier stand, and how much a flat face is lifted, in units. */
-  hazardHeight = 1;
-  barrierHeight = 0.8;
-  flatLift = 0.04;
+  /** How high a hazard stands, how far a flat face and the line are lifted off the ground, in metres. */
+  hazardHeight = 1.5;
+  flatLift = 0.03;
+  lineLift = 0.02;
 
+  private readonly bands = inject(TileBands);
+  private readonly facets = inject(TileFacets);
   private readonly geometry = inject(TileGeometry);
-  private readonly obstacles = inject(TileObstacles);
   private readonly lines = inject(TileLines);
+  private readonly obstacles = inject(TileObstacles);
   private readonly polygons = inject(Polygons);
   private readonly units = inject(Units);
 
@@ -42,23 +51,14 @@ export class TileTriangles {
       this.obstacleTriangles(sweep, obstacle, heightAt, out);
     }
     if (build.line !== null && build.line !== undefined) {
+      const lift = this.units.metersToUnits(this.lineLift);
       for (const square of this.lines.squares(sweep, build.line)) {
-        this.fan(
-          square.points,
-          heightAt,
-          { kind: 'line', dark: square.dark },
-          out,
-          this.flatLift * 1.5,
-        );
+        this.fan(square.points, heightAt, { kind: 'line', dark: square.dark }, out, lift);
       }
     }
     const inside = this.units.toWorld(sweep.center, 0);
-    const outline = this.geometry.boundary(sweep);
-    for (let i = 0; i < outline.length; i++) {
-      const a = outline[i]!;
-      const b = outline[(i + 1) % outline.length]!;
-      this.wall(a, b, heightAt, () => build.skirtBase, { kind: 'skirt' }, inside, out);
-    }
+    const base: HeightAt = () => build.skirtBase;
+    this.walls(this.geometry.boundary(sweep), heightAt, base, inside, SKIRT, out);
     return out;
   }
 
@@ -68,26 +68,36 @@ export class TileTriangles {
     heightAt: HeightAt,
     out: Triangle3[],
   ): void {
-    const body = this.obstacles.footprint(sweep, obstacle).body;
-    const raised = this.raisedBy(obstacle);
-    const top = this.obstaclePaint(obstacle, 'top');
-    const pieces = obstacle.kind === 'hazard' ? [body] : this.bandQuads(body);
-    for (const piece of pieces)
-      this.fan(piece, heightAt, top, out, raised > 0 ? raised : this.flatLift);
-    if (raised === 0) return;
-    const side = this.obstaclePaint(obstacle, 'side');
-    const outline = this.dedupe(body);
-    const inside = this.units.toWorld(this.polygons.centroid(outline.map((p: SPoint) => p.at)), 0);
-    for (let i = 0; i < outline.length; i++) {
-      const a = outline[i]!;
-      const b = outline[(i + 1) % outline.length]!;
-      this.wall(a, b, (p) => heightAt(p) + raised, heightAt, side, inside, out);
-    }
+    if (obstacle.kind === 'hazard') this.hazardTriangles(sweep, obstacle, heightAt, out);
+    else if (obstacle.kind === 'patch') this.patchTriangles(sweep, obstacle, heightAt, out);
+    else out.push(...this.bands.build(sweep, obstacle, heightAt));
   }
 
-  private raisedBy(obstacle: Obstacle): number {
-    if (obstacle.kind === 'hazard') return this.hazardHeight;
-    return obstacle.kind === 'barrier' ? this.barrierHeight : 0;
+  private hazardTriangles(
+    sweep: TileSweep,
+    obstacle: Hazard,
+    heightAt: HeightAt,
+    out: Triangle3[],
+  ): void {
+    const { body } = this.obstacles.footprint(sweep, obstacle);
+    const raised = this.units.metersToUnits(this.hazardHeight);
+    this.fan(body, heightAt, this.obstaclePaint(obstacle, 'top'), out, raised);
+    const outline = this.facets.dedupe(body);
+    const inside = this.units.toWorld(this.polygons.centroid(outline.map((p: SPoint) => p.at)), 0);
+    const top: HeightAt = (p) => heightAt(p) + raised;
+    this.walls(outline, top, heightAt, inside, this.obstaclePaint(obstacle, 'side'), out);
+  }
+
+  private patchTriangles(
+    sweep: TileSweep,
+    obstacle: Patch,
+    heightAt: HeightAt,
+    out: Triangle3[],
+  ): void {
+    const { body } = this.obstacles.footprint(sweep, obstacle);
+    const paint = this.obstaclePaint(obstacle, 'top');
+    const lift = this.units.metersToUnits(this.flatLift);
+    for (const quad of this.bandQuads(body)) this.fan(quad, heightAt, paint, out, lift);
   }
 
   private fan(
@@ -97,49 +107,39 @@ export class TileTriangles {
     out: Triangle3[],
     lift = 0,
   ): void {
-    const contour = this.dedupe(points);
-    if (contour.length < 3) return;
-    const lifted = (p: SPoint): Vec3 => this.units.toWorld(p.at, heightAt(p) + lift);
-    const a = lifted(contour[0]!);
-    for (let i = 1; i + 1 < contour.length; i++) {
-      out.push(this.oriented(a, lifted(contour[i]!), lifted(contour[i + 1]!), paint, Vec3.UP));
+    const contour = this.facets.dedupe(points);
+    const world = contour.map((p: SPoint) => this.facets.point(p, heightAt(p) + lift));
+    this.facets.polygon(world, paint, Vec3.UP, out);
+  }
+
+  private walls(
+    outline: readonly SPoint[],
+    top: HeightAt,
+    base: HeightAt,
+    inside: Vec3,
+    paint: Paint,
+    out: Triangle3[],
+  ): void {
+    for (let i = 0; i < outline.length; i++) {
+      const a = outline[i]!;
+      const b = outline[(i + 1) % outline.length]!;
+      this.facets.wall(
+        [this.facets.point(a, top(a)), this.facets.point(b, top(b))],
+        [this.facets.point(a, base(a)), this.facets.point(b, base(b))],
+        inside,
+        paint,
+        out,
+      );
     }
   }
 
-  private wall(
-    a: SPoint,
-    b: SPoint,
-    top: HeightAt,
-    base: HeightAt,
-    paint: Paint,
-    inside: Vec3,
-    out: Triangle3[],
-  ): void {
-    const w = this.units;
-    const q = [
-      w.toWorld(a.at, top(a)),
-      w.toWorld(b.at, top(b)),
-      w.toWorld(b.at, base(b)),
-      w.toWorld(a.at, base(a)),
-    ];
-    const middle = q[0]!.add(q[1]!).scale(0.5);
-    const outward = new Vec3(middle.x - inside.x, 0, middle.z - inside.z);
-    out.push(
-      this.oriented(q[0]!, q[1]!, q[2]!, paint, outward),
-      this.oriented(q[0]!, q[2]!, q[3]!, paint, outward),
-    );
-  }
-
-  private oriented(a: Vec3, b: Vec3, c: Vec3, paint: Paint, outward: Vec3): Triangle3 {
-    const normal = b.sub(a).cross(c.sub(a));
-    return normal.dot(outward) < 0 ? { a, b: c, c: b, paint } : { a, b, c, paint };
-  }
-
-  private bandQuads(points: readonly SPoint[]): SPoint[][] {
-    const n = points.length / 2;
+  private bandQuads(body: readonly SPoint[]): SPoint[][] {
+    const slices = this.obstacles.slices(body);
     const quads: SPoint[][] = [];
-    for (let i = 0; i + 1 < n; i++) {
-      quads.push([points[i]!, points[i + 1]!, points[2 * n - 2 - i]!, points[2 * n - 1 - i]!]);
+    for (let i = 0; i + 1 < slices.length; i++) {
+      const [left, right] = slices[i]!;
+      const [nextLeft, nextRight] = slices[i + 1]!;
+      quads.push([left, nextLeft, nextRight, right]);
     }
     return quads;
   }
@@ -147,14 +147,5 @@ export class TileTriangles {
   private obstaclePaint(obstacle: Obstacle, face: 'top' | 'side'): Paint {
     const paint: Paint = { kind: 'obstacle', obstacle: obstacle.kind, face };
     return obstacle.kind === 'patch' ? { ...paint, road: obstacle.road } : paint;
-  }
-
-  private dedupe(points: readonly SPoint[]): SPoint[] {
-    const result: SPoint[] = [];
-    for (const p of points) {
-      const last = result.at(-1);
-      if (!last || p.at.distanceTo(last.at) > 1e-6) result.push(p);
-    }
-    return result;
   }
 }

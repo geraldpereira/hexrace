@@ -6,5 +6,7 @@ PORT ?= 4300
 serve: ## Sert l'application en développement (http://localhost:4300)
 	$(MAKE) _run-via-use-nvm CMD="$(NPM) run start -w @hexrace/web -- --port $(PORT)"
 
-serve-lan: ## La même, exposée sur le réseau local pour un téléphone
-	$(MAKE) _run-via-use-nvm CMD="$(NPM) run start -w @hexrace/web -- --port $(PORT) --host 0.0.0.0"
+# En https : AudioWorklet n'existe qu'en contexte sécurisé, sans quoi le son manque hors localhost.
+# Le téléphone accepte le certificat auto-signé une fois.
+serve-lan: ## La même, exposée en https sur le réseau local pour un téléphone
+	$(MAKE) _run-via-use-nvm CMD="$(NPM) run start -w @hexrace/web -- --port $(PORT) --host 0.0.0.0 --ssl"

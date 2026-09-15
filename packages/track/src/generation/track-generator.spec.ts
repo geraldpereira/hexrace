@@ -82,7 +82,7 @@ describe('TrackGenerator', () => {
           shoulder: 0,
           height: 0,
         });
-        expect(Math.abs(tile.profile.height - entry.height)).toBeLessThanOrEqual(3);
+        expect(Math.abs(tile.profile.height - entry.height)).toBeLessThanOrEqual(9);
       });
     }
   });

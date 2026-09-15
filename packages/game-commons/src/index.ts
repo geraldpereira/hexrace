@@ -6,6 +6,7 @@
  * the director that ties them to a `CarController`. It knows no hud and draws no interface.
  */
 export {
+  type RaceCut,
   type RaceFall,
   type RaceFinish,
   type RaceLap,
@@ -22,5 +23,7 @@ export { RaceClock } from '@game-commons/race/race-clock';
 export { RaceMachine } from '@game-commons/race/race-machine';
 export { FallWatch, FALL_MARGIN_METERS } from '@game-commons/stage/fall-watch';
 export { RaceDirector } from '@game-commons/stage/race-director';
+export { SpawnSpots } from '@game-commons/stage/spawn-spots';
+export { type FadingTile, FADE_SECONDS, TileFader } from '@game-commons/stage/tile-fader';
 export { TrackProbe } from '@game-commons/stage/track-probe';
 export { TrackStage } from '@game-commons/stage/track-stage';

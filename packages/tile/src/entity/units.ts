@@ -1,5 +1,5 @@
-/** One unit of length, a car width, in metres: 1.7 m to fix ideas until a car drives the tiles. */
-export const UNIT_METERS = 1.7;
+/** One unit of length, a lane width, in metres: 3 m, room for a 1.6 m car to slide through a turn. */
+export const UNIT_METERS = 3;
 /** One height step, in metres; heights do not depend on the car (functional spec 2.3). */
 export const HEIGHT_STEP_METERS = 0.2;
 /** One height step, in units of length. */

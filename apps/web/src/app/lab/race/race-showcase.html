@@ -7,6 +7,11 @@
       on the last tile.
     </p>
     <p class="what" [class.error]="issues().length > 0">{{ status() }}</p>
+    @if (!soundSupported) {
+      <p class="sound blocked">No sound here: it needs https or localhost, which make serve-lan serves.</p>
+    } @else if (!soundReady()) {
+      <p class="sound">Press a key or tap the page for sound; a gamepad alone cannot start it.</p>
+    }
   </header>
   <div class="stage">
     <div class="view">

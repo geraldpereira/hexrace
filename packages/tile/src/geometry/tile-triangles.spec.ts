@@ -69,14 +69,16 @@ describe('TileTriangles', () => {
     expect(of('hazard', 'top')).toHaveLength(2);
     expect(of('hazard', 'side')).toHaveLength(8);
     expect(of('barrier', 'side').length).toBeGreaterThan(0);
-    expect(of('ramp', 'side')).toHaveLength(0);
+    expect(of('ramp', 'side').length).toBeGreaterThan(0);
     expect(of('patch', 'side')).toHaveLength(0);
     expect(of('ramp', 'top').length).toBeGreaterThan(0);
     for (const t of of('patch', 'top')) expect(t.paint).toMatchObject({ road: 3 });
     for (const t of of('hazard', 'top')) expect(t.paint).not.toHaveProperty('road');
     const hazardTop = of('hazard', 'top')[0]!;
     const groundY = 10 * 0.2;
-    expect(hazardTop.a.y).toBeCloseTo(groundY + 1 * UNIT_METERS, 6);
+    expect(hazardTop.a.y).toBeCloseTo(groundY + 1.5, 6);
+    const patchTop = of('patch', 'top')[0]!;
+    expect(patchTop.a.y).toBeCloseTo(groundY + 0.03, 6);
     const hazardPoints = of('hazard', 'top').flatMap((tri: Triangle3) => [tri.a, tri.b, tri.c]);
     const cx = hazardPoints.reduce((s: number, v: Vec3) => s + v.x, 0) / hazardPoints.length;
     const cz = hazardPoints.reduce((s: number, v: Vec3) => s + v.z, 0) / hazardPoints.length;
@@ -88,22 +90,32 @@ describe('TileTriangles', () => {
     expect(line.length).toBeGreaterThan(0);
     expect(line.some((t: Triangle3) => t.paint.kind === 'line' && t.paint.dark)).toBe(true);
     expect(line.some((t: Triangle3) => t.paint.kind === 'line' && !t.paint.dark)).toBe(true);
-    expect(line[0]!.a.y).toBeCloseTo(groundY + 0.04 * 1.5 * UNIT_METERS, 6);
+    expect(line[0]!.a.y).toBeCloseTo(groundY + 0.02, 6);
+  });
+
+  it('lays the line barely off the road, well under the flat lift of a patch', () => {
+    const list = triangles.build({ sweep, obstacles, line: 0.5, skirtBase: -2 });
+    const line = list.filter((t: Triangle3) => t.paint.kind === 'line');
+    const groundY = 10 * 0.2;
+    const lifts = line
+      .flatMap((t: Triangle3) => [t.a.y, t.b.y, t.c.y])
+      .map((y: number) => y - groundY);
+    expect(Math.max(...lifts)).toBeLessThan(0.025);
+    expect(Math.min(...lifts)).toBeGreaterThan(0);
   });
 
   it('follows the knobs for heights and lifts', () => {
     triangles.hazardHeight = 2;
-    triangles.barrierHeight = 0.5;
     triangles.flatLift = 0.1;
+    triangles.lineLift = 0.5;
     const list = triangles.build({ sweep, obstacles, skirtBase: -2 });
     const top = (kind: Obstacle['kind']): Triangle3 =>
       list.find(
         (t: Triangle3) =>
           t.paint.kind === 'obstacle' && t.paint.obstacle === kind && t.paint.face === 'top',
       )!;
-    expect(top('hazard').a.y).toBeCloseTo(2 + 2 * UNIT_METERS, 6);
-    expect(top('barrier').a.y).toBeCloseTo(2 + 0.5 * UNIT_METERS, 6);
-    expect(top('ramp').a.y).toBeCloseTo(2 + 0.1 * UNIT_METERS, 6);
+    expect(top('hazard').a.y).toBeCloseTo(2 + 2, 6);
+    expect(top('patch').a.y).toBeCloseTo(2 + 0.1, 6);
     expect(list.filter((t: Triangle3) => t.paint.kind === 'line')).toHaveLength(0);
   });
 

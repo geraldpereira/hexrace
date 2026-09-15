@@ -51,10 +51,10 @@ describe('TileObstacles', () => {
     expect(xs(outline).every((x) => x >= 1 - 1e-9 && x <= 2 + 1e-9)).toBe(true);
     expect(Math.min(...ys(outline))).toBeCloseTo(-APOTHEM, 9);
     expect(Math.max(...ys(outline))).toBeCloseTo(APOTHEM, 9);
-    expect(xs(body).every((x) => x >= 1.7 - 1e-9)).toBe(true);
+    expect(xs(body).every((x) => x >= 1.84 - 1e-9)).toBe(true);
     const left = obstacles.footprint(STRAIGHT_SWEEP, LEFT_BARRIER);
     expect(xs(left.outline).every((x) => x >= -3 - 1e-9 && x <= -2 + 1e-9)).toBe(true);
-    expect(xs(left.body).every((x) => x <= -2.7 + 1e-9)).toBe(true);
+    expect(xs(left.body).every((x) => x <= -2.84 + 1e-9)).toBe(true);
   });
 
   it('hugs the curve of a sharp turn with a road band', () => {

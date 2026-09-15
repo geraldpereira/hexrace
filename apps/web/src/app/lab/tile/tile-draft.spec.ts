@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TilePaths, TileValidation, Units } from '@hexrace/tile';
+import { TilePaths, TileValidation, UNIT_METERS, Units } from '@hexrace/tile';
 
 import { TileDraft, probeReadout } from '@ui/lab/tile/tile-draft';
 
@@ -31,7 +31,7 @@ describe('TileDraft', () => {
       'exit profile: road plus shoulders make 11 units, at most 6',
       'exit profile: no landscape on the right: the block ends at unit 13',
     ]);
-    expect(draft.build(paths, units).skirtBase).toBeCloseTo((10 * 0.2 - 2) / 1.7, 9);
+    expect(draft.build(paths, units).skirtBase).toBeCloseTo((10 * 0.2 - 2) / UNIT_METERS, 9);
     draft.heading = 2;
     expect(draft.sweep(paths).heading).toBe(2);
   });

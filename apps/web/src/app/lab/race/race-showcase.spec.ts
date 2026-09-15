@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import type * as THREE from 'three';
 
+import { AudioHub } from '@hexrace/car';
 import { Clock, EventBus } from '@hexrace/commons';
 import { JoltPhysics, ThreeRenderer } from '@hexrace/engine';
 import { BestTimes } from '@hexrace/game-commons';
@@ -9,6 +10,7 @@ import { ResultsDialogs } from '@hexrace/hud';
 import { INPUT_SOURCES } from '@hexrace/inputs';
 
 import { RaceShowcase } from '@ui/lab/race/race-showcase';
+import { stubAudioContext } from '@ui/testing/audio-context.mock';
 import { FakeClock } from '@ui/testing/clock.mock';
 import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
 import { panelButton, panelSelect } from '@ui/testing/panel.mock';
@@ -203,6 +205,24 @@ describe('RaceShowcase', () => {
     TestBed.inject(EventBus).publish('race/finish', { timeMs: 61_234, record: false });
     await new Promise((r) => setTimeout(r, 0));
     expect(navigate).toHaveBeenCalledWith(['/lab']);
+    destroy();
+  });
+
+  it('says why there is no sound on an insecure origin', async () => {
+    const { host, destroy } = await loaded();
+    expect(host.querySelector('.sound.blocked')).not.toBeNull();
+    destroy();
+  });
+
+  it('asks for a gesture until the sound has started', async () => {
+    stubAudioContext();
+    vi.spyOn(AudioHub.prototype, 'supported', 'get').mockReturnValue(true);
+    const { host, page, destroy } = await loaded();
+    expect(host.querySelector('.sound')).not.toBeNull();
+    page.startSound();
+    TestBed.tick();
+    expect(host.querySelector('.sound')).toBeNull();
+    vi.unstubAllGlobals();
     destroy();
   });
 

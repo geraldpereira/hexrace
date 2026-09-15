@@ -20,7 +20,8 @@ _coder_ ici ; il ne raconte pas l'architecture et ne répète rien qu'un autre f
 
 Toujours par le Makefile : il épingle Node 24 via nvm, qu'Angular 22 exige et que le shell ambiant
 n'a généralement pas. `make check` est le quotidien, toutes les portes puis toutes les suites ;
-`make serve` sert l'application sur http://localhost:4300, `make serve-lan` l'expose à un téléphone.
+`make serve` sert l'application sur http://localhost:4300, `make serve-lan` l'expose à un téléphone,
+en https parce que le son (AudioWorklet) n'existe qu'en contexte sécurisé.
 
 ## Les règles qui ne sont écrites nulle part ailleurs
 
@@ -86,7 +87,8 @@ packages/car/      @hexrace/car    - la voiture : entity/ (caractéristiques, op
                                      particules), audio/ (les quatre couches procédurales du POC 1).
 packages/game-commons/ @hexrace/game-commons - le tronc commun des modes : la course (entity/), le
                                      compte à rebours, le chrono, les tours, les records (race/),
-                                     TrackStage, TrackProbe, FallWatch et RaceDirector (stage/).
+                                     TrackStage et son TileFader, TrackProbe, FallWatch, SpawnSpots
+                                     et RaceDirector (stage/).
 packages/hud/      @hexrace/hud    - le seul package à composants et pipes : game/ (compte-tours,
                                      dégâts, chrono…), commons/ (cadre de canvas, cartes, pipe time),
                                      dialog/, debug/ (les services autour de lil-gui). Testé par

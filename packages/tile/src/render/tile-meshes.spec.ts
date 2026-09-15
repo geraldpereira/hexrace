@@ -6,6 +6,7 @@ import { type Environment } from '@tile/entity/environment';
 import { PALE_SHOULDER } from '@tile/entity/profile.mock';
 import { sweepOf } from '@tile/entity/sweep.mock';
 import { type Paint, type Triangle3 } from '@tile/entity/triangle';
+import { UNIT_METERS } from '@tile/entity/units';
 import { EnvironmentCatalog } from '@tile/geometry/environment-catalog';
 import { TileTriangles } from '@tile/geometry/tile-triangles';
 import { OBSTACLE_COLORS, TileMeshes } from '@tile/render/tile-meshes';
@@ -105,8 +106,8 @@ describe('TileMeshes', () => {
       const outline = meshes.outline(sweep);
       const points = outline.geometry.getAttribute('position');
       expect(points.count).toBe(6);
-      expect(points.getY(0)).toBeCloseTo(5 * 0.2 + 0.02 * 1.7, 5);
-      expect(Math.hypot(points.getX(0), points.getZ(0))).toBeCloseTo(8 * 1.7, 5);
+      expect(points.getY(0)).toBeCloseTo(5 * 0.2 + 0.02 * UNIT_METERS, 5);
+      expect(Math.hypot(points.getX(0), points.getZ(0))).toBeCloseTo(8 * UNIT_METERS, 5);
       expect((outline.material as THREE.LineBasicMaterial).color.getHexString()).toBe('0c0a09');
       expect(
         (meshes.outline(sweep, '#ff0000').material as THREE.LineBasicMaterial).color.getHexString(),

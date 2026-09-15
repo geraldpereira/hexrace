@@ -1,13 +1,6 @@
 import { inject } from '@angular/core';
 import { Vec2, type Vec3 } from '@hexrace/commons';
-import {
-  BodyComponent,
-  GameComponent,
-  type GameObject,
-  MeshComponent,
-  Scene,
-  type Vec3Like,
-} from '@hexrace/engine';
+import { BodyComponent, GameComponent, MeshComponent, Scene, type Vec3Like } from '@hexrace/engine';
 import {
   type Environment,
   type TileBuild,
@@ -29,6 +22,8 @@ import {
   TrackWindow,
 } from '@hexrace/track';
 
+import { type FadingTile, TileFader } from '@game-commons/stage/tile-fader';
+
 const EMPTY_PLACEMENT: Placement = { tiles: [], next: ORIGIN };
 
 /** A track laid once and kept: what every tile of the window is built from. */
@@ -42,9 +37,9 @@ interface LaidTrack {
 
 /**
  * The track in the scene (functional spec 9.2): it lays a track once, then keeps only the tiles
- * around the player alive, each a GameObject carrying its mesh and its collider, added and
- * dropped as the window moves. That bounds the polygons and the bodies whatever the length of the
- * track. It owns no player: `follow` is told which tile to centre on.
+ * around the player alive, each a GameObject carrying its mesh and its collider, faded in when the
+ * window reaches it and faded out before it is dropped. That bounds the polygons and the bodies
+ * whatever the length of the track. It owns no player: `follow` is told which tile to centre on.
  */
 export class TrackStage extends GameComponent {
   ahead = TILES_AHEAD;
@@ -54,6 +49,7 @@ export class TrackStage extends GameComponent {
 
   private readonly bodies = inject(TrackBodies);
   private readonly environments = inject(EnvironmentCatalog);
+  private readonly fader = inject(TileFader);
   private readonly meshes = inject(TrackMeshes);
   private readonly placer = inject(TrackPlacement);
   private readonly profiles = inject(TrackProfiles);
@@ -62,7 +58,7 @@ export class TrackStage extends GameComponent {
   private readonly triangles = inject(TileTriangles);
   private readonly units = inject(Units);
   private readonly window = inject(TrackWindow);
-  private readonly loaded = new Map<number, GameObject>();
+  private readonly loaded = new Map<number, FadingTile>();
   private laid: LaidTrack | null = null;
 
   get track(): Track | null {
@@ -82,9 +78,11 @@ export class TrackStage extends GameComponent {
     return this.laid?.environment ?? null;
   }
 
-  /** The tiles the window holds right now, by index. */
+  /** The tiles the window holds right now, by index; the ones fading out have left it. */
   get shown(): ReadonlySet<number> {
-    return new Set(this.loaded.keys());
+    const shown = new Set<number>();
+    for (const [index, tile] of this.loaded) if (tile.target === 1) shown.add(index);
+    return shown;
   }
 
   /** Lays a track on the grid and makes it the one to walk; whatever was shown is dropped. */
@@ -100,7 +98,7 @@ export class TrackStage extends GameComponent {
     };
   }
 
-  /** Keeps in the scene only the tiles around `index`, adding and destroying the difference. */
+  /** Aims the window at `index`: what enters starts fading in, what leaves starts fading out. */
   follow(index: number): void {
     const laid = this.laid;
     if (!laid) return;
@@ -111,11 +109,7 @@ export class TrackStage extends GameComponent {
       this.ahead,
       this.behind,
     );
-    for (const [shown, object] of [...this.loaded]) {
-      if (wanted.has(shown)) continue;
-      object.destroy();
-      this.loaded.delete(shown);
-    }
+    for (const [shown, tile] of this.loaded) tile.target = wanted.has(shown) ? 1 : 0;
     for (const wants of wanted) {
       if (!this.loaded.has(wants)) this.loaded.set(wants, this.spawn(wants, laid));
     }
@@ -131,11 +125,19 @@ export class TrackStage extends GameComponent {
     return new Vec2(this.units.metersToUnits(point.x), -this.units.metersToUnits(point.z));
   }
 
+  override render(dt: number): void {
+    for (const [index, tile] of [...this.loaded]) {
+      if (!this.fader.advance(tile, dt)) continue;
+      tile.object.destroy();
+      this.loaded.delete(index);
+    }
+  }
+
   override onDestroy(): void {
     this.clear();
   }
 
-  private spawn(index: number, laid: LaidTrack): GameObject {
+  private spawn(index: number, laid: LaidTrack): FadingTile {
     const build = laid.builds[index]!;
     const triangles = this.triangles.build(build);
     const mesh = this.scene.instantiate(MeshComponent);
@@ -145,11 +147,12 @@ export class TrackStage extends GameComponent {
     const object = this.scene.spawn(`tile-${String(index)}`);
     object.add(mesh);
     object.add(body);
-    return object;
+    this.fader.paint(mesh.object, 0);
+    return { object, drawn: mesh.object, opacity: 0, target: 1 };
   }
 
   private clear(): void {
-    for (const object of this.loaded.values()) object.destroy();
+    for (const tile of this.loaded.values()) tile.object.destroy();
     this.loaded.clear();
   }
 }

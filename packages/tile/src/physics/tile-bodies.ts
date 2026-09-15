@@ -4,8 +4,9 @@ import { type JoltBody, JoltConversions, JoltPhysics, LAYER_NON_MOVING } from '@
 import { type Triangle3 } from '@tile/entity/triangle';
 
 /**
- * Builds the collider of a tile: a static Jolt mesh shape over the same triangles the renderer
- * draws, degenerate ones dropped by Jolt's sanitising. The body is added to the world at once,
+ * Builds the collider of a tile: a static Jolt mesh shape over the triangles the renderer draws,
+ * degenerate ones dropped by Jolt's sanitising, and the chequered line left out — it is paint on
+ * the road, and a collider would make a speed bump of it. The body is added to the world at once,
  * inactive as static bodies are; the caller frees it through `JoltPhysics.unregister`.
  */
 @Injectable({ providedIn: 'root' })
@@ -16,8 +17,9 @@ export class TileBodies {
   create(triangles: readonly Triangle3[]): JoltBody {
     const Jolt = this.physics.Jolt;
     const list = new Jolt.TriangleList();
-    list.reserve(triangles.length);
-    for (const t of triangles) {
+    const solid = triangles.filter((t: Triangle3) => t.paint.kind !== 'line');
+    list.reserve(solid.length);
+    for (const t of solid) {
       const a = this.conversions.vec3(t.a);
       const b = this.conversions.vec3(t.b);
       const c = this.conversions.vec3(t.c);

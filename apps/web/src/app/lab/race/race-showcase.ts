@@ -128,6 +128,9 @@ export class RaceShowcase extends PhysicsLab implements OnInit, RaceBench {
   private readonly router = inject(Router);
   private readonly validation = inject(TrackValidation);
   readonly showPaddles = signal(this.prefersTouch());
+  /** False until a key or a tap has started the sound; a gamepad alone cannot. */
+  readonly soundReady = signal(this.hub.ready);
+  readonly soundSupported = this.hub.supported;
   private readonly follow = this.scene.instantiate(FollowCamera);
   private eye!: CameraComponent;
   private trackId = '';
@@ -136,6 +139,9 @@ export class RaceShowcase extends PhysicsLab implements OnInit, RaceBench {
     super();
     const off = this.bus.on('race/finish', (event: RaceFinish) => {
       this.finished(event);
+    });
+    this.hub.whenReady(() => {
+      this.soundReady.set(true);
     });
     this.destroyRef.onDestroy(() => {
       off();

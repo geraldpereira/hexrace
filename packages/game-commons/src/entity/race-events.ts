@@ -22,11 +22,18 @@ export interface RaceFall {
   readonly tile: number;
 }
 
+/** A tile was skipped rather than driven: the car is put back on `from` instead of taking `to`. */
+export interface RaceCut {
+  readonly from: number;
+  readonly to: number;
+}
+
 declare module '@hexrace/commons' {
   interface HexraceEvents {
     'race/start': RaceStart;
     'race/lap': RaceLap;
     'race/finish': RaceFinish;
     'race/fall': RaceFall;
+    'race/cut': RaceCut;
   }
 }

@@ -72,6 +72,16 @@ describe('AudioHub', () => {
     expect(audio.nodes[1]?.outputs).toHaveLength(0);
   });
 
+  it('is supported only where worklets exist, on a secure origin', () => {
+    vi.stubGlobal('isSecureContext', true);
+    expect(hub.supported).toBe(true);
+    vi.stubGlobal('isSecureContext', false);
+    expect(hub.supported).toBe(false);
+    vi.stubGlobal('isSecureContext', true);
+    vi.stubGlobal('AudioWorkletNode', undefined);
+    expect(hub.supported).toBe(false);
+  });
+
   it('does nothing at all in a page without Web Audio', async () => {
     vi.unstubAllGlobals();
     vi.stubGlobal('AudioContext', undefined);

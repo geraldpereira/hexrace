@@ -42,7 +42,7 @@ type Block = Pick<Profile, 'roadWidth' | 'position' | 'leftShoulder' | 'rightSho
 
 /**
  * The exit profile drawn from the entry one: small steps of width, position and types, and a
- * height whose slope stays under half the threshold of the exit (functional spec 2.3), following
+ * height whose slope stays under three quarters of the threshold of the exit (functional spec 2.3), following
  * the trend so that climbs are steady, and inside the track's amplitude. In a hairpin only the
  * types and the height move: shifting the road on an arc of radius four would twist it.
  */

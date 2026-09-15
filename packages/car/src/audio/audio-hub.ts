@@ -18,6 +18,7 @@ export interface WorkletSource {
 }
 
 interface AudioWindow {
+  isSecureContext?: boolean;
   AudioContext?: new () => AudioContext;
   AudioWorkletNode?: new (
     context: AudioContext,
@@ -50,6 +51,11 @@ export class AudioHub {
 
   get ready(): boolean {
     return this.context !== null;
+  }
+
+  /** Whether a voice can open at all: worklets exist only on https or localhost. */
+  get supported(): boolean {
+    return Boolean(this.window?.isSecureContext && this.window.AudioWorkletNode);
   }
 
   /** Runs `then` with the context as soon as there is one, at once if there already is. */

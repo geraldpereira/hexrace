@@ -60,6 +60,8 @@ export { Grid } from '@tile/geometry/grid';
 export { Layout } from '@tile/geometry/layout';
 export { Profiles } from '@tile/geometry/profiles';
 export { Slopes } from '@tile/geometry/slopes';
+export { TileBands } from '@tile/geometry/tile-bands';
+export { TileFacets } from '@tile/geometry/tile-facets';
 export { TileGeometry } from '@tile/geometry/tile-geometry';
 export { TileLines } from '@tile/geometry/tile-lines';
 export { TileObstacles } from '@tile/geometry/tile-obstacles';
