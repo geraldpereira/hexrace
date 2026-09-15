@@ -1,0 +1,17 @@
+<div class="view">
+  <hr-canvas-frame [canvas]="canvas" (resized)="onResized($event)" />
+  <hr-race-hud [dash]="dash" [spec]="spec" [readout]="readout" />
+  @if (quitting()) {
+    <div class="quit">
+      <p>Quit the race?</p>
+      <hr-menu-list
+        [items]="quitChoices"
+        (chosen)="quitChose($event)"
+        (cancelled)="quitChose('resume')"
+      />
+    </div>
+  }
+</div>
+@if (showPaddles()) {
+  <hr-touch-paddles [source]="touch" />
+}

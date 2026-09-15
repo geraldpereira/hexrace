@@ -11,6 +11,9 @@ import {
   DamageIndicator,
   DebugPanel,
   GearIndicator,
+  MenuGrid,
+  MenuList,
+  MenuNavigation,
   RaceTimer,
   ResetGauge,
   ResultsDialogs,
@@ -27,6 +30,8 @@ import {
   type DamageReadout,
   type DebugFolder,
   type FrameSize,
+  type MenuGesture,
+  type MenuItem,
   type RaceMode,
   type TimerReadout,
   type TrackSummary,
@@ -81,6 +86,8 @@ class FakeRace {
     Credits,
     TrackCard,
     CarCard,
+    MenuList,
+    MenuGrid,
   ],
   templateUrl: './hud-showcase.html',
   styleUrl: './hud-showcase.scss',
@@ -89,6 +96,13 @@ class FakeRace {
 export class HudShowcase {
   readonly race = new FakeRace();
   readonly canvas = document.createElement('canvas');
+  readonly menuItems: readonly MenuItem[] = [
+    { id: 'race', label: 'Race', icon: 'flag' },
+    { id: 'garage', label: 'Garage', icon: 'build' },
+    { id: 'options', label: 'Options', icon: 'settings' },
+  ];
+  readonly answer = signal('nothing yet');
+  readonly gesture = signal<MenuGesture>({ x: 0, y: 0, confirm: false, back: false });
   readonly rpm = signal(this.race.rpm);
   readonly gear = signal(this.race.gear);
   readonly kmh = signal(this.race.kmh);
@@ -139,11 +153,20 @@ export class HudShowcase {
     this.panel.register('HUD', (f: DebugFolder) => this.buildFolder(f), inject(DestroyRef));
     this.panel.show();
     inject(FrameLoop).start((now: number) => this.tick(now));
+    inject(MenuNavigation).watch((gesture: MenuGesture) => {
+      this.readGesture(gesture);
+    });
   }
 
   /** The frame tells us its box; the canvas takes that resolution before the next paint. */
   onResized(size: FrameSize): void {
     this.frameSize = size;
+  }
+
+  private readGesture(gesture: MenuGesture): void {
+    if (gesture.x !== 0 || gesture.y !== 0 || gesture.confirm || gesture.back) {
+      this.gesture.set(gesture);
+    }
   }
 
   private tick(now: number): void {

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { type CarSpec } from '@hexrace/car';
 import { GearIndicator, RevCounter, SpeedIndicator } from '@hexrace/hud';
 
-import { type CarDash } from '@ui/lab/car/car-dash';
+import { type CarDash } from '@ui/scene/car-dash';
 
 /** The rev counter, the gear and the speed of a driving page, in one corner of the canvas. */
 @Component({

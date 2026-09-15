@@ -1,8 +1,7 @@
-import { type CarController } from '@hexrace/car';
-import { type RaceDirector, type TrackStage } from '@hexrace/game-commons';
 import { type TrackMode } from '@hexrace/track';
 
 import { type TrackDraft } from '@ui/lab/track/track-draft';
+import { type BuiltRace } from '@ui/scene/race-scene';
 
 /** The title of the showcase's folder in the debug panel, and the key its values are kept under. */
 export const RACE_TITLE = 'Race';
@@ -21,9 +20,7 @@ export interface RaceSettings {
 export interface RaceBench {
   readonly draft: TrackDraft;
   readonly settings: RaceSettings;
-  readonly stage: TrackStage;
-  readonly director: RaceDirector;
-  readonly car: CarController;
+  readonly race: BuiltRace;
   /** The best time of the track on show, already in words. */
   readonly best: string;
   /** The tile the car stands on, whole, as the readouts show it. */

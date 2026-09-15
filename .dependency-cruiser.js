@@ -55,6 +55,15 @@ export default {
       to: { path: '^src/(physics|render)/', pathNot: '^src/$1/' },
     },
     {
+      name: 'the-game-does-not-read-the-lab',
+      comment:
+        'Le lab est le banc d’essai, pas une bibliothèque du jeu : ce que les deux partagent vit ' +
+        'dans `src/app/scene/` (spec technique 8.1).',
+      severity: 'error',
+      from: { path: '^src/app/(game|scene)/' },
+      to: { path: '^src/app/lab/' },
+    },
+    {
       name: 'nobody-reads-the-hud',
       comment: 'Le hud lit tous les packages ; aucun package ne lit le hud (spec technique 2.2).',
       severity: 'error',

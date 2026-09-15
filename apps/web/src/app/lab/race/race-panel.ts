@@ -68,21 +68,21 @@ export class RacePanel {
   }
 
   private world(folder: DebugFolder, bench: RaceBench): void {
-    folder.add(bench.stage, 'ahead', 0, 12, 1).name('Tiles ahead');
-    folder.add(bench.stage, 'behind', 0, 12, 1).name('Tiles behind');
+    folder.add(bench.race.stage, 'ahead', 0, 12, 1).name('Tiles ahead');
+    folder.add(bench.race.stage, 'behind', 0, 12, 1).name('Tiles behind');
     folder
-      .add(bench.stage, 'smooth')
+      .add(bench.race.stage, 'smooth')
       .name('Smooth shading')
       .onChange(() => {
         bench.rebuild();
       });
-    folder.add(bench.director, 'wrongWaySpeed', 0, 20, 0.5).name('Wrong way above (m/s)');
+    folder.add(bench.race.director, 'wrongWaySpeed', 0, 20, 0.5).name('Wrong way above (m/s)');
     folder.add(this.fall, 'margin', 0, 20, 0.5).name('Fall margin (m)');
     folder.add(this.tuning, 'anticipation', 0, 1, 0.05).name('Camera anticipation');
   }
 
   private readouts(folder: DebugFolder, bench: RaceBench): void {
-    const state = bench.director.state;
+    const state = bench.race.director.state;
     folder.add(state, 'phase').name('Phase').listen().disable();
     folder.add(state, 'lap', 0, 9, 1).name('Lap').listen().disable();
     folder.add(state, 'lapCount', 0, 9, 1).name('Laps to run').listen().disable();

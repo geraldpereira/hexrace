@@ -484,6 +484,40 @@ menu plutôt qu'au lab.
 **Fini quand** le MVP de la spec fonctionnelle 10.4 se joue de bout en bout, à la manette et au
 tactile.
 
+**Écrit (2026-09-15).**
+
+**Le sous-module `hud/menus`.** Trois fichiers. `MenuNavigation` transforme les valeurs continues de
+`Inputs` en gestes discrets (spec technique 5.5) ; il tourne dans sa propre boucle d'images, se
+déclare dans les `providers` de chaque menu pour que deux menus n'aient pas le même état de
+répétition, et refuse de lire une action déjà tenue avant son arrivée — c'est ce qui empêche l'appui
+qui ouvre un écran d'être relu par l'écran ouvert. `MenuList` est la liste d'entrées navigable, qui
+boucle aux deux bouts ; `MenuGrid` est la grille de cartes, qui s'arrête aux coins, projette les
+cartes qu'on lui donne et pose la classe de sélection sur la courante depuis la boucle : `TrackCard`
+n'apprend pas qu'elle peut être sélectionnée. Pas de cadre d'écran commun : deux écrans se
+partageaient trois règles de mise en page, un partiel SCSS (`game/_game-screen.scss`) suffisait.
+Rien d'autre n'a été écrit : ni interrupteur, ni liste déroulante, ni écran d'options.
+
+**La sortie de la course hors du lab.** `apps/web/src/app/scene/` est né, et la règle qui le protège
+est dans `.dependency-cruiser.js` : ni `game/` ni `scene/` ne lisent `lab/`. Y ont déménagé
+`CarScene` (réduit à l'assemblage de la voiture ; le sol peint et les obstacles du POC 1 restent au
+lab), `RaceScene`, `InputPoller`, `CarDash`, `CarGauges`, plus trois nouveaux : `RaceReadout` (l'état
+de course en signaux, comme `CarDash` l'est pour la voiture), `RaceHud` (les quatre coins du HUD de
+course) et `DrivingPage` (ce que la vitrine et l'écran de course partagent). La plomberie 3D est
+descendue de `PhysicsLab` dans une base neutre, `ScenePage` : le lab garde le compteur de
+performance allumé, le panneau de debug et les caisses, le jeu n'en hérite rien. Une classe de plus
+plutôt qu'un drapeau, pour que le jeu ne tienne aucune référence aux outils du développeur.
+
+**Le jeu.** `game.routes.ts` porte trois écrans : `''` l'accueil (le titre, une seule entrée — Track
+— et un lien discret vers le lab), `/tracks` le choix de piste (les boucles d'exemple que la
+validation accepte, en `TrackCard` dans une `MenuGrid`, avec leur meilleur temps), et `/race/:track`
+la course, chargée en `loadComponent` avec three.js et Jolt. `app.routes.ts` n'assemble plus que
+`LAB_ROUTES`, `GAME_ROUTES` et un `**` qui ramène à la racine : la racine est le jeu.
+
+**Ce qui a été tranché en chemin.** `back` en course ne quitte pas, il demande : une question
+s'ouvre par-dessus, et la course continue derrière, puisque la spec 4.1 refuse la pause. Le choix de
+piste liste toutes les boucles valides plutôt qu'une seule, parce qu'elles existent déjà. L'accueil
+ne montre aucun bouton mort pour les modes à venir.
+
 ### 2.10 Et après
 
 Dans l'ordre d'envie de la spec fonctionnelle 10.5, un module à la fois, chacun avec sa vitrine :

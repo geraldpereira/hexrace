@@ -356,7 +356,16 @@ Essayé sur téléphone le 2026-09-13 : zones et palonniers validés, course par
 ### 5.5 Navigation dans les menus
 
 Les mêmes actions pour les trois périphériques : `navigateX/Y`, `confirm`, `back`. Les sources
-livrent des valeurs continues ; c'est le module des menus qui détectera les fronts.
+livrent des valeurs continues ; c'est le module des menus qui détecte les fronts.
+
+**Écrit (2026-09-15, `packages/hud/src/menus`).** `MenuNavigation` lit `Inputs` une fois par image,
+dans sa propre boucle d'animation, et rend les gestes du pas : une zone morte à 0,5, un pas au
+franchissement, puis une première attente de 0,4 s et une répétition toutes les 0,12 s tant que
+l'axe est tenu, pour qu'un stick maintenu déroule une liste sans s'emballer ; `confirm` et `back`
+ne se répètent pas. Une action déjà hors du repos quand la veille commence ne donne rien tant
+qu'elle n'y est pas revenue : c'est ce qui empêche l'appui qui a ouvert un écran d'être relu par
+l'écran qu'il ouvre. Chaque menu déclare le service dans ses `providers`, donc chacun a son propre
+état de répétition.
 
 ---
 
@@ -410,12 +419,21 @@ Rien n'existe dans rally-game : Howler et Tone y sont installés, aucun son n'a 
 2026-09-13). Tout ce qui est générique dans l'inventaire de [F 7.5] est pris tel quel ; le package
 `hud` n'écrit que les composants propres au jeu, répartis dans ses sous-modules : `commons` (conteneur
 de canvas, barres, cartes, solde), `game` (compte-tours, rapport, vitesse, dégâts, chrono, compte à
-rebours, aperçu, jauge de reset, faux sens, témoins, palonniers), `menus`, `dialog` (résultats),
-`editor`, `debug` (l'enveloppe Angular de lil-gui avec les ajouts du POC, et le compteur de
-performance ; voir la décision du 2026-09-13).
+rebours, aperçu, jauge de reset, faux sens, témoins, palonniers), `menus` (la détection des fronts
+`MenuNavigation`, la liste `MenuList` et la grille `MenuGrid` ; écrit le 2026-09-15), `dialog`
+(résultats), `editor`, `debug` (l'enveloppe Angular de lil-gui avec les ajouts du POC, et le
+compteur de performance ; voir la décision du 2026-09-13).
 
-- 8.1 Structure applicative
-  _Routage des écrans [F 7.1], cohabitation d'un canvas three.js persistant avec les vues, cycle de vie des scènes (2.2)._
+- 8.1 Structure applicative (écrite le 2026-09-15, référence `apps/web/src/app`)
+  **Trois zones, trois dossiers.** `game/` est le jeu, `lab/` les vitrines, `scene/` ce que les deux partagent. La règle qui les tient est dans `.dependency-cruiser.js` : `game/` et `scene/` ne lisent jamais `lab/`. Le lab est le banc d'essai d'un module, pas une bibliothèque du jeu ; ce qui sert aux deux déménage dans `scene/` au lieu d'être importé depuis le lab.
+
+  **Le routage.** `app.routes.ts` ne fait qu'assembler : `LAB_ROUTES` d'abord, `GAME_ROUTES` ensuite, puis un `**` qui ramène à la racine. La racine est le jeu ; `/lab` reste atteignable telle quelle. Les écrans du MVP [F 7.1] sont `''` (l'accueil), `/tracks` (le choix de piste) et `/race/:track` (la course). Tout écran qui ouvre une scène 3D se charge en `loadComponent`, three.js et Jolt avec lui : un joueur qui reste dans les menus ne télécharge ni l'un ni l'autre.
+
+  **Le canvas.** Il n'y en a qu'un pour toute l'application, celui de `ThreeRenderer`, service racine. Un écran ne le crée pas : il le donne à un `CanvasFrame` [F 7.5] qui l'adopte comme unique enfant et publie sa taille ; le renderer se redimensionne sur ce que la vue lui laisse. Passer d'un écran à l'autre déplace le même canvas, sans perdre le contexte WebGL ni recharger le wasm de Jolt, qui est chargé une fois par `JoltPhysics.load()`.
+
+  **Le cycle de vie d'une scène.** `ScenePage` est la plomberie neutre : renderer et canvas, `load()` qui attend le wasm puis construit, la boucle à pas fixe (mise à jour de la scène, pas physique, image), et `leave()` qui arrête la boucle et détruit la scène quand la vue est quittée. Elle n'allume rien : ni panneau de debug, ni compteur de performance. `PhysicsLab` en hérite et ajoute ce qui n'appartient qu'au développeur — compteur allumé, panneau ouvert, caisses à lâcher. C'est une classe de plus plutôt qu'un drapeau, pour que le jeu ne tienne aucune référence aux outils du lab. `DrivingPage` en hérite aussi et porte ce que les deux pages de course partagent : la caméra de suivi, la scène que `RaceScene` assemble, le `CarDash` et le `RaceReadout` que le HUD lit à chaque image, et l'abonnement au drapeau ; une sous-classe pose sa piste dans `ready()` et répond à `finished()`.
+
+  **Le dossier partagé.** `scene/` contient `ScenePage`, `DrivingPage`, `CarScene` (l'assemblage de la voiture), `RaceScene` (l'assemblage d'une course), `InputPoller`, `CarDash`, `CarGauges`, `RaceReadout` et `RaceHud`. Rien d'un environnement de test n'y entre : le sol peint en voies, les obstacles du POC 1 et le panneau de réglages restent dans `lab/`.
 - 8.2 HUD
   _En DOM par-dessus le canvas ou dans la scène ; fréquence de rafraîchissement ; l'indicateur du front de disparition [F 7.2]. Ce qui bouge à chaque image se met à jour hors de la détection de changement, par signaux ou écriture directe du DOM depuis la boucle._
 - 8.6 Panneau de debug (écrit le 2026-09-13, référence `packages/hud/src/debug`)
@@ -572,6 +590,12 @@ Le panneau de debug garde ses propres réglages sous ses propres clés ; les pis
 | 2026-09-15 | Un écart de plus d'une tuile avec la dernière parcourue est un raccourci : l'index n'est pas adopté, la voiture est reposée et `race/cut` publié ; `car.home` suit la voiture de tuile en tuile                                                                                                                                                            | Le plus court chemin de `LapCounter` sert aussi ici ; et `home` à jour rend au reset manuel le sens qu'[F 3.8] lui donne, sans quoi il ressemblerait lui-même à un raccourci                                   |
 | 2026-09-15 | `SpawnSpots` cherche la place libre la plus proche du point demandé — en travers d'abord, puis en avant sur l'axe — en testant le rectangle du châssis contre les emprises d'obstacles découpées en quadrilatères                                                                                                                                           | Le générateur pose les hazards entre 0,3 et 0,7, exactement là où la remise déposait la voiture ; jamais en arrière, pour ne pas repasser derrière la ligne ([F 3.8])                                          |
 | 2026-09-15 | Les tuiles entrent et sortent de la fenêtre en fondu de 0,4 s, tenu par un `TileFader` sans état dont `TrackStage` garde la liste                                                                                                                                                                                                                          | Un service racine sert alors toutes les scènes, et une tuile reprise en cours de fondu repart de son opacité courante ([F 9.2])                                                                                |
+| 2026-09-15 | `apps/web/src/app` se coupe en trois : `game/` le jeu, `lab/` les vitrines, `scene/` ce que les deux partagent ; `.dependency-cruiser.js` interdit à `game/` et `scene/` de lire `lab/` | Le lab est un banc d'essai, pas une bibliothèque : sans règle, le jeu aurait fini par en dépendre |
+| 2026-09-15 | La plomberie 3D passe dans une base neutre `ScenePage` dont `PhysicsLab` hérite, au lieu d'un drapeau sur `PhysicsLab` | Une classe de plus plutôt qu'une condition : le jeu ne garde aucune référence au panneau de debug ni aux caisses du lab |
+| 2026-09-15 | `DrivingPage` porte ce que la vitrine `lab/race` et l'écran de course partagent ; `RaceReadout` et `RaceHud` sortent le HUD de course dans `scene/` | Les deux pages montraient le même tableau de bord et lisaient le même état ; `.jscpd.json` ne tolère aucun doublon |
+| 2026-09-15 | `MenuNavigation` : zone morte 0,5, premier pas au franchissement, attente 0,4 s puis répétition 0,12 s, et rien tant qu'une action tenue au départ n'est pas revenue au repos | Un stick maintenu doit dérouler une liste, et l'appui qui ouvre un écran ne doit pas être relu par l'écran ouvert (5.5) |
+| 2026-09-15 | `MenuGrid` projette les cartes qu'on lui donne et pose la classe `hr-menu-picked` sur la courante depuis la boucle d'images | `TrackCard` reste une carte et n'apprend pas qu'elle peut être sélectionnée ([F 7.5]) |
+| 2026-09-15 | `GameTracks` n'offre que les pistes d'exemple en mode Track que `TrackValidation` accepte | L'écran de choix ne doit montrer que ce qui se conduit ; les exemples fautifs restent au lab |
 
 ### 13.2 Questions ouvertes
 

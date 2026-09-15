@@ -769,6 +769,11 @@ Par ordre d'envie :
 | 2026-09-15 | Sauter une tuile en coupant remet la voiture sur la dernière tuile parcourue                              | Un raccourci ne rapporte rien ; c'est la remise de la chute (3.8)                      |
 | 2026-09-15 | Remise à la place libre la plus proche du centre de la tuile, jamais en arrière                           | On réapparaissait dans les obstacles, posés justement au milieu (3.8)                  |
 | 2026-09-15 | Fondu de 0,4 s des tuiles qui entrent dans la fenêtre et de celles qui en sortent                         | Le bord du champ sautait à l'œil en mode Rally (9.2)                                   |
+| 2026-09-15 | La racine du site est le jeu ; `/lab` reste la porte du développeur, en lien discret sur l'accueil        | Le MVP se joue, il ne se visite plus par le banc d'essai (7.1)                          |
+| 2026-09-15 | L'accueil ne montre que ce qui marche : une seule entrée, Track ; ni Rally, ni Collapse, ni garage        | Un bouton mort ment au joueur ; le MVP est court par définition (10.4)                  |
+| 2026-09-15 | Le choix de piste liste toutes les boucles d'exemple que le modèle accepte, pas une seule                 | Neuf exemples existent déjà ; en montrer plusieurs ne coûte rien et donne à rejouer      |
+| 2026-09-15 | **Back en course ne quitte pas : il demande.** La course continue derrière la question                    | Pas de pause (4.1), mais pas de course perdue sur un appui malheureux non plus          |
+| 2026-09-15 | Un menu se pilote au stick, à la croix, aux flèches, à la souris et au doigt, sans mode                   | Le survol ou l'appui choisit, le clic valide : la manette et le tactile cohabitent      |
 
 ### 11.2 Questions ouvertes
 

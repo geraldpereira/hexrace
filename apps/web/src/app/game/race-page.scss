@@ -1,0 +1,27 @@
+/* The race takes the whole screen: the canvas below, the HUD in its corners, nothing else. */
+.view {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.quit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgb(0 0 0 / 70%);
+}
+
+.quit p {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.quit hr-menu-list {
+  width: min(16rem, 70vw);
+}

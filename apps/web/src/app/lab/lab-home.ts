@@ -9,6 +9,7 @@ import { SHOWCASES } from '@ui/lab/showcases';
   imports: [RouterLink],
   template: `
     <main>
+      <a class="quiet" routerLink="/">← game</a>
       <h1>HexRace — lab</h1>
       <p>Every module of the game, playable on its own, in the order of the build plan.</p>
       <ol>
@@ -43,6 +44,10 @@ import { SHOWCASES } from '@ui/lab/showcases';
     small {
       display: block;
       opacity: 0.8;
+    }
+    .quiet {
+      font-size: 0.85rem;
+      opacity: 0.6;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -2,17 +2,22 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { DebugPanel } from '@hexrace/hud';
+import { INPUT_SOURCES } from '@hexrace/inputs';
 
 import { HudShowcase } from '@ui/lab/hud/hud-showcase';
+import { fakeContext, mockCanvasContext } from '@ui/testing/canvas.mock';
 import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
 import { panelButton } from '@ui/testing/panel.mock';
 import { stubResizeObserver } from '@ui/testing/resize-observer.mock';
+import { ScriptedSource } from '@ui/testing/scripted-source.mock';
 
 describe('HudShowcase', () => {
   let capture: FrameCapture;
+  let source: ScriptedSource;
 
   beforeEach(() => {
     capture = captureFrames();
+    source = new ScriptedSource();
     stubResizeObserver({ width: 320, height: 180 });
   });
 
@@ -23,7 +28,7 @@ describe('HudShowcase', () => {
   async function render(): Promise<{ host: HTMLElement; page: HudShowcase }> {
     await TestBed.configureTestingModule({
       imports: [HudShowcase],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: INPUT_SOURCES, useValue: source, multi: true }],
     }).compileComponents();
     const fixture = TestBed.createComponent(HudShowcase);
     await fixture.whenStable();
@@ -107,6 +112,32 @@ describe('HudShowcase', () => {
     expect(page.countdownStep()).toBe(0);
     vi.advanceTimersByTime(1000);
     expect(page.countdownStep()).toBeNull();
+  });
+
+  it('shows the menu components and lights the last gesture the navigation read', async () => {
+    mockCanvasContext(fakeContext());
+    const { host, page } = await render();
+    expect(host.querySelectorAll('hr-menu-list button').length).toBe(3);
+    expect(host.querySelectorAll('hr-menu-grid hr-track-card').length).toBe(2);
+    capture.tick(1);
+    expect(page.gesture()).toEqual({ x: 0, y: 0, confirm: false, back: false });
+    source.actions.navigateX = 1;
+    capture.tick(1);
+    expect(page.gesture().x).toBe(1);
+    source.actions.navigateX = 0;
+    source.actions.navigateY = 1;
+    capture.tick(1);
+    expect(page.gesture().y).toBe(1);
+    source.actions.navigateY = 0;
+    source.actions.confirm = 1;
+    capture.tick(1);
+    expect(page.gesture().confirm).toBe(true);
+    expect(page.answer()).toBe('garage');
+    source.actions.confirm = 0;
+    source.actions.back = 1;
+    capture.tick(1);
+    expect(page.gesture().back).toBe(true);
+    expect(page.answer()).toBe('cancelled');
   });
 
   it('opens the results dialog from the folder', async () => {

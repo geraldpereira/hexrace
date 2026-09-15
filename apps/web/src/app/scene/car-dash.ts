@@ -6,9 +6,9 @@ const ACTING = 0.01;
 const RESET_SECONDS = 3;
 
 /**
- * The gauges of a page that drives a car, as signals the HUD reads: two pages do, `lab/car` and
- * `lab/race`, and both show the same dashboard. `read` is called once a frame with the car's
- * state. An assist that was never bought shows no lamp at all, which is what a null stands for.
+ * The gauges of a page that drives a car, as signals the HUD reads: the two showcases and the
+ * game's race screen do, and all three show the same dashboard. `read` is called once a frame
+ * with the car's state. An assist never bought shows no lamp at all, which is what a null is.
  */
 export class CarDash {
   /** What the garage sold, which says which lamps exist at all. */

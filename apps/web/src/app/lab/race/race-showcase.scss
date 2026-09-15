@@ -1,5 +1,4 @@
 @use '../lab-page';
-@use '../lab-hud';
 
 .view {
   position: relative;
@@ -17,15 +16,6 @@ aside {
   margin: 0;
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
-}
-
-.sidebar {
-  right: 1rem;
-  top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.6rem;
 }
 
 .sound {

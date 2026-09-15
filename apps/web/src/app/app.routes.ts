@@ -1,10 +1,11 @@
 import { type Routes } from '@angular/router';
 
+import { GAME_ROUTES } from '@ui/game/game.routes';
 import { LAB_ROUTES } from '@ui/lab/lab.routes';
 
-/** One routes file per area; until the game exists, the root leads to the lab. */
+/** One routes file per area: the lab keeps its own addresses, the game holds the root. */
 export const ROUTES: Routes = [
   ...LAB_ROUTES,
-  { path: '', redirectTo: 'lab', pathMatch: 'full' },
-  { path: '**', redirectTo: 'lab' },
+  ...GAME_ROUTES,
+  { path: '**', redirectTo: '' },
 ];

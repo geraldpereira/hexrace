@@ -15,6 +15,7 @@ _coder_ ici ; il ne raconte pas l'architecture et ne répète rien qu'un autre f
 | Qui a le droit de lire qui ?                      | `.dependency-cruiser.js`, une règle par ligne avec son argument               |
 | Quelles règles de lint, et pourquoi ?             | `eslint.config.js`, et `quality/` pour la règle maison                        |
 | Seuils de couverture, plafond de duplication ?    | 100 % partout : `packages/*/vitest.config.ts`, `angular.json` ; `.jscpd.json` |
+| Comment les écrans du jeu sont routés et montés ? | `docs/specs-techniques.md` 8.1, et `apps/web/src/app/game/game.routes.ts`     |
 
 ## Commandes
 
@@ -91,9 +92,12 @@ packages/game-commons/ @hexrace/game-commons - le tronc commun des modes : la co
                                      et RaceDirector (stage/).
 packages/hud/      @hexrace/hud    - le seul package à composants et pipes : game/ (compte-tours,
                                      dégâts, chrono…), commons/ (cadre de canvas, cartes, pipe time),
+                                     menus/ (détection des fronts, liste et grille navigables),
                                      dialog/, debug/ (les services autour de lil-gui). Testé par
                                      `ng test hud`, pas par Vitest seul.
-apps/web/          @hexrace/web    - l'application Angular 22 : le lab des vitrines, puis le jeu.
+apps/web/          @hexrace/web    - l'application Angular 22, en trois zones : game/ le jeu, lab/ les
+                                     vitrines, scene/ ce que les deux partagent. game/ et scene/ ne
+                                     lisent jamais lab/ (dependency-cruiser).
 ```
 
 Un package ajouté se déclare dans `make/quality.mk` (PROJECTS), `eslint.config.js` (project),

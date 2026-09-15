@@ -1,8 +1,9 @@
 /**
  * The HUD: the only package with Angular components. `debug/` is the developer's lil-gui panel;
- * `game/` what the race shows over the canvas; `commons/` what the menus share; `dialog/` the boxes.
- * Every component is a function of its inputs and knows nothing of a car or a track: the modules
- * that produce the values feed them.
+ * `game/` what the race shows over the canvas; `commons/` what the screens share; `menus/` the
+ * navigable lists and grids with the edge detection behind them; `dialog/` the boxes. Every
+ * component is a function of its inputs and knows nothing of a car or a track: the modules that
+ * produce the values feed them.
  */
 export { type GUI as DebugFolder } from 'lil-gui';
 
@@ -21,6 +22,9 @@ export { PerfMeter } from '@hud/debug/perf-meter';
 export { DebugPlots } from '@hud/debug/debug-plots';
 export { ResultsDialog, type RaceResult, type ResultsChoice } from '@hud/dialog/results-dialog';
 export { ResultsDialogs } from '@hud/dialog/results-dialogs';
+export { MenuGrid } from '@hud/menus/menu-grid';
+export { MenuList, type MenuItem } from '@hud/menus/menu-list';
+export { type MenuGesture, MenuNavigation } from '@hud/menus/menu-navigation';
 export { AssistLamps, type AssistReadout } from '@hud/game/assist-lamps';
 export { Countdown } from '@hud/game/countdown';
 export { DamageIndicator } from '@hud/game/damage-indicator';

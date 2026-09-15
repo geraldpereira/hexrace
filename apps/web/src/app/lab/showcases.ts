@@ -19,7 +19,7 @@ const PLANNED: readonly Showcase[] = [
   {
     module: 'hud',
     path: 'lab/hud',
-    summary: 'Every HUD component fed with fake values from the debug panel.',
+    summary: 'Every HUD and menu component fed with fake values from the debug panel.',
     ready: true,
   },
   {

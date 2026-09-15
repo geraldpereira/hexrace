@@ -119,31 +119,31 @@ describe('RaceShowcase', () => {
     expect(host.textContent).toContain('Small Ring');
     expect(host.textContent).toContain('the model accepts it');
     expect(page.settings).toEqual({ mode: 'track', laps: 3 });
-    expect(page.stage.shown.size).toBeGreaterThan(1);
+    expect(page.race.stage.shown.size).toBeGreaterThan(1);
     expect(page.best).toBe('--');
 
     source.actions.throttle = 1;
     capture.tick(30, 50);
-    expect(page.director.state.phase).toBe('countdown');
-    expect(page.countdownStep()).toBe(3);
-    expect(page.car.frozen).toBe(true);
+    expect(page.race.director.state.phase).toBe('countdown');
+    expect(page.readout.countdownStep()).toBe(3);
+    expect(page.race.parts.car.frozen).toBe(true);
     expect(page.dash.kmh()).toBeLessThan(2);
     expect(rendered.length).toBeGreaterThan(0);
 
     go();
-    expect(page.director.state.phase).toBe('racing');
-    expect(page.car.frozen).toBe(false);
-    const from = page.director.state.position;
+    expect(page.race.director.state.phase).toBe('racing');
+    expect(page.race.parts.car.frozen).toBe(false);
+    const from = page.race.director.state.position;
     capture.tick(150, 50);
     clock.tick(5);
     capture.tick(2, 50);
     expect(page.dash.kmh()).toBeGreaterThan(10);
     expect(page.dash.rpm()).toBeGreaterThan(800);
-    expect(page.director.state.position).toBeGreaterThan(from);
-    expect(page.car.nextTile).not.toBeNull();
-    expect(page.timer().currentMs).toBeCloseTo(5000, -2);
-    expect(page.timer().lapCount).toBe(3);
-    expect(page.tile).toBe(Math.floor(page.director.state.position));
+    expect(page.race.director.state.position).toBeGreaterThan(from);
+    expect(page.race.parts.car.nextTile).not.toBeNull();
+    expect(page.readout.timer().currentMs).toBeCloseTo(5000, -2);
+    expect(page.readout.timer().lapCount).toBe(3);
+    expect(page.tile).toBe(Math.floor(page.race.director.state.position));
 
     page.options.abs.enabled = true;
     page.options.tractionControl.enabled = true;
@@ -159,7 +159,7 @@ describe('RaceShowcase', () => {
     TestBed.tick();
     expect(page.issues().length).toBeGreaterThan(0);
     expect(host.textContent).toContain('see what it refuses');
-    expect(page.stage.shown.size).toBeGreaterThan(0);
+    expect(page.race.stage.shown.size).toBeGreaterThan(0);
 
     page.loadText('not a track file at all');
     expect(page.issues().length).toBeGreaterThan(0);
@@ -167,10 +167,10 @@ describe('RaceShowcase', () => {
 
     page.loadText(EMPTY_TRACK);
     expect(page.status()).toContain('lays no tile');
-    expect(page.stage.shown.size).toBe(0);
+    expect(page.race.stage.shown.size).toBe(0);
     capture.tick(4, 50);
-    expect(page.director.state.phase).toBe('countdown');
-    expect(page.car.nextTile).toBeNull();
+    expect(page.race.director.state.phase).toBe('countdown');
+    expect(page.race.parts.car.nextTile).toBeNull();
     destroy();
   });
 
@@ -178,7 +178,7 @@ describe('RaceShowcase', () => {
     const { page, destroy } = await loaded();
     vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     go();
-    expect(page.director.state.phase).toBe('racing');
+    expect(page.race.director.state.phase).toBe('racing');
     TestBed.inject(EventBus).publish('race/finish', { timeMs: 61_234, record: true });
     await new Promise((r) => setTimeout(r, 0));
     const box = document.querySelector('hr-results-dialog')!;
@@ -199,7 +199,7 @@ describe('RaceShowcase', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(open).toHaveBeenCalledWith({ mode: 'track', timeMs: 61_234, record: true });
     expect(page.best).toBe('61.23 s');
-    expect(page.director.state.phase).toBe('countdown');
+    expect(page.race.director.state.phase).toBe('countdown');
 
     open.mockResolvedValue('home');
     TestBed.inject(EventBus).publish('race/finish', { timeMs: 61_234, record: false });
@@ -248,7 +248,7 @@ describe('RaceShowcase', () => {
     }
     capture.tick(4, 50);
     expect(page.draft.source).toBe('generated');
-    expect(page.director.state.phase).toBe('countdown');
+    expect(page.race.director.state.phase).toBe('countdown');
     destroy();
   });
 });

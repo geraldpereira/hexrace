@@ -30,13 +30,16 @@ import { Inputs, TouchSource } from '@hexrace/inputs';
 import { type EnvironmentId } from '@hexrace/tile';
 
 import { BENCH_TITLE, type CarBench } from '@ui/lab/car/car-bench';
-import { CarDash } from '@ui/lab/car/car-dash';
-import { CarGauges } from '@ui/lab/car/car-gauges';
+import { CarGround } from '@ui/lab/car/car-ground';
+import { CarObstacles } from '@ui/lab/car/car-obstacles';
 import { CarPanel } from '@ui/lab/car/car-panel';
-import { CarScene } from '@ui/lab/car/car-scene';
+import { LaneProbe } from '@ui/lab/car/lane-probe';
 import { DEFAULT_OBSTACLES, type ObstacleSpec } from '@ui/lab/car/obstacle-spec';
-import { InputPoller } from '@ui/lab/car/input-poller';
 import { PhysicsLab } from '@ui/lab/lab-scene';
+import { CarDash } from '@ui/scene/car-dash';
+import { CarGauges } from '@ui/scene/car-gauges';
+import { CarScene } from '@ui/scene/car-scene';
+import { InputPoller } from '@ui/scene/input-poller';
 
 /**
  * POC 1 redone (plan de construction 2.7): the car on a flat ground cut into one lane per rank of
@@ -73,6 +76,9 @@ export class CarShowcase extends PhysicsLab implements OnInit, CarBench {
 
   private readonly builder = inject(CarScene);
   private readonly carPanel = inject(CarPanel);
+  private readonly grounds = inject(CarGround);
+  private readonly obstacleBuilder = inject(CarObstacles);
+  private readonly probe = new LaneProbe();
   private readonly surfaces = inject(Surfaces);
   private readonly hub = inject(AudioHub);
   private readonly destroyRef = inject(DestroyRef);
@@ -103,14 +109,16 @@ export class CarShowcase extends PhysicsLab implements OnInit, CarBench {
 
   rebuildGround(): void {
     this.ground?.destroy();
-    this.ground = this.builder.ground(this.scene, this.environment);
-    this.builder.probe.lanes = this.surfaces.of(this.environment);
+    const built = this.grounds.build(this.scene, this.environment);
+    this.ground = built.object;
+    this.probe.lanes = this.surfaces.of(this.environment);
+    this.probe.laneWidth = built.laneWidth;
     this.rebuildObstacles();
   }
 
   rebuildObstacles(): void {
     for (const object of this.obstacleObjects) object.destroy();
-    this.obstacleObjects = this.builder.obstacles(this.scene, this.obstacles);
+    this.obstacleObjects = this.obstacleBuilder.build(this.scene, this.obstacles);
   }
 
   startSound(): void {
@@ -141,7 +149,11 @@ export class CarShowcase extends PhysicsLab implements OnInit, CarBench {
   }
 
   private buildCar(): void {
-    const built = this.builder.car(this.scene, this.spec, this.options, this.environment);
+    const built = this.builder.car(this.scene, this.spec, this.options, {
+      environment: this.environment,
+      probe: this.probe,
+      home: { x: this.probe.centreOf(0), y: 0, z: 0 },
+    });
     this.carObject = built.object;
     this.car = built.car;
     this.view = built.view;

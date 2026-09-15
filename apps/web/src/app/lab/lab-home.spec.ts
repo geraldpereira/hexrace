@@ -30,7 +30,7 @@ describe('LabHome', () => {
 
   it('links the ready showcase and greys out the one that is not', async () => {
     const host = await render([READY, PENDING]);
-    const link = host.querySelector('a');
+    const link = host.querySelector('li a');
     expect(link?.textContent).toContain('inputs');
     expect(link?.getAttribute('href')).toBe('/lab/inputs');
     const pending = host.querySelectorAll('li.pending');

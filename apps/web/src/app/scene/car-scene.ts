@@ -8,19 +8,23 @@ import {
   ChassisSound,
   EngineSound,
   SkidMarks,
+  type Point3,
   type SurfaceFeel,
+  type SurfaceProbe,
   Surfaces,
   TyreSound,
 } from '@hexrace/car';
 import { type GameObject, type Scene } from '@hexrace/engine';
 import { EnvironmentCatalog, type EnvironmentId } from '@hexrace/tile';
 
-import { CarGround } from '@ui/lab/car/car-ground';
-import { CarObstacles } from '@ui/lab/car/car-obstacles';
-import { LaneProbe } from '@ui/lab/car/lane-probe';
-import { type ObstacleSpec } from '@ui/lab/car/obstacle-spec';
+/** Where a car is put down, what reads the ground under it, and the surface when nothing does. */
+export interface CarGrounding {
+  readonly environment: EnvironmentId;
+  readonly probe: SurfaceProbe | null;
+  readonly home: Point3;
+}
 
-/** One car in the showcase's scene: the object to destroy, and every part the panel drives. */
+/** One car in a scene: the object to destroy, and every part a page drives or listens to. */
 export interface BuiltCar {
   readonly object: GameObject;
   readonly car: CarController;
@@ -33,17 +37,14 @@ export interface BuiltCar {
 }
 
 /**
- * Assembles the showcase's scene: the painted ground and its lane probe, the two obstacles, and
- * the car as one object carrying its controller, its meshes, its marks, its dust and its three
- * sound layers, each reading the controller's readout and none of them the others. The sound
- * palette is every surface of every environment, so switching ground does not silence a voice.
+ * Assembles the car every driving page shares, the showcase and the game alike: one object
+ * carrying its controller, its meshes, its marks, its dust and its three sound layers, each
+ * reading the controller's readout and none of them the others. The sound palette is every
+ * surface of every environment, so changing ground does not silence a voice. The grounding comes
+ * in with the rest: a component wakes the moment it is added, and its body is built from `home`.
  */
 @Injectable({ providedIn: 'root' })
 export class CarScene {
-  readonly probe = new LaneProbe();
-
-  private readonly grounds = inject(CarGround);
-  private readonly obstacleBuilder = inject(CarObstacles);
   private readonly surfaces = inject(Surfaces);
   private readonly environments = inject(EnvironmentCatalog);
 
@@ -52,24 +53,13 @@ export class CarScene {
     ...new Set(this.environments.ids.flatMap((id: EnvironmentId) => this.surfaces.palette(id))),
   ];
 
-  ground(scene: Scene, environment: EnvironmentId): GameObject {
-    const built = this.grounds.build(scene, environment);
-    this.probe.lanes = built.lanes;
-    this.probe.laneWidth = built.laneWidth;
-    return built.object;
-  }
-
-  obstacles(scene: Scene, spec: ObstacleSpec): GameObject[] {
-    return this.obstacleBuilder.build(scene, spec);
-  }
-
-  car(scene: Scene, spec: CarSpec, options: CarOptions, environment: EnvironmentId): BuiltCar {
+  car(scene: Scene, spec: CarSpec, options: CarOptions, ground: CarGrounding): BuiltCar {
     const car = scene.instantiate(CarController);
     car.spec = spec;
     car.options = options;
-    car.probe = this.probe;
-    car.defaultSurface = { environment, zone: 'road', rank: 1 };
-    car.home = { x: this.probe.centreOf(0), y: 0, z: 0 };
+    car.probe = ground.probe;
+    car.home = ground.home;
+    car.defaultSurface = { environment: ground.environment, zone: 'road', rank: 1 };
     const object = scene.spawn('car');
     object.add(car);
     const view = scene.instantiate(CarView);

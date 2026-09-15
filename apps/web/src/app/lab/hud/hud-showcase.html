@@ -40,13 +40,35 @@
       <hr-credits [amount]="race.credits" />
     </div>
     <div class="row cards">
-      <hr-track-card [track]="track" />
-      <hr-track-card [track]="lockedTrack" />
       <hr-car-card [car]="car" />
       <hr-car-card [car]="ownedCar" />
     </div>
     <div class="row">
       <hr-stat-bars [stats]="car.stats" />
+    </div>
+  </section>
+
+  <section class="menus">
+    <h2>Menus</h2>
+    <p class="gesture">
+      Last gesture — x {{ gesture().x }}, y {{ gesture().y }}, confirm {{ gesture().confirm }},
+      back {{ gesture().back }}. Answer — {{ answer() }}.
+    </p>
+    <div class="row">
+      <hr-menu-list
+        [items]="menuItems"
+        (chosen)="answer.set($event)"
+        (cancelled)="answer.set('cancelled')"
+      />
+      <hr-menu-grid
+        [count]="2"
+        [columns]="2"
+        (chosen)="answer.set('card ' + $event)"
+        (cancelled)="answer.set('cancelled')"
+      >
+        <hr-track-card [track]="track" />
+        <hr-track-card [track]="lockedTrack" />
+      </hr-menu-grid>
     </div>
   </section>
 </main>
