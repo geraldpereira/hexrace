@@ -9,12 +9,14 @@ const MAX_SEGMENTS = 6000;
 const VERTICES = 6;
 const SEGMENT_LENGTH = 0.12;
 const LIFT = 0.015;
+const HORIZON_METERS = 90;
 
 /**
  * A ribbon per wheel laid on the ground while the tyre scrubs (POC 1): locked under braking or
  * the hand brake, optionally sideways too. One non-indexed geometry with a ring of quads, RGBA
  * vertex colours, so each edge fades with the slip and takes the surface's own mark colour. The
- * intensity it computes is the one the tyre noise and the dust follow, so all three agree.
+ * intensity it computes is the one the tyre noise and the dust follow, so all three agree. A mark
+ * further than `horizon` from the car is rubbed out, because the tile that carried it is gone.
  */
 export class SkidMarks extends GameComponent implements SlideReadout {
   readout!: CarReadout;
@@ -29,7 +31,9 @@ export class SkidMarks extends GameComponent implements SlideReadout {
   attack = 0.05;
   release = 0.2;
   widthScale = 1;
-  /** Quads laid so far; it wraps at the buffer size. */
+  /** How far behind the car a mark survives, in metres; 0 keeps every one of them. */
+  horizon = HORIZON_METERS;
+  /** Quads standing right now; the ring buffer bounds them and the horizon rubs them out. */
   segments = 0;
   readonly wheelIntensity: number[] = [];
 
@@ -56,6 +60,7 @@ export class SkidMarks extends GameComponent implements SlideReadout {
   private readonly lastMid = new THREE.Vector3();
   private readonly colour = new THREE.Color();
   private head = 0;
+  private tail = 0;
 
   override awake(): void {
     const geometry = new THREE.BufferGeometry();
@@ -106,6 +111,7 @@ export class SkidMarks extends GameComponent implements SlideReadout {
       trail.right.copy(this.right);
       trail.alpha = intensity;
     }
+    if (this.rubOut()) dirty = true;
     if (!dirty) return;
     this.positions.needsUpdate = true;
     this.colors.needsUpdate = true;
@@ -118,6 +124,7 @@ export class SkidMarks extends GameComponent implements SlideReadout {
     this.positions.needsUpdate = true;
     this.colors.needsUpdate = true;
     this.head = 0;
+    this.tail = 0;
     this.segments = 0;
     for (const trail of this.trails) trail.active = false;
   }
@@ -126,6 +133,28 @@ export class SkidMarks extends GameComponent implements SlideReadout {
     this.renderer.scene.remove(this.mesh);
     this.mesh.geometry.dispose();
     (this.mesh.material as THREE.Material).dispose();
+  }
+
+  private rubOut(): boolean {
+    if (this.horizon <= 0) return false;
+    const far = this.horizon * this.horizon;
+    let rubbed = false;
+    while (this.segments > 0 && this.beyond(this.tail, far)) {
+      for (let i = 0; i < VERTICES; i++) this.colors.setW(this.tail * VERTICES + i, 0);
+      this.tail = (this.tail + 1) % MAX_SEGMENTS;
+      this.segments--;
+      rubbed = true;
+    }
+    return rubbed;
+  }
+
+  private beyond(segment: number, far: number): boolean {
+    const at = segment * VERTICES;
+    const car = this.readout.pose.position;
+    const dx = this.positions.getX(at) - car.x;
+    const dy = this.positions.getY(at) - car.y;
+    const dz = this.positions.getZ(at) - car.z;
+    return dx * dx + dy * dy + dz * dz > far;
   }
 
   private smooth(index: number, raw: number, dt: number): number {

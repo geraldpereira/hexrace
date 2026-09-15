@@ -86,6 +86,7 @@ export class EffectsPanel {
     f.add(bench.marks, 'lockSlipFull', 0.1, 1.5, 0.05).name('Lock slip full');
     f.add(bench.marks, 'slipSpeedStart', 0, 5, 0.1).name('Scrub start (m/s)');
     f.add(bench.marks, 'slipSpeedFull', 0.2, 10, 0.1).name('Scrub full (m/s)');
+    f.add(bench.marks, 'horizon', 0, 400, 10).name('Horizon (m)');
     f.add(bench.marks, 'attack', 0, 0.5, 0.01).name('Attack (s)');
     f.add(bench.marks, 'release', 0, 1, 0.01).name('Release (s)');
     f.add(bench.marks, 'lateralEnabled').name('Sideways too');

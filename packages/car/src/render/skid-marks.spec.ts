@@ -48,6 +48,28 @@ describe('SkidMarks', () => {
     expect(marks.segments).toBe(laid);
   });
 
+  it('rubs out the marks the car has left behind, unless the horizon is off', () => {
+    slide(20);
+    const laid = marks.segments;
+    expect(laid).toBeGreaterThan(0);
+
+    readout.pose.position.z = 10;
+    marks.render?.(1 / 60);
+    expect(marks.segments).toBe(laid);
+
+    readout.pose.position.z = 500;
+    marks.render?.(1 / 60);
+    expect(marks.segments).toBe(0);
+
+    readout.pose.position.z = 0;
+    slide(20);
+    marks.horizon = 0;
+    readout.pose.position.z = 500;
+    const kept = marks.segments;
+    marks.render?.(1 / 60);
+    expect(marks.segments).toBe(kept);
+  });
+
   it('marks sideways too when the option is on, and never off the ground', () => {
     marks.lateralEnabled = true;
     for (const contact of readout.contacts) contact.lateralSlipDeg = 40;
