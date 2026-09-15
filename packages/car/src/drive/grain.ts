@@ -1,46 +1,43 @@
 import { Injectable, inject } from '@angular/core';
+import { Noise } from '@hexrace/commons';
+import { type Swell } from '@hexrace/tile';
 
 import { type SurfaceFeel } from '@car/entity/surface-feel';
-import { Noise } from '@car/drive/noise';
 
 const REF_SPEED = 10;
 const MAX_SPEED_FACTOR = 2;
-const WHEEL_OFFSET = 7.31;
 const LATERAL_OFFSET = 100;
 
 /**
- * The grain of a surface, sampled along the distance travelled in wavelengths so a parked car is
- * still (POC 1). Vertically it is a virtual bump height pushed into the suspension preload, the
- * spring acting as if the ground had risen: a force could not do this, at 5 Hz even a full-load
- * one moves 1300 kg by millimetres. Sideways it is a noise force growing with speed, read far
- * enough away in the field to be uncorrelated with the bumps.
+ * The roughness of a surface at the world place a wheel stands on: the short grain of POC 1 and
+ * the long swell that heaves a landscape, added. Being of the place and not of the distance run, a
+ * parked car is still, two wheels read apart, a crest is found again, and the mesh can light the
+ * very field the suspension climbs. The bump enters the suspension preload, the spring acting as
+ * if the ground had risen; sideways it is a noise force growing with speed, read far from it.
  */
 @Injectable({ providedIn: 'root' })
 export class Grain {
   private readonly noise = inject(Noise);
 
-  /** Virtual bump height under a wheel, in metres. */
-  bump(feel: SurfaceFeel, travelled: number, wheel: number): number {
-    return feel.bumpHeight * this.noise.at(wheel * WHEEL_OFFSET, this.phase(feel, travelled));
+  /** Virtual bump height under a wheel standing at a world place, in metres. */
+  bump(feel: SurfaceFeel, swell: Swell, x: number, z: number): number {
+    return this.wave(feel.bumpHeight, feel.wavelength, x, z) + this.swell(swell, x, z);
+  }
+
+  /** The long swell alone at a world place, in metres: what the ground mesh shades. */
+  swell(swell: Swell, x: number, z: number): number {
+    return this.wave(swell.height, swell.length, x, z);
   }
 
   /** Sideways force at a wheel, in newtons, across its rolling direction. */
-  lateral(
-    feel: SurfaceFeel,
-    travelled: number,
-    wheel: number,
-    load: number,
-    speed: number,
-  ): number {
+  lateral(feel: SurfaceFeel, x: number, z: number, load: number, speed: number): number {
     const factor = Math.min(speed / REF_SPEED, MAX_SPEED_FACTOR);
-    const sample = this.noise.at(
-      wheel * WHEEL_OFFSET + LATERAL_OFFSET,
-      this.phase(feel, travelled),
-    );
+    const sample = this.noise.at(x / feel.wavelength + LATERAL_OFFSET, z / feel.wavelength);
     return feel.lateralRoughness * load * factor * sample;
   }
 
-  private phase(feel: SurfaceFeel, travelled: number): number {
-    return travelled / feel.wavelength;
+  private wave(height: number, length: number, x: number, z: number): number {
+    if (height === 0 || length <= 0) return 0;
+    return height * this.noise.at(x / length, z / length);
   }
 }

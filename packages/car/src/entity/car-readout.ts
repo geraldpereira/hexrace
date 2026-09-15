@@ -1,3 +1,5 @@
+import { type Swell } from '@hexrace/tile';
+
 import { type CarState } from '@car/entity/car-state';
 import { type SurfaceFeel } from '@car/entity/surface-feel';
 import { type Point3, type QuatMut, type Vec3Mut } from '@car/entity/vectors';
@@ -11,6 +13,8 @@ import { type Point3, type QuatMut, type Vec3Mut } from '@car/entity/vectors';
 export interface WheelContact {
   contact: boolean;
   surface: SurfaceFeel;
+  /** The long swell of the surface, which the ground mesh shades but does not carry. */
+  swell: Swell;
   longitudinalSlip: number;
   lateralSlipDeg: number;
   /** Tyre surface speed against the ground along the rolling direction, m/s. */

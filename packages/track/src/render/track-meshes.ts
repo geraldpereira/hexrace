@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import {
   type Environment,
+  type SwellProbe,
   type TileBuild,
   type Triangle3,
   TileMeshes,
@@ -14,6 +15,8 @@ export interface TileGroupOptions {
   readonly outline?: boolean;
   readonly faulty?: boolean;
   readonly triangles?: readonly Triangle3[];
+  /** Where the roughness of a zone rank is read, to give the ground its relief; none for flat. */
+  readonly swells?: SwellProbe | null;
 }
 
 /** How a whole track is drawn; `faulty` holds the indices the validation refused. */
@@ -21,12 +24,15 @@ export interface TrackGroupOptions {
   readonly smooth?: boolean;
   readonly outline?: boolean;
   readonly faulty?: ReadonlySet<number>;
+  /** Where the roughness of a zone rank is read, to give the ground its relief; none for flat. */
+  readonly swells?: SwellProbe | null;
 }
 
 /**
  * The three.js side of a track: one group per tile, so the tile window can add and drop them one
- * by one, each holding the tile's mesh and the hexagon's edge, drawn red when the tile is faulty.
- * The skirt of every tile goes down to the same floor, which `TrackSweeps` put in the build.
+ * by one, each holding the tile's meshes, one per zone rank when a swell roughens them, and the
+ * hexagon's edge, drawn red when the tile is faulty. The skirt of every tile goes down to the same
+ * floor, which `TrackSweeps` put in the build.
  */
 @Injectable({ providedIn: 'root' })
 export class TrackMeshes {
@@ -39,7 +45,8 @@ export class TrackMeshes {
   tile(build: TileBuild, environment: Environment, options: TileGroupOptions = {}): THREE.Group {
     const triangles = options.triangles ?? this.triangles.build(build);
     const group = new THREE.Group();
-    group.add(this.meshes.mesh(build, environment, options.smooth ?? false, triangles));
+    const paint = { smooth: options.smooth ?? false, swells: options.swells ?? null };
+    for (const part of this.meshes.parts(build, environment, paint, triangles)) group.add(part);
     if (options.outline ?? true) {
       group.add(
         options.faulty

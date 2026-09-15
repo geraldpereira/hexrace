@@ -1,9 +1,12 @@
 import { inject } from '@angular/core';
+import { Surfaces } from '@hexrace/car';
 import { Vec2, type Vec3 } from '@hexrace/commons';
 import { BodyComponent, GameComponent, MeshComponent, Scene, type Vec3Like } from '@hexrace/engine';
 import {
   type Environment,
+  type SwellProbe,
   type TileBuild,
+  type Zone,
   EnvironmentCatalog,
   TileTriangles,
   Units,
@@ -33,13 +36,15 @@ interface LaidTrack {
   readonly environment: Environment;
   readonly builds: readonly TileBuild[];
   readonly closed: boolean;
+  readonly swells: SwellProbe;
 }
 
 /**
  * The track in the scene (functional spec 9.2): it lays a track once, then keeps only the tiles
- * around the player alive, each a GameObject carrying its mesh and its collider, faded in when the
- * window reaches it and faded out before it is dropped. That bounds the polygons and the bodies
- * whatever the length of the track. It owns no player: `follow` is told which tile to centre on.
+ * around the player alive, each a GameObject carrying its mesh and its collider, faded in and out
+ * with the window, which bounds the polygons and the bodies whatever the length of the track.
+ * Holding both tables, it also hands the mesh the roughness the car reads under its wheels, so
+ * `tile` never reads `car` (technical spec 4.2). `follow` says which tile to centre on.
  */
 export class TrackStage extends GameComponent {
   ahead = TILES_AHEAD;
@@ -48,6 +53,8 @@ export class TrackStage extends GameComponent {
   smooth = false;
   /** The hexagon's edge drawn on the ground; off in play, it is an editing aid. */
   outlines = false;
+  /** The ground shaded by the swell the wheels feel (functional spec 8.2); off leaves it flat. */
+  roughness = true;
 
   private readonly bodies = inject(TrackBodies);
   private readonly environments = inject(EnvironmentCatalog);
@@ -56,6 +63,7 @@ export class TrackStage extends GameComponent {
   private readonly placer = inject(TrackPlacement);
   private readonly profiles = inject(TrackProfiles);
   private readonly scene = inject(Scene);
+  private readonly surfaces = inject(Surfaces);
   private readonly sweeps = inject(TrackSweeps);
   private readonly triangles = inject(TileTriangles);
   private readonly units = inject(Units);
@@ -97,6 +105,7 @@ export class TrackStage extends GameComponent {
       environment: this.environments.of(track.environment),
       builds: this.sweeps.builds(track, placement),
       closed: this.profiles.isClosed(track),
+      swells: this.swellsOf(track),
     };
   }
 
@@ -143,7 +152,12 @@ export class TrackStage extends GameComponent {
     const build = laid.builds[index]!;
     const triangles = this.triangles.build(build);
     const mesh = this.scene.instantiate(MeshComponent);
-    mesh.object = this.meshes.tile(build, laid.environment, { smooth: this.smooth, outline: this.outlines, triangles });
+    mesh.object = this.meshes.tile(build, laid.environment, {
+      smooth: this.smooth,
+      outline: this.outlines,
+      triangles,
+      swells: this.roughness ? laid.swells : null,
+    });
     const body = this.scene.instantiate(BodyComponent);
     body.body = this.bodies.create(build, triangles);
     const object = this.scene.spawn(`tile-${String(index)}`);
@@ -151,6 +165,12 @@ export class TrackStage extends GameComponent {
     object.add(body);
     this.fader.paint(mesh.object, 0);
     return { object, drawn: mesh.object, opacity: 0, target: 1 };
+  }
+
+  private swellsOf(track: Track): SwellProbe {
+    const environment = track.environment;
+    const surfaces = this.surfaces;
+    return { of: (zone: Zone, rank: number) => surfaces.swell({ environment, zone, rank }) };
   }
 
   private clear(): void {

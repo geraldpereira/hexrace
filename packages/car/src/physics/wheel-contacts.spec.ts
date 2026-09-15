@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { FIRM } from '@car/entity/surfaces/sealed-feels';
+import { SWELL_CATALOG } from '@car/entity/surfaces/swell-catalog';
 import { WheelContacts } from '@car/physics/wheel-contacts';
 import { type CarWorld, type RigWorld, carWorld, rigWorld } from '@car/physics/car-world.mock';
 
@@ -9,7 +10,7 @@ describe('WheelContacts', () => {
     const world: RigWorld = await rigWorld();
     world.step(60);
     const contacts = TestBed.inject(WheelContacts);
-    const room = contacts.create(2, FIRM);
+    const room = contacts.create(2, FIRM, SWELL_CATALOG.europe.road[0]);
     const lengths: number[] = [];
     contacts.read(world.rig, room, lengths, 1 / 60);
     expect(room[0]?.contact).toBe(true);

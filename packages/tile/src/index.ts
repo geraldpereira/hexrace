@@ -42,6 +42,7 @@ export {
 } from '@tile/entity/profile';
 export { type SPoint, type Slice } from '@tile/entity/slice';
 export { GENERATOR_SLOPE_FACTOR, MAX_SLOPE } from '@tile/entity/slope';
+export { type Swell, type SwellProbe } from '@tile/entity/swell';
 export { type Surface } from '@tile/entity/surface';
 export { type Boundaries, type TileSweep } from '@tile/entity/sweep';
 export { type Tile, type TileProfiles } from '@tile/entity/tile';
@@ -72,4 +73,4 @@ export { TileTriangles } from '@tile/geometry/tile-triangles';
 export { TileValidation } from '@tile/geometry/tile-validation';
 export { Units } from '@tile/geometry/units';
 export { TileBodies } from '@tile/physics/tile-bodies';
-export { type TileMesh, TileMeshes } from '@tile/render/tile-meshes';
+export { type TileMesh, type TilePaint, TileMeshes } from '@tile/render/tile-meshes';

@@ -77,6 +77,7 @@ export class TileDraft {
   line = true;
   smooth = false;
   outline = false;
+  roughness = true;
 
   sweep(paths: TilePaths): TileSweep {
     return {

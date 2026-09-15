@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
-import { type SurfaceFeel } from '@hexrace/car';
+import { Injectable, inject } from '@angular/core';
+import { type SurfaceFeel, Surfaces } from '@hexrace/car';
 import { type DebugFolder } from '@hexrace/hud';
+import { type EnvironmentId, ENVIRONMENT_IDS } from '@hexrace/tile';
 
 import { type CarBench } from '@ui/lab/car/car-bench';
 
@@ -9,11 +10,15 @@ import { type CarBench } from '@ui/lab/car/car-bench';
  * gesture and which therefore has its own switch, the marks and the dust with the thresholds they
  * share, and the two test obstacles. The per-surface knobs are the ones POC 1 left to be dosed
  * while driving, so they sit one folder per rank of the palette, pushed into the worklets live.
+ * The swell belongs to a rank of an environment, not to a feel two zones share: its own folder.
  */
 @Injectable({ providedIn: 'root' })
 export class EffectsPanel {
+  private readonly surfaces = inject(Surfaces);
+
   build(folder: DebugFolder, bench: CarBench): void {
     this.sound(folder, bench);
+    this.swells(folder);
     this.marks(folder, bench);
     this.dust(folder, bench);
     this.obstacles(folder, bench);
@@ -77,6 +82,23 @@ export class EffectsPanel {
     sf.add(feel, 'bumpHeight', 0, 0.15, 0.005).name('Bump height (m)');
     sf.add(feel, 'lateralRoughness', 0, 2, 0.05).name('Lateral roughness');
     sf.add(feel, 'wavelength', 0.1, 5, 0.1).name('Grain wavelength (m)');
+  }
+
+  private swells(folder: DebugFolder): void {
+    const f = folder.addFolder('Swell');
+    f.close();
+    for (const id of ENVIRONMENT_IDS) this.environmentSwells(f, id);
+  }
+
+  private environmentSwells(folder: DebugFolder, id: EnvironmentId): void {
+    const f = folder.addFolder(id);
+    f.close();
+    for (const query of this.surfaces.of(id)) {
+      const swell = this.surfaces.swell(query);
+      const name = `${query.zone} ${String(query.rank)}`;
+      f.add(swell, 'height', 0, 0.3, 0.005).name(`${name} height (m)`);
+      f.add(swell, 'length', 2, 20, 0.5).name(`${name} step (m)`);
+    }
   }
 
   private marks(folder: DebugFolder, bench: CarBench): void {

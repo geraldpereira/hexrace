@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Noise } from '@car/drive/noise';
+import { Noise } from '@commons/math/noise';
 
 describe('Noise', () => {
   let noise: Noise;
@@ -15,6 +15,12 @@ describe('Noise', () => {
     for (const v of samples) expect(Math.abs(v)).toBeLessThanOrEqual(1);
     expect(noise.at(3.25, 1.5)).toBe(noise.at(3.25, 1.5));
     expect(noise.at(-3.25, -1.5)).toBe(noise.at(-3.25, -1.5));
+  });
+
+  it('folds into a field that repeats, and is the plain one inside the first period', () => {
+    expect(noise.tiled(1.5, 2.5, 8)).toBe(noise.at(1.5, 2.5));
+    expect(noise.tiled(9.5, 2.5, 8)).toBeCloseTo(noise.tiled(1.5, 2.5, 8), 10);
+    expect(noise.tiled(-0.5, -0.5, 8)).toBeCloseTo(noise.tiled(7.5, 7.5, 8), 10);
   });
 
   it('varies smoothly and is not a constant', () => {

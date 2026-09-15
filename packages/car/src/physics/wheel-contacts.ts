@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { JoltPhysics } from '@hexrace/engine';
+import { type Swell } from '@hexrace/tile';
 import type Jolt from 'jolt-physics';
 
 import { type WheelContact } from '@car/entity/car-readout';
@@ -19,11 +20,12 @@ const RAD_TO_DEG = 180 / Math.PI;
 export class WheelContacts {
   private readonly physics = inject(JoltPhysics);
 
-  /** One contact per wheel, resting on `feel` until the ground says otherwise. */
-  create(wheels: number, feel: SurfaceFeel): WheelContact[] {
+  /** One contact per wheel, resting on `feel` and its `swell` until the ground says otherwise. */
+  create(wheels: number, feel: SurfaceFeel, swell: Swell): WheelContact[] {
     return Array.from({ length: wheels }, () => ({
       contact: false,
       surface: feel,
+      swell,
       longitudinalSlip: 0,
       lateralSlipDeg: 0,
       slipSpeed: 0,

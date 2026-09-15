@@ -70,12 +70,11 @@ export class RacePanel {
   private world(folder: DebugFolder, bench: RaceBench): void {
     folder.add(bench.race.stage, 'ahead', 0, 12, 1).name('Tiles ahead');
     folder.add(bench.race.stage, 'behind', 0, 12, 1).name('Tiles behind');
-    folder
-      .add(bench.race.stage, 'smooth')
-      .name('Smooth shading')
-      .onChange(() => {
-        bench.rebuild();
-      });
+    const again = (): void => {
+      bench.rebuild();
+    };
+    folder.add(bench.race.stage, 'smooth').name('Smooth shading').onChange(again);
+    folder.add(bench.race.stage, 'roughness').name('Swell relief').onChange(again);
     folder.add(bench.race.director, 'wrongWaySpeed', 0, 20, 0.5).name('Wrong way above (m/s)');
     folder.add(this.fall, 'margin', 0, 20, 0.5).name('Fall margin (m)');
     folder.add(this.tuning, 'anticipation', 0, 1, 0.05).name('Camera anticipation');

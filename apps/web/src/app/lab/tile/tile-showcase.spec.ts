@@ -70,6 +70,8 @@ describe('TileShowcase', () => {
     expect(rendered).toHaveLength(2);
 
     panelRow('Smooth shading').querySelector('input')!.click();
+    panelRow('Swell relief').querySelector('input')!.click();
+    expect(page.draft.roughness).toBe(false);
     expect(physics.physicsSystem.GetNumBodies()).toBe(1);
     page.draft.outline = true;
     page.rebuild();

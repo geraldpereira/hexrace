@@ -109,7 +109,9 @@ describe('TrackShowcase', () => {
     expect(host.textContent).toContain('see what it refuses below');
     expect(host.querySelector('.issues')?.textContent).toContain('covers tile 0');
     panelRow('Smooth shading').querySelector('input')!.click();
+    panelRow('Swell relief').querySelector('input')!.click();
     panelRow('Tile outline').querySelector('input')!.click();
+    expect(page.draft.roughness).toBe(false);
     expect(bodies()).toBeGreaterThan(0);
   });
 

@@ -24,6 +24,18 @@ describe('Surfaces', () => {
     expect(surfaces.feel({ environment: 'europe', zone: 'road', rank: 0 })).toBe(FIRM);
   });
 
+  it('answers the swell of a rank, flat on the road and long on the landscape', () => {
+    expect(surfaces.swell({ environment: 'europe', zone: 'road', rank: 2 }).height).toBe(0);
+    expect(surfaces.swell({ environment: 'africa', zone: 'shoulder', rank: 3 }).height)
+      .toBeGreaterThan(0);
+    const wild = surfaces.swell({ environment: 'europe', zone: 'landscape', rank: 2 });
+    expect(wild.height).toBeGreaterThan(0.1);
+    expect(wild.length).toBeGreaterThan(4);
+    expect(surfaces.swell({ environment: 'europe', zone: 'landscape', rank: 9 })).toBe(
+      surfaces.swell({ environment: 'europe', zone: 'landscape', rank: 1 }),
+    );
+  });
+
   it('lists the eight ranks of an environment in the order of the palette', () => {
     const ranks = surfaces.of('north');
     expect(ranks).toHaveLength(8);

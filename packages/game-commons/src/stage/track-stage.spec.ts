@@ -43,6 +43,14 @@ describe('TrackStage', () => {
     });
   }
 
+  function meshes(): number {
+    let count = 0;
+    renderer.scene.traverse((child: THREE.Object3D) => {
+      if ((child as Partial<THREE.Mesh>).isMesh === true) count++;
+    });
+    return count;
+  }
+
   function settle(): void {
     stage.render(FADE_SECONDS);
   }
@@ -62,6 +70,19 @@ describe('TrackStage', () => {
     expect(stage.placement.tiles).toHaveLength(ring.tiles.length);
     expect(stage.builds).toHaveLength(ring.tiles.length);
     expect(stage.environment?.id).toBe('europe');
+  });
+
+  it('hands the mesh the roughness the car reads, and draws it in one piece when it is off', () => {
+    stage.ahead = 0;
+    stage.behind = 0;
+    stage.roughness = false;
+    stage.load(ring);
+    stage.follow(0);
+    expect(meshes()).toBe(1);
+    stage.roughness = true;
+    stage.load(ring);
+    stage.follow(0);
+    expect(meshes()).toBeGreaterThan(1);
   });
 
   it('keeps only the window in the scene, and moves it with the player', () => {

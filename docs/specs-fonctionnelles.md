@@ -101,9 +101,11 @@ Une tuile est **transposable** d'un environnement à l'autre : sa géométrie ne
 
 **Ce qu'un environnement définit** :
 
-- pour chacun de ses huit types de surface : adhérence longitudinale et latérale, freinage, effet sur la vitesse de pointe, grain, et l'apparence (voir 3.4 et 8.2) ;
+- pour chacun de ses huit types de surface : adhérence longitudinale et latérale, freinage, effet sur la vitesse de pointe, grain, **houle** (voir 2.3), et l'apparence (voir 3.4 et 8.2) ;
 - l'**étendue de la transition** dans une tuile (voir 2.6) : la fraction de l'axe sur laquelle largeur, position et types passent du profil d'entrée au profil de sortie. La hauteur ne dépend pas de ce réglage, elle suit la courbe de 2.3. Le POC 2 montre qu'une transition sur toute la tuile donne des courbes régulières là où une transition sur la bande centrale fait des chicanes ; la valeur par environnement se règle en roulant ;
 - l'habillage de chaque obstacle (voir 2.4).
+
+**Grain et houle.** La rugosité d'une surface se joue à deux échelles. Le **grain** est le tremblement court, quelques centimètres tous les mètres : c'est lui qui distingue un bitume usé d'un bitume neuf, et il a été calé au POC 1. La **houle** est la grande ondulation du sol, une dizaine de centimètres de creux à bosse tous les dix à quatorze mètres. Les deux s'additionnent sous la roue. La piste et les bas-côtés n'ont **pas de houle**, ou si peu qu'on ne la sent pas : ce que le POC 1 a réglé ne bouge pas. Le paysage, lui, en a une **grosse**, dans les trois environnements.
 
 <TODO> Lister les trois pistes, trois bas-côtés et deux paysages de chaque environnement, et pour chacun ce que le joueur doit ressentir. Le POC 1 sert précisément à trouver ces valeurs.
 
@@ -123,6 +125,10 @@ Le relief se joue uniquement par la hauteur des tuiles et les obstacles.
 - Le **générateur** reste plus prudent que la main : il se limite aux **trois quarts** de ces seuils, soit 18,75 % en ligne droite, 13,5 % en virage large et 9 % en virage serré, où la marche entre les deux tuiles voisines se concentre au sommet — au plus 38, 25 et 11 pas. Une piste faite à la main va jusqu'aux seuils pleins.
 
 Les seuils et l'unité de 3 m sont calés en roulant sur des pistes générées, avec la voiture du POC 1 (1,6 m de large) : 20 / 15 / 10 % donnaient des pistes trop sages, la glisse en virage demande la voie large.
+
+**La houle du paysage.** À côté de ce relief-là, qui est celui des tuiles, le **paysage ondule**. Ce n'est pas une hauteur de tuile, c'est une rugosité de surface : le sol reste géométriquement plat, la voiture seule la sent, par ses suspensions. Une bosse fait une dizaine de centimètres et il y en a une tous les dix à quatorze mètres, si bien qu'à 70 km/h le paysage **allège les roues**, secoue la caisse et fait perdre l'appui juste au moment où on aurait besoin de tourner ; combinée à la rugosité latérale déjà forte du paysage rocailleux, elle rend une sortie de route **chère en temps et en maîtrise**. Le paysage reste **traversable** — seul un paysage explicitement bloquant (voir 2.2) arrête la voiture — mais il n'y a rien à y gagner. La houle ne se joue pas non plus dans le relief des tuiles : deux paysages voisins à des hauteurs différentes font toujours une marche, et la houle vient par-dessus.
+
+Pourquoi le sol reste plat sous une houle qu'on sent : le maillage et le collider d'une tuile sont la même liste de triangles, et les déformer coûterait des polygones partout, sur la piste comprise. La houle est donc un **champ**, une fonction du lieu, que la voiture lit sous chaque roue et que le rendu **éclaire** sans déplacer un sommet (voir 8.2).
 
 ### 2.4 Habillage d'une tuile
 
@@ -606,6 +612,8 @@ Low poly. Textures pixelisées ou flat shading, ou un rendu plus daté genre _De
 
 Une surface se reconnaît par sa **couleur** et sa **texture**, sans légende. Les trois zones d'une tuile (piste, bas-côté, paysage) doivent se distinguer au premier coup d'œil.
 
+**On voit ce qu'on va sentir.** Une surface qui ondule se **voit onduler** : le paysage accroche la lumière en bosses et en creux là où la houle de 2.3 en a, la piste reste lisse. C'est le même champ, au même endroit et à la même échelle, qui secoue les suspensions et qui éclaire le sol — l'image ne promet donc rien que la conduite ne tienne, et on voit venir de loin ce que sortir de la route va coûter. Le sol ne se déforme pas pour autant : la lumière suffit à le dire.
+
 ### 8.3 Effets
 
 Ce qui sert le gameplay, rien de plus :
@@ -801,6 +809,9 @@ Par ordre d'envie :
 | 2026-09-15 | L'accueil offre **Race et Rally** ; le choix de piste s'ouvre sur une entrée **Random**                    | Le Rally marchait déjà dans le moteur ; Random donne de quoi rejouer sans attendre d'autres pistes livrées |
 | 2026-09-15 | La graine d'une course tirée au sort est **dans l'adresse**, pas dans le catalogue ni en mémoire            | Random doit être aléatoire à chaque choix, et une course doit pouvoir se recharger telle quelle |
 | 2026-09-15 | Chaque pays offre au moins une piste livrée dans chaque mode, en plus de son Random                         | Un menu qui n'aurait que Random ne montrerait pas ce que le pays sait faire (5.1) |
+| 2026-09-15 | Une surface a deux rugosités : le **grain** court du POC 1 et une **houle** longue qui s'y ajoute            | Le grain seul ne fait que trembler ; une ondulation longue est ce qui allège les roues et coûte du temps (2.3) |
+| 2026-09-15 | Piste et bas-côtés sans houle, paysages avec une grosse houle dans les trois environnements                 | On ne retouche pas ce que le POC 1 a validé, et sortir de la route doit se payer (2.2, 2.3) |
+| 2026-09-15 | Le paysage **ondule à l'œil sans se déformer** : même champ, même endroit, même échelle que sous les roues   | Une image honnête fait voir venir le coût (8.2), et le maillage sert aussi de collider |
 
 ### 11.2 Questions ouvertes
 

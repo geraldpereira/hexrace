@@ -16,7 +16,8 @@ const RAD_TO_DEG = 180 / Math.PI;
  * Everything the car pushes on itself beyond the tyres (POC 1): the surface drag and the grain,
  * the yaw damping that opposes a spin without touching pitch and roll, and the wing's downforce
  * along the chassis' own down axis, applied between the axles so a rear wing loads the rear. The
- * grain bump goes into the suspension preload, where a force of that frequency would do nothing.
+ * grain and the swell are read at each wheel's own contact point, and their bump goes into the
+ * suspension preload, where a force of that frequency would do nothing.
  */
 @Injectable({ providedIn: 'root' })
 export class CarForces {
@@ -30,7 +31,6 @@ export class CarForces {
   surface(
     rig: CarRig,
     contacts: readonly WheelContact[],
-    travelled: number,
     grain: boolean,
     mass: number,
     speed: number,
@@ -44,9 +44,12 @@ export class CarForces {
       const feel = contact.surface;
       let fx = -feel.drag * velocity.GetX();
       let fz = -feel.drag * velocity.GetZ();
-      const bump = grain ? this.grain.bump(feel, travelled, i) : 0;
+      const where = wheel.GetContactPosition();
+      const x = where.GetX();
+      const z = where.GetZ();
+      const bump = grain ? this.grain.bump(feel, contact.swell, x, z) : 0;
       if (grain) {
-        const side = this.grain.lateral(feel, travelled, i, load, speed);
+        const side = this.grain.lateral(feel, x, z, load, speed);
         const lateral = wheel.GetContactLateral();
         fx += side * lateral.GetX();
         fz += side * lateral.GetZ();

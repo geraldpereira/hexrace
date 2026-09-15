@@ -44,6 +44,7 @@ export class TrackDraft {
   position = 0;
   smooth = false;
   outline = false;
+  roughness = true;
   follow = true;
   map = true;
 

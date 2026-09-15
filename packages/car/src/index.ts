@@ -17,7 +17,6 @@ export { Assists } from '@car/drive/assists';
 export { Drivetrain } from '@car/drive/drivetrain';
 export { EngineModel } from '@car/drive/engine-model';
 export { Grain } from '@car/drive/grain';
-export { Noise } from '@car/drive/noise';
 export { Ramps } from '@car/drive/ramps';
 export { Steering } from '@car/drive/steering';
 export { Surfaces } from '@car/drive/surfaces';
@@ -59,7 +58,9 @@ export {
   type SurfaceQuery,
 } from '@car/entity/surface-feel';
 export { type SurfaceRanks } from '@car/entity/surface-ranks';
+export { type EnvironmentSwells, type SwellRanks } from '@car/entity/surface-swells';
 export { SURFACE_CATALOG } from '@car/entity/surfaces/surface-catalog';
+export { SWELL_CATALOG } from '@car/entity/surfaces/swell-catalog';
 export { type Point3, type QuatMut, type Vec3Mut } from '@car/entity/vectors';
 export { CarBodies } from '@car/physics/car-bodies';
 export { CarController } from '@car/physics/car-controller';

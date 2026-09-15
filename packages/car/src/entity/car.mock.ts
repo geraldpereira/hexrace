@@ -3,6 +3,7 @@ import { type CarSpec } from '@car/entity/car-spec';
 import { type WheelContact } from '@car/entity/car-readout';
 import { DEFAULT_CAR_OPTIONS, DEFAULT_CAR_SPEC } from '@car/entity/car-defaults';
 import { FIRM } from '@car/entity/surfaces/sealed-feels';
+import { SWELL_CATALOG } from '@car/entity/surfaces/swell-catalog';
 
 export function carSpec(): CarSpec {
   return structuredClone(DEFAULT_CAR_SPEC);
@@ -16,6 +17,7 @@ export function wheelContact(overrides: Partial<WheelContact> = {}): WheelContac
   return {
     contact: true,
     surface: FIRM,
+    swell: SWELL_CATALOG.europe.road[0],
     longitudinalSlip: 0,
     lateralSlipDeg: 0,
     slipSpeed: 0,

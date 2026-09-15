@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { type DebugFolder } from '@hexrace/hud';
+import { TileMeshes } from '@hexrace/tile';
 import { TrackExamples } from '@hexrace/track';
 
 import { GeneratorPanel } from '@ui/lab/track/generator-panel';
@@ -24,6 +25,7 @@ export interface TrackPage {
 @Injectable({ providedIn: 'root' })
 export class TrackPanel {
   private readonly examples = inject(TrackExamples);
+  private readonly meshes = inject(TileMeshes);
   private readonly generators = inject(GeneratorPanel);
   private position: Knob | null = null;
 
@@ -97,6 +99,9 @@ export class TrackPanel {
     move: () => void,
   ): void {
     folder.add(draft, 'smooth').name('Smooth shading').onChange(rebuild);
+    folder.add(draft, 'roughness').name('Swell relief').onChange(rebuild);
+    folder.add(this.meshes, 'relief', 0, 5, 0.1).name('Relief depth').onChange(rebuild);
+    folder.add(this.meshes, 'shading', 0, 1, 0.05).name('Relief tint').onChange(rebuild);
     folder.add(draft, 'outline').name('Tile outline').onChange(rebuild);
     folder.add(draft, 'follow').name('Camera follows').onChange(move);
     folder.add(draft, 'map').name('2D map').onChange(move);

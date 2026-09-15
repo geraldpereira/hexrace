@@ -3,9 +3,12 @@ import { RouterLink } from '@angular/router';
 import { Vec2 } from '@hexrace/commons';
 import * as THREE from 'three';
 
+import { Surfaces } from '@hexrace/car';
 import { LightComponent, type GameObject } from '@hexrace/engine';
 import { CanvasFrame, type DebugFolder } from '@hexrace/hud';
 import {
+  type SwellProbe,
+  type Zone,
   EnvironmentCatalog,
   TileBodies,
   TileMeshes,
@@ -97,6 +100,7 @@ export class TileShowcase extends OrbitLab implements OnInit {
   readonly probe: ProbeReadout = probeReadout(null);
 
   private readonly environments = inject(EnvironmentCatalog);
+  private readonly carSurfaces = inject(Surfaces);
   private readonly validation = inject(TileValidation);
   private readonly paths = inject(TilePaths);
   private readonly units = inject(Units);
@@ -106,7 +110,7 @@ export class TileShowcase extends OrbitLab implements OnInit {
   private readonly tileBodies = inject(TileBodies);
 
   private tile: GameObject | null = null;
-  private tileMesh: THREE.Mesh | null = null;
+  private tileParts: THREE.Mesh[] = [];
 
   constructor() {
     super();
@@ -135,12 +139,13 @@ export class TileShowcase extends OrbitLab implements OnInit {
     const build = this.draft.build(this.paths, this.units);
     const triangles = this.triangles.build(build);
     const environment = this.environments.of(this.draft.environment);
-    const mesh = this.meshes.mesh(build, environment, this.draft.smooth, triangles);
+    const paint = { smooth: this.draft.smooth, swells: this.swells() };
+    const parts = this.meshes.parts(build, environment, paint, triangles);
     const group = new THREE.Group();
-    group.add(mesh);
+    for (const part of parts) group.add(part);
     if (this.draft.outline) group.add(this.meshes.outline(build.sweep));
     this.tile = this.solid('tile', group, this.tileBodies.create(triangles));
-    this.tileMesh = mesh;
+    this.tileParts = parts;
   }
 
   ngOnInit(): void {
@@ -152,7 +157,7 @@ export class TileShowcase extends OrbitLab implements OnInit {
   }
 
   private readonly onPointerMove = (event: PointerEvent): void => {
-    if (!this.tileMesh) return;
+    if (this.tileParts.length === 0) return;
     const rect = this.canvas.getBoundingClientRect();
     const pointer = new THREE.Vector2(
       ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1,
@@ -161,7 +166,7 @@ export class TileShowcase extends OrbitLab implements OnInit {
     this.eye.camera.updateMatrixWorld();
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(pointer, this.eye.camera);
-    const hit = raycaster.intersectObject(this.tileMesh)[0];
+    const hit = raycaster.intersectObjects(this.tileParts)[0];
     if (!hit) return;
     const plane = new Vec2(hit.point.x / UNIT_METERS, -hit.point.z / UNIT_METERS);
     const surface = this.surfaces.at(this.draft.sweep(this.paths), plane, this.draft.obstacles());
@@ -181,6 +186,9 @@ export class TileShowcase extends OrbitLab implements OnInit {
     folder.add(d, 'exit', EXITS).name('Exit face').onChange(rebuild);
     folder.add(d, 'transitionExtent', 0.1, 1, 0.05).name('Transition extent').onChange(rebuild);
     folder.add(d, 'smooth').name('Smooth shading').onChange(rebuild);
+    folder.add(d, 'roughness').name('Swell relief').onChange(rebuild);
+    folder.add(this.meshes, 'relief', 0, 5, 0.1).name('Relief depth').onChange(rebuild);
+    folder.add(this.meshes, 'shading', 0, 1, 0.05).name('Relief tint').onChange(rebuild);
     folder.add(d, 'outline').name('Hexagon outline').onChange(rebuild);
     folder.add(d, 'line').name('Chequered line').onChange(rebuild);
     this.profileFolder(folder.addFolder('Entry profile'), d.entry, rebuild);
@@ -199,6 +207,13 @@ export class TileShowcase extends OrbitLab implements OnInit {
     probe.add(this.probe, 'offset').name('Offset (units)').listen().disable();
     folder.add({ drop: () => this.dropCrate(8) }, 'drop').name('Drop a crate');
     folder.add({ clear: () => this.clearCrates() }, 'clear').name('Clear crates');
+  }
+
+  private swells(): SwellProbe | null {
+    if (!this.draft.roughness) return null;
+    const environment = this.draft.environment;
+    const surfaces = this.carSurfaces;
+    return { of: (zone: Zone, rank: number) => surfaces.swell({ environment, zone, rank }) };
   }
 
   private profileFolder(

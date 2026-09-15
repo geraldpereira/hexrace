@@ -87,7 +87,6 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
     rotation: { x: 0, y: 0, z: 0, w: 1 },
     wheels: [],
   };
-  private travelled = 0;
   private rearScale = 1;
   private readonly gearboxState: GearboxState = { ...IDLE_GEARBOX };
 
@@ -118,7 +117,11 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
     const rig = this.bodies.create(this.spec, start, rotation);
     this.rig = rig;
     this.physics.register(rig.body, this.gameObject);
-    this.contactList = this.wheelContacts.create(WHEELS, this.surfaces.feel(this.defaultSurface));
+    this.contactList = this.wheelContacts.create(
+      WHEELS,
+      this.surfaces.feel(this.defaultSurface),
+      this.surfaces.swell(this.defaultSurface),
+    );
     this.poseData = this.poses.create(WHEELS);
     for (let i = 0; i < WHEELS; i++) this.applySurface(rig, i);
     this.poses.read(rig, this.contactList, this.poseData);
@@ -149,11 +152,9 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
     this.applySteerAngle(rig, speedKmh);
     this.readGround(rig);
     this.applyRearScale(rig, handBrake > 0 ? this.spec.handBrakeLateralGrip : 1);
-    this.travelled += Math.abs(forwardSpeed) * dt;
     const pushed = this.forces.surface(
       rig,
       this.contactList,
-      this.travelled,
       this.grain,
       this.spec.chassis.mass,
       Math.abs(forwardSpeed),
@@ -295,7 +296,9 @@ export class CarController extends GameComponent implements CarReadout, CameraTa
 
   private applySurface(rig: CarRig, index: number): void {
     const contact = this.contactList[index]!;
-    contact.surface = this.surfaces.feel(this.queries[index] ?? this.defaultSurface);
+    const query = this.queries[index] ?? this.defaultSurface;
+    contact.surface = this.surfaces.feel(query);
+    contact.swell = this.surfaces.swell(query);
     const rear = REAR.includes(index);
     this.wheelSurfaces.apply(rig.wheels[index]!, contact.surface, rear ? this.rearScale : 1);
   }

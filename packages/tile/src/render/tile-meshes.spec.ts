@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { type Environment } from '@tile/entity/environment';
 import { PALE_SHOULDER } from '@tile/entity/profile.mock';
 import { sweepOf } from '@tile/entity/sweep.mock';
+import { ROLLING, swellProbe } from '@tile/entity/swell.mock';
 import { type Paint, type Triangle3 } from '@tile/entity/triangle';
 import { UNIT_METERS } from '@tile/entity/units';
 import { EnvironmentCatalog } from '@tile/geometry/environment-catalog';
@@ -73,7 +74,7 @@ describe('TileMeshes', () => {
     });
 
     it('merges coincident vertices when smooth', () => {
-      const geometry = meshes.geometry(two, europe, true);
+      const geometry = meshes.geometry(two, europe, { smooth: true });
       expect(geometry.getAttribute('position').count).toBe(4);
       expect(geometry.index?.count).toBe(6);
     });
@@ -83,23 +84,71 @@ describe('TileMeshes', () => {
       expect(meshes.material(true).flatShading).toBe(false);
       expect(meshes.material().side).toBe(THREE.DoubleSide);
       expect(meshes.material().vertexColors).toBe(true);
+      expect(meshes.material().normalMap).toBeNull();
+    });
+
+    it('hangs the swell on the material, deeper the higher the swell, and shares one map', () => {
+      const soft = meshes.material(false, { height: 0.05, length: 6 });
+      const hard = meshes.material(false, ROLLING);
+      expect(soft.normalMap).toBe(hard.normalMap);
+      expect(soft.normalMap?.source.data).toBeDefined();
+      expect(hard.normalScale.x).toBeGreaterThan(soft.normalScale.x);
+      expect(meshes.material(false, { height: 10, length: 6 }).normalScale.x).toBeCloseTo(
+        meshes.relief,
+      );
     });
   });
 
-  describe('mesh and outline', () => {
-    it('builds a mesh over freshly built triangles, receiving shadows, flat or smooth', () => {
+  describe('the swell in the paint', () => {
+    it('leaves a tile without a probe in one flat mesh, unlit by any map', () => {
+      const parts = meshes.parts({ sweep, skirtBase: -2 }, europe);
+      expect(parts).toHaveLength(1);
+      expect(parts[0]?.material.normalMap).toBeNull();
+    });
+
+    it('cuts a tile into one mesh per zone rank, and only the rough ones carry a map', () => {
+      const parts = meshes.parts({ sweep, skirtBase: -2 }, europe, { swells: swellProbe });
+      expect(parts.length).toBeGreaterThan(1);
+      const mapped = parts.filter((part) => part.material.normalMap !== null);
+      expect(mapped.length).toBeGreaterThan(0);
+      expect(mapped.length).toBeLessThan(parts.length);
+      const corners = parts.reduce((n, part) => n + part.geometry.getAttribute('position').count, 0);
+      expect(corners).toBe(TestBed.inject(TileTriangles).build({ sweep, skirtBase: -2 }).length * 3);
+    });
+
+    it('lights the crests and darkens the hollows of a rough zone, and leaves a flat one alone', () => {
+      const rough: Triangle3[] = [
+        {
+          a: new Vec3(0, 0, 0),
+          b: new Vec3(20, 0, 0),
+          c: new Vec3(0, 0, 20),
+          paint: { kind: 'zone', zone: 'landscape', type: 1 },
+        },
+      ];
+      const shaded = meshes.geometry(rough, europe, { swells: swellProbe });
+      const colors = shaded.getAttribute('color');
+      expect(colors.getX(0)).not.toBeCloseTo(colors.getX(1));
+      const uv = shaded.getAttribute('uv');
+      expect(uv.getX(1)).toBeCloseTo(20 / (ROLLING.length * 8));
+      const plain = meshes.geometry(rough, europe).getAttribute('color');
+      expect(plain.getX(0)).toBeCloseTo(plain.getX(1));
+    });
+  });
+
+  describe('parts and outline', () => {
+    it('builds the meshes over freshly built triangles, receiving shadows, flat or smooth', () => {
       const build = { sweep, skirtBase: -2, line: 0.5 };
-      const flat = meshes.mesh(build, europe);
+      const flat = meshes.parts(build, europe)[0]!;
       expect(flat.receiveShadow).toBe(true);
       expect(flat.material.flatShading).toBe(true);
       const count = TestBed.inject(TileTriangles).build(build).length * 3;
       expect(flat.geometry.getAttribute('position').count).toBe(count);
-      expect(meshes.mesh(build, europe, true).material.flatShading).toBe(false);
+      expect(meshes.parts(build, europe, { smooth: true })[0]?.material.flatShading).toBe(false);
     });
 
     it('reuses the triangles it is given', () => {
-      const mesh = meshes.mesh({ sweep, skirtBase: -2 }, europe, false, two);
-      expect(mesh.geometry.getAttribute('position').count).toBe(6);
+      const part = meshes.parts({ sweep, skirtBase: -2 }, europe, {}, two)[0]!;
+      expect(part.geometry.getAttribute('position').count).toBe(6);
     });
 
     it('draws the six corners at ground height, in metres, in the colour asked', () => {

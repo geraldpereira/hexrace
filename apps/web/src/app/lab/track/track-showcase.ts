@@ -3,7 +3,15 @@ import { ChangeDetectionStrategy, Component, type OnInit, inject, signal } from 
 import { RouterLink } from '@angular/router';
 import { LightComponent, type GameObject } from '@hexrace/engine';
 import { CanvasFrame, type DebugFolder, type FrameSize } from '@hexrace/hud';
-import { type TileBuild, EnvironmentCatalog, TileTriangles, UNIT_METERS } from '@hexrace/tile';
+import { Surfaces } from '@hexrace/car';
+import {
+  type SwellProbe,
+  type TileBuild,
+  type Zone,
+  EnvironmentCatalog,
+  TileTriangles,
+  UNIT_METERS,
+} from '@hexrace/tile';
 import {
   type Placement,
   type PlayerPose,
@@ -57,6 +65,7 @@ export class TrackShowcase extends OrbitLab implements OnInit, TrackPage {
   private readonly painter = inject(TrackMap);
   private readonly panel = inject(TrackPanel);
   private readonly profiles = inject(TrackProfiles);
+  private readonly carSurfaces = inject(Surfaces);
   private readonly sweeps = inject(TrackSweeps);
   private readonly trackBodies = inject(TrackBodies);
   private readonly trackMeshes = inject(TrackMeshes);
@@ -191,8 +200,16 @@ export class TrackShowcase extends OrbitLab implements OnInit, TrackPage {
       outline: this.draft.outline,
       faulty: this.faulty.has(index),
       triangles,
+      swells: this.swells(),
     });
     return this.solid(`tile-${String(index)}`, group, this.trackBodies.create(build, triangles));
+  }
+
+  private swells(): SwellProbe | null {
+    if (!this.draft.roughness) return null;
+    const environment = this.environment.id;
+    const surfaces = this.carSurfaces;
+    return { of: (zone: Zone, rank: number) => surfaces.swell({ environment, zone, rank }) };
   }
 
   private clearWindow(): void {

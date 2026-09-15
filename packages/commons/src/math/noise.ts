@@ -9,19 +9,41 @@ const SEED = 7;
 /**
  * A smooth two-dimensional value noise in -1..1, the grain field of POC 1 (which used
  * simplex-noise; the same shape, without the dependency). It is a pure function of its two
- * coordinates: the same wheel at the same distance always reads the same bump, so a parked car
- * is still and a replay is identical.
+ * coordinates, so a place always reads the same value: the car feels the same bump every time it
+ * comes back, the mesh paints that bump, and a replay is identical.
  */
 @Injectable({ providedIn: 'root' })
 export class Noise {
   at(x: number, y: number): number {
+    return this.sample(x, y, 0);
+  }
+
+  /** The same field folded to repeat every `period` whole steps, for a texture that has to tile. */
+  tiled(x: number, y: number, period: number): number {
+    return this.sample(x, y, period);
+  }
+
+  private sample(x: number, y: number, period: number): number {
     const x0 = Math.floor(x);
     const y0 = Math.floor(y);
     const fx = this.fade(x - x0);
     const fy = this.fade(y - y0);
-    const top = this.mix(this.hash(x0, y0), this.hash(x0 + 1, y0), fx);
-    const bottom = this.mix(this.hash(x0, y0 + 1), this.hash(x0 + 1, y0 + 1), fx);
-    return this.mix(top, bottom, fy);
+    const top = this.mix(this.corner(x0, y0, period), this.corner(x0 + 1, y0, period), fx);
+    const under = this.mix(
+      this.corner(x0, y0 + 1, period),
+      this.corner(x0 + 1, y0 + 1, period),
+      fx,
+    );
+    return this.mix(top, under, fy);
+  }
+
+  private corner(x: number, y: number, period: number): number {
+    if (period <= 0) return this.hash(x, y);
+    return this.hash(this.wrap(x, period), this.wrap(y, period));
+  }
+
+  private wrap(value: number, period: number): number {
+    return ((value % period) + period) % period;
   }
 
   private fade(t: number): number {
