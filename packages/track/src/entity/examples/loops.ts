@@ -1,0 +1,48 @@
+/** Track mode, three laps: the reference loop, and the whole obstacle vocabulary on it. */
+export const LOOP_FILE = `hexrace-track 1
+
+id: europe-loop-01
+name: Loop
+environment: europe  # Europe
+mode: track
+laps: 3
+
+# One line per tile, in the order of travel. The entry face is always 6.
+# exit exit face · pos/w road position and width at the exit · sh shoulders left,right
+# h height in steps · t road/shoulder/landscape ranks · obs obstacles (see obstacle-text.ts)
+
+[tiles]
+start  exit=12  pos=2  w=3  sh=1,1  h=40  t=1/1/1
+       exit=2   pos=2  w=3  sh=1,1  h=40  t=1/1/1
+       exit=12  pos=2  w=3  sh=1,1  h=48  t=1/1/1  obs=bump@0.45-0.55
+       exit=2   pos=2  w=3  sh=1,1  h=48  t=2/1/1  obs=patch:3@0.3-0.7/-0.5x1.5
+       exit=12  pos=3  w=2  sh=1,1  h=48  t=2/1/1
+       exit=2   pos=3  w=2  sh=1,1  h=48  t=2/1/1  obs=barrier:left,barrier:right
+       exit=12  pos=3  w=2  sh=1,1  h=56  t=2/1/1  obs=ramp@0.4-0.55
+       exit=2   pos=3  w=2  sh=1,1  h=56  t=2/1/1  obs=hazard:medium@0.5/-1.5
+       exit=12  pos=2  w=3  sh=1,1  h=48  t=1/1/1
+       exit=2   pos=2  w=3  sh=1,1  h=48  t=1/1/1  obs=hazard:small@0.5/1
+       exit=12  pos=2  w=3  sh=1,1  h=40  t=1/1/1  obs=barrier:right@0.5-1
+       exit=2   pos=2  w=3  sh=1,1  h=40  t=1/1/1  obs=barrier:right@0-0.5,hazard:large@0.6/-2.5
+`;
+
+/** Six wide left turns around one tile: the smallest loop the model accepts. */
+export const SMALL_LOOP_FILE = `hexrace-track 1
+
+id: north-loop-01
+name: Small Loop
+environment: north  # North
+mode: track
+
+# One line per tile, in the order of travel. The entry face is always 6.
+# exit exit face · pos/w road position and width at the exit · sh shoulders left,right
+# h height in steps · t road/shoulder/landscape ranks · obs obstacles (see obstacle-text.ts)
+
+[tiles]
+start  exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=32  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=32  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=2  w=3  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
+`;

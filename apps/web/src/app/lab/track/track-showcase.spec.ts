@@ -75,7 +75,7 @@ describe('TrackShowcase', () => {
 
   it('lays the small ring, keeps only the window alive and draws the map', async () => {
     const { host, page } = await loaded();
-    expect(host.textContent).toContain('Small Ring · 12 tiles · the model accepts it');
+    expect(host.textContent).toContain('Loop · 12 tiles · the model accepts it');
     expect(bodies()).toBe(7);
     expect(page.issues()).toEqual([]);
     expect(page.text()).toContain('hexrace-track 1');

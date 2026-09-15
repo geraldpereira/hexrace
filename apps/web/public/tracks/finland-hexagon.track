@@ -1,0 +1,19 @@
+hexrace-track 1
+
+id: finland-hexagon
+name: Hexagon
+environment: north  # North
+mode: track
+laps: 3
+
+# One line per tile, in the order of travel. The entry face is always 6.
+# exit exit face · pos/w road position and width at the exit · sh shoulders left,right
+# h height in steps · t road/shoulder/landscape ranks · obs obstacles (see obstacle-text.ts)
+
+[tiles]
+start  exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=32  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=32  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=2  w=3  sh=1,1  h=24  t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=24  t=2/2/2

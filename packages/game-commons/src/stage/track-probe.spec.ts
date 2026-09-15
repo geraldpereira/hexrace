@@ -22,7 +22,7 @@ describe('TrackProbe', () => {
     scene.spawn('track').add(stage);
     probe = TestBed.inject(TrackProbe);
     window = TestBed.inject(TrackWindow);
-    ring = TestBed.inject(TrackExamples).of('europe-ring-01')!;
+    ring = TestBed.inject(TrackExamples).of('europe-loop-01')!;
   });
 
   afterEach(() => {

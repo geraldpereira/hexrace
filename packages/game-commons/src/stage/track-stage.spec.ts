@@ -25,7 +25,7 @@ describe('TrackStage', () => {
     scene = TestBed.inject(Scenes).create();
     stage = scene.instantiate(TrackStage);
     scene.spawn('track').add(stage);
-    ring = TestBed.inject(TrackExamples).of('europe-ring-01')!;
+    ring = TestBed.inject(TrackExamples).of('europe-loop-01')!;
   });
 
   afterEach(() => {

@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import {
   inject,
   provideAppInitializer,
@@ -15,6 +16,7 @@ import { ROUTES } from '@ui/app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideHttpClient(),
     provideRouter(ROUTES),
     ...provideInputSources(),
     provideAppInitializer(() => {

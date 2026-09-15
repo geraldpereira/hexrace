@@ -247,6 +247,41 @@ compilateur JIT d'Angular chargé dans `test-setup.ts`, pour que les `@Injectabl
 
   **Écrit (2026-09-14).** Le joueur est une **position continue** le long de la piste : partie entière l'index de la tuile, partie décimale l'avancement sur son axe. `TrackWindow.cursorAt` la découpe (en boucle elle repasse par le départ, en ligne elle s'arrête aux bouts), `indices` donne les tuiles vivantes (`ahead` devant, `behind` derrière, 4 et 2 par défaut) et `playerPose` rend le centre de la piste sous le joueur, sa direction de marche et la hauteur du sol. C'est l'appelant qui pose et retire : la vitrine crée un `GameObject` par tuile avec `TrackMeshes.tile` et `TrackBodies.create`, et le détruit quand la tuile quitte la fenêtre, ce qui libère maillage et corps Jolt d'un coup. Le front de disparition de Collapse viendra par-dessus, en avançant la borne arrière tout seul.
 
+- 3.10 Catalogue des pistes livrées (écrit le 2026-09-15, référence `apps/web/public/tracks`)
+  _Où sont les pistes du jeu, sous quelle forme, qui les charge et quand [F 5.1], [F 7.1]._
+
+  **Les pistes du jeu sont des données, pas du code.** Elles vivent dans `apps/web/public/tracks/`, servi tel quel par le build Angular (l'entrée `assets` de `angular.json`) : un fichier `.track` par piste, au format inchangé de 3.3, et un `catalogue.json` qui décrit les menus. Ajouter une piste ou réordonner un menu ne demande donc plus de recompiler.
+
+  **La forme du catalogue.** Une liste de `countries`, dans l'ordre où le menu les montre. Un pays porte son `id` (le segment d'adresse), son `name` (ce que le joueur lit), son `environment` ([F 2.2], `north`, `europe` ou `africa`) et ses `modes`. Sous `modes`, une clé par mode joué, `track` et `rally` : un mode absent veut dire que ce pays n'a rien à proposer là, et l'écran de choix ne l'affiche pas. Chaque mode porte son entrée `random` — les cinq cadrans et la longueur, **jamais la graine** — et la liste de ses `tracks`, chacune un `id`, un `name` et le chemin de son `file`.
+
+  ```json
+  {
+    "countries": [
+      {
+        "id": "finland",
+        "name": "Finland",
+        "environment": "north",
+        "modes": {
+          "track": {
+            "random": { "dials": { "turning": 5, "sharpness": 2, "relief": 5, "variety": 4, "obstacles": 3 }, "length": 22 },
+            "tracks": [{ "id": "finland-hexagon", "name": "Hexagon", "file": "tracks/finland-hexagon.track" }]
+          }
+        }
+      }
+    ]
+  }
+  ```
+
+  Les trois pays sont **Finland** (`north`), **France** (`europe`) et **Morocco** (`africa`). La spec 2.2 parle de thèmes ; c'est le catalogue qui leur donne un nom de pays, parce que c'est précisément ce qu'une donnée d'habillage doit porter. Chaque pays offre au moins une piste livrée dans chaque mode, plus son Random.
+
+  **Qui le charge, et quand.** `TrackCatalogue` (`apps/web/src/app/game`) lit `catalogue.json` par `HttpClient` — provisionné dans `app.config.ts` — **une seule fois**, et garde la promesse ; un fichier introuvable laisse le jeu sans aucun pays plutôt que de le planter. Un `.track` n'est lu que lorsqu'on joue la piste ou qu'on affiche sa carte, et lui aussi n'est lu qu'une fois. `GameTracks` s'en sert pour bâtir les cartes `TrackSummary`, les meilleurs temps venant de `BestTimes`.
+
+  **Le catalogue ne décide pas de la validité.** Une piste qu'il nomme mais que le lecteur refuse, ou que `TrackValidation` refuse, n'est **pas proposée** : le service l'écarte et le dit en console (`hexrace: <fichier> is not offered: <raisons>`). Un spec sous Node (`catalogue-files.spec.ts`) relit tout le dossier `public/tracks` par `node:fs` et éprouve chaque piste hors HTTP : elle se lit, la validation l'accepte, son `id`, son mode et son environnement s'accordent avec le catalogue, aucune voie sous deux unités ni sous trois au Nord, et aucune face du Nord pavée du rang qui n'arrive qu'en plaque.
+
+  **Ce qui reste compilé dans `packages/track`.** Les exemples de `entity/examples/` ne sont plus du contenu de jeu : ce sont des **bancs d'essai** (`Catalog`, `Curves`, `Surfaces`, `Borders`, `Bends`, `Relief`, `Straight Line`) et des **cas volontairement faux** (`Overlap`, `Invalid`, `Triangle`), plus deux boucles valides, `Loop` (`europe-loop-01`) et `Small Loop` (`north-loop-01`), sur lesquelles les suites du paquet et de `game-commons` éprouvent le placement, la fenêtre, la validation et la course. Ils restent compilés parce qu'un test ne doit pas dépendre d'un fichier servi, et la vitrine `lab/track` continue de les lire. `Small Ring` et `Hexagon`, les deux seules qui étaient jouables, sont parties dans les assets sous `france-small-ring` et `finland-hexagon`.
+
+  **Le tirage de Random.** L'entrée `random` donne les cadrans et la longueur ; la graine se tire à chaque fois qu'on choisit Random (`GameTracks.seed`, six caractères) et part **dans l'adresse**, jamais dans un service : recharger `/race/:mode/:country/random/:seed` redonne exactement la même piste. En mode Track, le générateur peut retomber sur une ligne quand la boucle ne se ferme pas (3.8) ; `GameTracks` redemande alors une graine dérivée (`<graine>-2`, `-3`…, huit essais) plutôt que de lancer une course Rally sous un menu Track, et la dérivation étant déterministe, le rechargement suit.
+
 ---
 
 ## 4. Véhicule et physique
@@ -429,7 +464,19 @@ compteur de performance ; voir la décision du 2026-09-13).
 - 8.1 Structure applicative (écrite le 2026-09-15, référence `apps/web/src/app`)
   **Trois zones, trois dossiers.** `game/` est le jeu, `lab/` les vitrines, `scene/` ce que les deux partagent. La règle qui les tient est dans `.dependency-cruiser.js` : `game/` et `scene/` ne lisent jamais `lab/`. Le lab est le banc d'essai d'un module, pas une bibliothèque du jeu ; ce qui sert aux deux déménage dans `scene/` au lieu d'être importé depuis le lab.
 
-  **Le routage.** `app.routes.ts` ne fait qu'assembler : `LAB_ROUTES` d'abord, `GAME_ROUTES` ensuite, puis un `**` qui ramène à la racine. La racine est le jeu ; `/lab` reste atteignable telle quelle. Les écrans du MVP [F 7.1] sont `''` (l'accueil), `/tracks` (le choix de piste) et `/race/:track` (la course). Tout écran qui ouvre une scène 3D se charge en `loadComponent`, three.js et Jolt avec lui : un joueur qui reste dans les menus ne télécharge ni l'un ni l'autre.
+  **Le routage.** `app.routes.ts` ne fait qu'assembler : `LAB_ROUTES` d'abord, `GAME_ROUTES` ensuite, puis un `**` qui ramène à la racine. La racine est le jeu ; `/lab` reste atteignable telle quelle. Tout écran qui ouvre une scène 3D se charge en `loadComponent`, three.js et Jolt avec lui : un joueur qui reste dans les menus ne télécharge ni l'un ni l'autre.
+
+  **L'enchaînement des écrans (2026-09-15), [F 7.1].** Quatre adresses, le mode toujours porté par l'adresse :
+
+  ```
+  /                              HomeScreen    Race (mode track) | Rally, et le lien discret vers le lab
+  /play/:mode                    CountryPick   les pays que le catalogue offre dans ce mode
+  /play/:mode/:country           TrackPick     Random en tête, puis les pistes livrées du pays
+  /race/:mode/:country/:track    RacePage      une piste livrée
+  /race/:mode/:country/random/:seed  RacePage  une piste tirée, rejouable telle quelle
+  ```
+
+  Le retour marche à chaque étage : de la piste au pays, du pays à l'accueil. **Une adresse qui ne désigne rien de jouable ramène à l'accueil sans rien construire** — mode inconnu, pays absent du catalogue, piste que la validation refuse : `RacePage` ne charge alors ni scène, ni physique. `RacePage` ne fixe plus le mode : il vient de la piste jouée, et nourrit à la fois `RaceRules` (les tours en Track, la ligne d'arrivée en Rally) et le `TimerReadout` du HUD.
 
   **Le canvas.** Il n'y en a qu'un pour toute l'application, celui de `ThreeRenderer`, service racine. Un écran ne le crée pas : il le donne à un `CanvasFrame` [F 7.5] qui l'adopte comme unique enfant et publie sa taille ; le renderer se redimensionne sur ce que la vue lui laisse. Passer d'un écran à l'autre déplace le même canvas, sans perdre le contexte WebGL ni recharger le wasm de Jolt, qui est chargé une fois par `JoltPhysics.load()`.
 
@@ -600,6 +647,13 @@ Le panneau de debug garde ses propres réglages sous ses propres clés ; les pis
 | 2026-09-15 | `MenuNavigation` : zone morte 0,5, premier pas au franchissement, attente 0,4 s puis répétition 0,12 s, et rien tant qu'une action tenue au départ n'est pas revenue au repos | Un stick maintenu doit dérouler une liste, et l'appui qui ouvre un écran ne doit pas être relu par l'écran ouvert (5.5) |
 | 2026-09-15 | `MenuGrid` projette les cartes qu'on lui donne et pose la classe `hr-menu-picked` sur la courante depuis la boucle d'images | `TrackCard` reste une carte et n'apprend pas qu'elle peut être sélectionnée ([F 7.5]) |
 | 2026-09-15 | `GameTracks` n'offre que les pistes d'exemple en mode Track que `TrackValidation` accepte | L'écran de choix ne doit montrer que ce qui se conduit ; les exemples fautifs restent au lab |
+| 2026-09-15 | Les pistes du jeu sont un **catalogue JSON servi**, `apps/web/public/tracks/catalogue.json` et ses `.track`, lu à l'exécution par `HttpClient` (3.10) | Ajouter une piste ou réordonner un menu ne doit pas demander de recompiler ; le paquet garde ses exemples pour ses tests et son lab |
+| 2026-09-15 | Le catalogue est lu **une fois** et gardé ; une piste n'est lue que jouée ou affichée, et elle aussi une seule fois | Un menu de pays ne doit télécharger aucune piste, et revenir en arrière ne doit rien relire |
+| 2026-09-15 | Le catalogue ne décide pas de la validité : une piste que le lecteur ou `TrackValidation` refuse est écartée et dite en console | Une donnée éditée à la main ne doit jamais planter le jeu ; un spec sous Node éprouve tout le dossier `public/tracks` |
+| 2026-09-15 | `Small Ring` et `Hexagon` quittent `packages/track` pour les assets ; deux boucles de fixture, `europe-loop-01` et `north-loop-01`, les remplacent dans les suites | Une piste est soit du contenu de jeu, soit un banc d'essai ; un test ne doit pas dépendre d'un fichier servi |
+| 2026-09-15 | La **graine d'un Random vit dans l'adresse**, `/race/:mode/:country/random/:seed`, jamais dans un service | Une course tirée au sort doit se recharger à l'identique ; le catalogue ne donne que les cadrans et la longueur |
+| 2026-09-15 | Une boucle que le générateur n'a pas fermée fait redemander une graine dérivée (`<graine>-2`…) au lieu de lancer un Rally | Un menu Track ne doit pas rendre une ligne ; la dérivation reste déterministe, donc rechargeable |
+| 2026-09-15 | `RacePage` prend son mode de la piste jouée et en nourrit `RaceRules` et le `TimerReadout` | Le mode était en dur à `track` : le Rally n'aurait eu ni sa fin de course ni son chrono |
 
 ### 13.2 Questions ouvertes
 

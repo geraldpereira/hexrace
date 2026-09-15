@@ -16,6 +16,7 @@ _coder_ ici ; il ne raconte pas l'architecture et ne répète rien qu'un autre f
 | Quelles règles de lint, et pourquoi ?             | `eslint.config.js`, et `quality/` pour la règle maison                        |
 | Seuils de couverture, plafond de duplication ?    | 100 % partout : `packages/*/vitest.config.ts`, `angular.json` ; `.jscpd.json` |
 | Comment les écrans du jeu sont routés et montés ? | `docs/specs-techniques.md` 8.1, et `apps/web/src/app/game/game.routes.ts`     |
+| Où sont les pistes livrées, et leur menu ?        | `apps/web/public/tracks/` : un `.track` par piste, `catalogue.json` pour les menus |
 
 ## Commandes
 
@@ -63,6 +64,10 @@ en https parce que le son (AudioWorklet) n'existe qu'en contexte sécurisé.
   Pas de commentaire dans le corps d'une fonction, sauf un lien vers une spec ou un mot sur un bloc
   vide voulu. Aucun dans les specs. Ce qui ne tient pas dans la ration va dans l'en-tête de la
   classe, ou réclame un meilleur nom.
+- **Le contenu du jeu est de la donnée servie, pas du code.** Les pistes jouables vivent dans
+  `apps/web/public/tracks/` (`catalogue.json` et les `.track`), lues à l'exécution par
+  `TrackCatalogue` ; spec technique 3.10. Les exemples compilés de `packages/track/src/entity/examples`
+  ne sont plus que des bancs d'essai et des cas faux, pour les suites et la vitrine `lab/track`.
 - **`poc/` n'est pas le jeu.** Matière première à reprendre module par module ; rien ne l'importe.
 
 ## Les modules

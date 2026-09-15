@@ -380,6 +380,8 @@ Par ordre d'arrivée probable :
 
 Par environnement : **trois pistes Track** (boucles) et **trois pistes Rally** (lignes). **Toutes ouvertes** dès le départ : la progression est dans les voitures, pas dans les pistes.
 
+Elles sont livrées comme **données et non comme code** : un fichier `.track` par piste et un catalogue qui décrit les menus, servis avec le jeu (spec technique 3.10). En ajouter une ne demande pas de recompiler. À ce jour chaque pays en a au moins une par mode, l'entrée **Random** complétant le menu en attendant les autres.
+
 ### 5.2 Éditeur de pistes
 
 Un éditeur **accessible à tous**, mais **PC uniquement** (clavier et souris).
@@ -463,13 +465,23 @@ Tout est dans le **stockage local du navigateur** pour commencer : chronos, voit
 Sur le modèle de hexact pour la structure et l'enchaînement.
 
 ```
-Home ─┬─ Track ─── choix environnement ─── choix piste ─── Course ─── Résultats ─┬─ Retry
-      ├─ Rally ─── choix environnement ─── choix piste ─── Course ─── Résultats ─┤
-      ├─ Collapse  choix environnement ────────────────── Course ─── Résultats ─┴─ Home
+Home ─┬─ Race ───── choix du pays ─── choix piste ─── Course ─── Résultats ─┬─ Retry
+      ├─ Rally ──── choix du pays ─── choix piste ─── Course ─── Résultats ─┤
+      ├─ Collapse   choix du pays ────────────────── Course ─── Résultats ─┴─ Home
       ├─ Garage (voitures, améliorations, crédits) ─── Piste d'essai (réglages en direct)
       ├─ Éditeur (PC uniquement)
       └─ Options
 ```
+
+**Ce qui est construit (2026-09-15).** L'accueil offre **Race** (le mode Track) et **Rally**, plus un
+lien discret vers le lab. Les deux mènent au même écran de **choix du pays**, qui ne montre que les
+pays ayant quelque chose à proposer dans le mode demandé. Le choix se dit en **pays** et non en
+environnement : c'est le catalogue de pistes qui nomme *Finland*, *France* et *Morocco* devant les
+thèmes `north`, `europe` et `africa` de 2.2. Vient ensuite le **choix de piste**, où **Random** est
+la première carte — elle tire une graine et lance une piste générée dans le mode courant (5.3) —
+suivie des pistes livrées du pays, chacune avec son meilleur temps. Le retour marche à chaque
+étage : de la piste au pays, du pays à l'accueil. Collapse, le garage, l'éditeur et les options
+restent à venir ; aucun bouton mort ne les annonce.
 
 ### 7.2 HUD en course
 
@@ -784,6 +796,11 @@ Par ordre d'envie :
 | 2026-09-15 | Le choix de piste liste toutes les boucles d'exemple que le modèle accepte, pas une seule                 | Neuf exemples existent déjà ; en montrer plusieurs ne coûte rien et donne à rejouer      |
 | 2026-09-15 | **Back en course ne quitte pas : il demande.** La course continue derrière la question                    | Pas de pause (4.1), mais pas de course perdue sur un appui malheureux non plus          |
 | 2026-09-15 | Un menu se pilote au stick, à la croix, aux flèches, à la souris et au doigt, sans mode                   | Le survol ou l'appui choisit, le clic valide : la manette et le tactile cohabitent      |
+| 2026-09-15 | Les pistes livrées sont un **catalogue de données** servi avec le jeu, plus des fichiers `.track`          | Ajouter une piste ou réordonner un menu sans recompiler ; la validité reste au modèle, pas au catalogue |
+| 2026-09-15 | L'écran d'environnement devient un **choix de pays** : Finland, France, Morocco                            | Un pays se lit mieux qu'un thème ; c'est le catalogue qui le nomme, l'environnement ne change pas (2.2) |
+| 2026-09-15 | L'accueil offre **Race et Rally** ; le choix de piste s'ouvre sur une entrée **Random**                    | Le Rally marchait déjà dans le moteur ; Random donne de quoi rejouer sans attendre d'autres pistes livrées |
+| 2026-09-15 | La graine d'une course tirée au sort est **dans l'adresse**, pas dans le catalogue ni en mémoire            | Random doit être aléatoire à chaque choix, et une course doit pouvoir se recharger telle quelle |
+| 2026-09-15 | Chaque pays offre au moins une piste livrée dans chaque mode, en plus de son Random                         | Un menu qui n'aurait que Random ne montrerait pas ce que le pays sait faire (5.1) |
 
 ### 11.2 Questions ouvertes
 

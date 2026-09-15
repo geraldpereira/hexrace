@@ -1,0 +1,26 @@
+hexrace-track 1
+
+id: france-riviera-run
+name: Riviera Run
+environment: europe  # Europe
+mode: rally
+
+# One line per tile, in the order of travel. The entry face is always 6.
+# exit exit face · pos/w road position and width at the exit · sh shoulders left,right
+# h height in steps · t road/shoulder/landscape ranks · obs obstacles (see obstacle-text.ts)
+
+[tiles]
+start  exit=12  pos=2  w=3  sh=1,1  h=20  t=1/1/1
+       exit=2   pos=2  w=3  sh=1,1  h=26  t=1/1/1
+       exit=12  pos=3  w=2  sh=1,1  h=32  t=1/1/1  obs=barrier:right
+       exit=2   pos=3  w=2  sh=1,1  h=38  t=1/1/1
+       exit=12  pos=3  w=2  sh=1,1  h=44  t=2/1/1  obs=ramp@0.4-0.55
+       exit=10  pos=3  w=2  sh=1,1  h=48  t=2/1/1
+       exit=12  pos=2  w=3  sh=1,1  h=48  t=2/1/1  obs=hazard:medium@0.5/1
+       exit=10  pos=2  w=3  sh=1,1  h=44  t=2/2/1
+       exit=12  pos=2  w=3  sh=1,1  h=38  t=2/2/1  obs=patch:3@0.3-0.7/0x2
+       exit=2   pos=2  w=3  sh=1,1  h=32  t=3/2/1
+       exit=12  pos=2  w=3  sh=1,1  h=26  t=3/2/2  obs=bump@0.45-0.55
+       exit=2   pos=2  w=3  sh=1,1  h=22  t=3/3/2
+       exit=12  pos=2  w=3  sh=1,1  h=20  t=2/3/2  obs=hazard:small@0.5/-1
+       exit=12  pos=2  w=3  sh=1,1  h=20  t=1/1/1

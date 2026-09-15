@@ -26,7 +26,7 @@ export interface TrackLoad {
  */
 export class TrackDraft {
   source: TrackSource = 'example';
-  example = 'europe-ring-01';
+  example = 'europe-loop-01';
   /** The track file the page's text area holds. */
   text = '';
   seed = DEFAULT_GENERATOR.seed;

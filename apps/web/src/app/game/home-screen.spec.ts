@@ -26,23 +26,26 @@ describe('HomeScreen', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('shows the title, the one choice of the MVP, and a quiet way to the lab', async () => {
+  it('shows the title, the two modes that are playable, and a quiet way to the lab', async () => {
     const host = await render();
     expect(host.querySelector('h1')?.textContent).toBe('HexRace');
-    expect(host.querySelectorAll('hr-menu-list button').length).toBe(1);
-    expect(host.querySelector('hr-menu-list button')?.textContent).toContain('Race');
+    const rows = [...host.querySelectorAll('hr-menu-list button')];
+    expect(rows.map((row: Element) => row.textContent?.trim())).toEqual([
+      expect.stringContaining('Race'),
+      expect.stringContaining('Rally'),
+    ]);
     expect(host.querySelector('a.quiet')?.getAttribute('href')).toBe('/lab');
   });
 
-  it('goes to the track pick screen, on a click and on the confirm button', async () => {
+  it('goes to the countries of the mode chosen, on a click and on the confirm button', async () => {
     const host = await render();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    host.querySelector('button')?.click();
-    expect(navigate).toHaveBeenCalledWith(['/tracks']);
+    host.querySelectorAll('button')[1]?.click();
+    expect(navigate).toHaveBeenCalledWith(['/play', 'rally']);
     navigate.mockClear();
     capture.tick(1);
     source.actions.confirm = 1;
     capture.tick(1);
-    expect(navigate).toHaveBeenCalledWith(['/tracks']);
+    expect(navigate).toHaveBeenCalledWith(['/play', 'rally']);
   });
 });

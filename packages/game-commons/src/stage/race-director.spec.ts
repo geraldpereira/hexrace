@@ -30,7 +30,7 @@ describe('RaceDirector', () => {
   });
 
   function ring(): Track {
-    return TestBed.inject(TrackExamples).of('europe-ring-01')!;
+    return TestBed.inject(TrackExamples).of('europe-loop-01')!;
   }
 
   function go(): void {

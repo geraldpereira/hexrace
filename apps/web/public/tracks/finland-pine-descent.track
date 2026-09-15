@@ -1,0 +1,26 @@
+hexrace-track 1
+
+id: finland-pine-descent
+name: Pine Descent
+environment: north  # North
+mode: rally
+
+# One line per tile, in the order of travel. The entry face is always 6.
+# exit exit face · pos/w road position and width at the exit · sh shoulders left,right
+# h height in steps · t road/shoulder/landscape ranks · obs obstacles (see obstacle-text.ts)
+
+[tiles]
+start  exit=12  pos=2  w=4  sh=1,1  h=144  t=1/1/1
+       exit=12  pos=2  w=4  sh=1,1  h=132  t=1/1/1
+       exit=2   pos=2  w=4  sh=1,1  h=120  t=1/1/1
+       exit=12  pos=3  w=3  sh=1,1  h=110  t=2/1/1  obs=barrier:right
+       exit=12  pos=3  w=3  sh=1,1  h=100  t=2/1/1  obs=patch:3@0.3-0.7/0.5x1.5
+       exit=10  pos=3  w=3  sh=1,1  h=92   t=2/1/1
+       exit=12  pos=3  w=3  sh=1,1  h=84   t=2/2/1  obs=hazard:medium@0.5/-1
+       exit=2   pos=3  w=3  sh=1,1  h=76   t=2/2/1
+       exit=12  pos=3  w=3  sh=1,1  h=68   t=2/2/2  obs=bump@0.4-0.6
+       exit=12  pos=3  w=3  sh=1,1  h=60   t=2/2/2
+       exit=10  pos=3  w=3  sh=1,1  h=52   t=2/2/2
+       exit=12  pos=2  w=4  sh=1,1  h=44   t=1/2/2  obs=hazard:small@0.55/1.5
+       exit=12  pos=2  w=4  sh=1,1  h=36   t=1/2/2
+       exit=12  pos=2  w=4  sh=1,1  h=30   t=1/1/2

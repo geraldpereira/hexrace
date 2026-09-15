@@ -16,7 +16,7 @@ describe('TrackWindow', () => {
     TestBed.configureTestingModule({});
     window = TestBed.inject(TrackWindow);
     placement = TestBed.inject(TrackPlacement);
-    ring = TestBed.inject(TrackExamples).of('europe-ring-01') ?? EMPTY_TRACK;
+    ring = TestBed.inject(TrackExamples).of('europe-loop-01') ?? EMPTY_TRACK;
   });
 
   it('cuts a position into a tile and a progress, wrapping on a loop', () => {

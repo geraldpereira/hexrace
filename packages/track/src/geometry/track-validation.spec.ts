@@ -26,8 +26,8 @@ describe('TrackValidation', () => {
   }
 
   it.each([
-    'europe-ring-01',
-    'north-ring-01',
+    'europe-loop-01',
+    'north-loop-01',
     'europe-line-01',
     'europe-relief-01',
     'europe-curves-01',
@@ -52,7 +52,7 @@ describe('TrackValidation', () => {
   });
 
   it('names the last tile when the loop does not close', () => {
-    const ring = example('europe-ring-01');
+    const ring = example('europe-loop-01');
     const open: Track = { ...ring, tiles: ring.tiles.slice(0, 11) };
     const review = validation.validate(open);
     expect(review.issues).toHaveLength(1);

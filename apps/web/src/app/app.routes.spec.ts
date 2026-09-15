@@ -10,8 +10,18 @@ describe('ROUTES', () => {
 
   it.each([
     ['the root is the game, not the lab', '/', '/'],
-    ['the track pick screen is its own address', '/tracks', '/tracks'],
-    ['the race loads lazily, three and Jolt with it', '/race/europe-ring-01', '/race/europe-ring-01'],
+    ['the country pick screen is its own address', '/play/track', '/play/track'],
+    ['the track pick screen names the country', '/play/rally/france', '/play/rally/france'],
+    [
+      'the race loads lazily, three and Jolt with it',
+      '/race/track/france/france-small-ring',
+      '/race/track/france/france-small-ring',
+    ],
+    [
+      'a drawn race carries its seed, so reloading gives the same track',
+      '/race/rally/morocco/random/ab12cd',
+      '/race/rally/morocco/random/ab12cd',
+    ],
     ['the lab keeps its front page', '/lab', '/lab'],
     ['the engine showcase loads lazily, three and Jolt with it', '/lab/engine', '/lab/engine'],
     ['the camera showcase loads lazily', '/lab/camera', '/lab/camera'],

@@ -15,7 +15,7 @@ describe('TrackProfiles', () => {
     TestBed.configureTestingModule({});
     profiles = TestBed.inject(TrackProfiles);
     same = TestBed.inject(Profiles);
-    ring = TestBed.inject(TrackExamples).of('europe-ring-01') ?? EMPTY_TRACK;
+    ring = TestBed.inject(TrackExamples).of('europe-loop-01') ?? EMPTY_TRACK;
   });
 
   it('gives each tile the exit profile of the one before', () => {

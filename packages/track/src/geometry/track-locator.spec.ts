@@ -59,7 +59,7 @@ describe('TrackLocator', () => {
       if (!pose) return;
       expect(locator.locate(line, laid, pose.point)?.position).toBeCloseTo(position, 3);
     }
-    const ring = TestBed.inject(TrackExamples).of('europe-ring-01') ?? EMPTY_TRACK;
+    const ring = TestBed.inject(TrackExamples).of('europe-loop-01') ?? EMPTY_TRACK;
     const laidRing = placement.place(ring);
     const pose = window.playerPose(ring, laidRing, 6.5);
     expect(pose && locator.locate(ring, laidRing, pose.point)?.position).toBeCloseTo(6.5, 3);

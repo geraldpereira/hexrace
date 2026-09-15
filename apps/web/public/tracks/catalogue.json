@@ -1,0 +1,104 @@
+{
+  "countries": [
+    {
+      "id": "finland",
+      "name": "Finland",
+      "environment": "north",
+      "modes": {
+        "track": {
+          "random": {
+            "dials": { "turning": 5, "sharpness": 2, "relief": 5, "variety": 4, "obstacles": 3 },
+            "length": 22
+          },
+          "tracks": [
+            {
+              "id": "finland-aurora-ring",
+              "name": "Aurora Ring",
+              "file": "tracks/finland-aurora-ring.track"
+            },
+            { "id": "finland-hexagon", "name": "Hexagon", "file": "tracks/finland-hexagon.track" }
+          ]
+        },
+        "rally": {
+          "random": {
+            "dials": { "turning": 6, "sharpness": 3, "relief": 6, "variety": 5, "obstacles": 4 },
+            "length": 28
+          },
+          "tracks": [
+            {
+              "id": "finland-pine-descent",
+              "name": "Pine Descent",
+              "file": "tracks/finland-pine-descent.track"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "france",
+      "name": "France",
+      "environment": "europe",
+      "modes": {
+        "track": {
+          "random": {
+            "dials": { "turning": 6, "sharpness": 4, "relief": 3, "variety": 5, "obstacles": 4 },
+            "length": 24
+          },
+          "tracks": [
+            {
+              "id": "france-small-ring",
+              "name": "Small Ring",
+              "file": "tracks/france-small-ring.track"
+            }
+          ]
+        },
+        "rally": {
+          "random": {
+            "dials": { "turning": 5, "sharpness": 4, "relief": 5, "variety": 5, "obstacles": 4 },
+            "length": 30
+          },
+          "tracks": [
+            {
+              "id": "france-riviera-run",
+              "name": "Riviera Run",
+              "file": "tracks/france-riviera-run.track"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "morocco",
+      "name": "Morocco",
+      "environment": "africa",
+      "modes": {
+        "track": {
+          "random": {
+            "dials": { "turning": 4, "sharpness": 3, "relief": 6, "variety": 4, "obstacles": 5 },
+            "length": 26
+          },
+          "tracks": [
+            {
+              "id": "morocco-kasbah-ring",
+              "name": "Kasbah Ring",
+              "file": "tracks/morocco-kasbah-ring.track"
+            }
+          ]
+        },
+        "rally": {
+          "random": {
+            "dials": { "turning": 4, "sharpness": 2, "relief": 7, "variety": 4, "obstacles": 5 },
+            "length": 32
+          },
+          "tracks": [
+            {
+              "id": "morocco-dune-crossing",
+              "name": "Dune Crossing",
+              "file": "tracks/morocco-dune-crossing.track"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

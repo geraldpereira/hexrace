@@ -35,7 +35,7 @@ describe('TrackPlacement', () => {
   });
 
   it('closes the small ring on twelve distinct cells', () => {
-    const ring = example('europe-ring-01');
+    const ring = example('europe-loop-01');
     const laid = placement.place(ring);
     expect(placement.closureIssue(ring, laid)).toBeNull();
     expect(placement.overlaps(laid)).toEqual([]);
@@ -44,7 +44,7 @@ describe('TrackPlacement', () => {
 
   it('closes three hairpins around a corner and six wide turns around a tile', () => {
     const triangle = example('africa-triangle-01');
-    const hexagon = example('north-ring-01');
+    const hexagon = example('north-loop-01');
     expect(placement.place(triangle).tiles.map((t: PlacedTile) => t.heading)).toEqual([0, 2, 4]);
     expect(placement.place(hexagon).tiles.map((t: PlacedTile) => t.heading)).toEqual([
       0, 5, 4, 3, 2, 1,
@@ -54,7 +54,7 @@ describe('TrackPlacement', () => {
   });
 
   it('says where a loop that does not close ends up, and refuses an empty loop', () => {
-    const ring = example('europe-ring-01');
+    const ring = example('europe-loop-01');
     const open: Track = { ...ring, tiles: ring.tiles.slice(0, 11) };
     expect(placement.closureIssue(open, placement.place(open))).toBe(
       'the loop does not close: after the last tile we reach (0, -1) heading 5, ' +
@@ -72,13 +72,13 @@ describe('TrackPlacement', () => {
     const prefix = placement.validPrefix(laid);
     expect(prefix.tiles).toHaveLength(6);
     expect(prefix.next).toEqual({ cell: { q: 0, r: 0 }, heading: 0 });
-    const ring = placement.place(example('europe-ring-01'));
+    const ring = placement.place(example('europe-loop-01'));
     expect(placement.firstOverlap(ring)).toBeNull();
     expect(placement.validPrefix(ring).tiles).toHaveLength(12);
   });
 
   it('gives each laid tile its entry profile and its two slopes', () => {
-    const { tiles } = placement.place(example('europe-ring-01'));
+    const { tiles } = placement.place(example('europe-loop-01'));
     expect(tiles[4]?.entry.roadWidth).toBe(3);
     expect(tiles[4]?.tile.profile.roadWidth).toBe(2);
     expect(tiles[0]?.entrySlope).toBe(tiles.at(-1)?.exitSlope);

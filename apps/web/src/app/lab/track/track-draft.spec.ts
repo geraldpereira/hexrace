@@ -18,7 +18,7 @@ describe('TrackDraft', () => {
   });
 
   it('loads an example by its id, and says when there is none', () => {
-    expect(draft.load(examples, files, generator).track?.name).toBe('Small Ring');
+    expect(draft.load(examples, files, generator).track?.name).toBe('Loop');
     draft.example = 'mars-01';
     expect(draft.load(examples, files, generator)).toEqual({
       track: null,

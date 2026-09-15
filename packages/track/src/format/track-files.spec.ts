@@ -8,8 +8,8 @@ import { TrackFiles } from '@track/format/track-files';
 
 const SKETCH = `hexrace-track 1
 
-id: europe-ring-01
-name: Small Ring
+id: europe-loop-01
+name: Loop
 environment: europe
 mode: track
 laps: 3
@@ -54,7 +54,7 @@ describe('TrackFiles', () => {
 
   it('reads the file of sketch 6', () => {
     const track = trackOf(files, SKETCH);
-    expect(track.name).toBe('Small Ring');
+    expect(track.name).toBe('Loop');
     expect(track.mode).toBe('track');
     expect(track.laps).toBe(3);
     expect(track.tiles).toHaveLength(4);

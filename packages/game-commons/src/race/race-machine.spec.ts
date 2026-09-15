@@ -30,7 +30,7 @@ describe('RaceMachine', () => {
     bus.on('race/start', (event: RaceStart) => starts.push(event));
     bus.on('race/lap', (event: RaceLap) => laps.push(event));
     bus.on('race/finish', (event: RaceFinish) => finishes.push(event));
-    ring = TestBed.inject(TrackExamples).of('europe-ring-01')!;
+    ring = TestBed.inject(TrackExamples).of('europe-loop-01')!;
   });
 
   function race(track: Track, laps = DEFAULT_LAPS): void {

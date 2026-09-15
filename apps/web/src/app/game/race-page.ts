@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, type OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, type ParamMap, Router } from '@angular/router';
 
 import { DEFAULT_LAPS, type RaceFinish } from '@hexrace/game-commons';
 import {
@@ -13,6 +13,7 @@ import {
   TouchPaddles,
 } from '@hexrace/hud';
 import { Inputs, TouchSource } from '@hexrace/inputs';
+import { type TrackMode } from '@hexrace/track';
 
 import { type PlayableTrack, GameTracks } from '@ui/game/game-tracks';
 import { DrivingPage } from '@ui/scene/driving-page';
@@ -26,11 +27,11 @@ const QUIT_CHOICES: readonly MenuItem[] = [
 ];
 
 /**
- * The race itself (functional spec 4.2): the track laid in the stage, the car on its start line,
- * the countdown, the chrono, the laps and the HUD over the canvas, and the results box at the
- * flag, from which Retry runs the same track again and Home leaves for the front page. There is
- * no pause (functional spec 4.1): back only asks whether to quit, and the race runs on behind the
- * question, so that no stray press ever loses a run.
+ * The race itself (functional spec 4.2 and 4.3): the track the address names laid in the stage,
+ * the car on its start line, the countdown, the chrono, the laps of a Track loop or the finish
+ * line of a Rally, and the results box at the flag, from which Retry runs the same track again
+ * and Home leaves for the front page. There is no pause (4.1): back only asks whether to quit,
+ * and the race runs on behind the question, so that no stray press ever loses a run.
  */
 @Component({
   selector: 'hr-race-page',
@@ -45,19 +46,22 @@ export class RacePage extends DrivingPage implements OnInit {
   readonly quitting = signal(false);
 
   private readonly document = inject(DOCUMENT);
+  private readonly games = inject(GameTracks);
   private readonly inputs = inject(Inputs);
   private readonly results = inject(ResultsDialogs);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly playable: PlayableTrack | null = inject(GameTracks).of(
-    inject(ActivatedRoute).snapshot.paramMap.get('track') ?? '',
-  );
   readonly showPaddles = signal(this.prefersTouch());
-  protected readonly mode: RaceMode = 'track';
+  private playable: PlayableTrack | null = null;
+  private raceMode: RaceMode = 'track';
   private backWasHeld = true;
 
   ngOnInit(): void {
-    if (this.playable) this.load();
-    else this.home();
+    void this.asked().then((playable: PlayableTrack | null) => {
+      this.playable = playable;
+      if (playable) this.load();
+      else this.home();
+    });
   }
 
   /** Back to the countdown on the start line, with the tyre marks of the last run wiped. */
@@ -78,10 +82,15 @@ export class RacePage extends DrivingPage implements OnInit {
     void this.router.navigate(['/']);
   }
 
+  protected get mode(): RaceMode {
+    return this.raceMode;
+  }
+
   protected ready(): void {
     const track = this.playable!.track;
+    this.raceMode = track.mode;
     this.race.stage.load(track);
-    this.race.director.rules = { mode: 'track', laps: track.laps ?? DEFAULT_LAPS };
+    this.race.director.rules = { mode: track.mode, laps: track.laps ?? DEFAULT_LAPS };
     this.race.director.restart();
   }
 
@@ -93,11 +102,21 @@ export class RacePage extends DrivingPage implements OnInit {
   protected finished(event: RaceFinish): void {
     this.quitting.set(false);
     void this.results
-      .open({ mode: 'track', timeMs: event.timeMs, record: event.record })
+      .open({ mode: this.mode, timeMs: event.timeMs, record: event.record })
       .then((choice: ResultsChoice) => {
         if (choice === 'retry') this.restart();
         else this.home();
       });
+  }
+
+  private asked(): Promise<PlayableTrack | null> {
+    const params: ParamMap = this.route.snapshot.paramMap;
+    const mode: TrackMode | null = this.games.modeOf(params.get('mode'));
+    const country = params.get('country') ?? '';
+    const seed = params.get('seed') ?? '';
+    if (!mode) return Promise.resolve(null);
+    if (seed !== '') return this.games.random(mode, country, seed);
+    return this.games.shipped(mode, country, params.get('track') ?? '');
   }
 
   private askedToQuit(): void {

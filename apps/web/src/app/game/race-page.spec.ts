@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import type * as THREE from 'three';
@@ -9,12 +11,22 @@ import { PerfMeter, ResultsDialogs } from '@hexrace/hud';
 import { INPUT_SOURCES } from '@hexrace/inputs';
 
 import { RacePage } from '@ui/game/race-page';
+import { serveCatalogue } from '@ui/testing/catalogue.mock';
 import { FakeClock } from '@ui/testing/clock.mock';
 import { type FrameCapture, captureFrames } from '@ui/testing/frames.mock';
 import { stubResizeObserver } from '@ui/testing/resize-observer.mock';
 import { ScriptedSource } from '@ui/testing/scripted-source.mock';
 
-const TRACK_ID = 'europe-ring-01';
+const LOOP: Readonly<Record<string, string>> = {
+  mode: 'track',
+  country: 'testland',
+  track: 'mock-loop',
+};
+const DRAWN: Readonly<Record<string, string>> = {
+  mode: 'rally',
+  country: 'testland',
+  seed: 'abc123',
+};
 
 interface Page {
   host: HTMLElement;
@@ -34,28 +46,29 @@ describe('RacePage', () => {
     clock = new FakeClock();
     rendered = [];
     source = new ScriptedSource();
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     vi.spyOn(ThreeRenderer.prototype, 'render').mockImplementation((camera: THREE.Camera) => {
       rendered.push(camera);
     });
     stubResizeObserver({ width: 400, height: 300 });
   });
 
-  async function render(id: string | null = TRACK_ID): Promise<Page> {
+  async function render(address: Readonly<Record<string, string>> = LOOP): Promise<Page> {
+    const params = new Map<string, string>(Object.entries(address));
     await TestBed.configureTestingModule({
       imports: [RacePage],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: Clock, useValue: clock },
         { provide: INPUT_SOURCES, useValue: source, multi: true },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: { paramMap: new Map<string, string>(id === null ? [] : [['track', id]]) },
-          },
-        },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: params } } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(RacePage);
+    await fixture.whenStable();
+    await serveCatalogue();
     await fixture.whenStable();
     return {
       host: fixture.nativeElement as HTMLElement,
@@ -64,8 +77,8 @@ describe('RacePage', () => {
     };
   }
 
-  async function loaded(): Promise<Page> {
-    const page = await render();
+  async function loaded(address: Readonly<Record<string, string>> = LOOP): Promise<Page> {
+    const page = await render(address);
     await TestBed.inject(JoltPhysics).load();
     await new Promise((r) => setTimeout(r, 0));
     TestBed.tick();
@@ -77,18 +90,22 @@ describe('RacePage', () => {
     capture.tick(2, 50);
   }
 
-  it('leaves for the front page when the address names no playable track', async () => {
+  it('leaves for the front page when the address names nothing playable', async () => {
     const navigate = vi.spyOn(Router.prototype, 'navigate').mockResolvedValue(true);
-    const nameless = await render(null);
+    const nameless = await render({ ...LOOP, mode: 'collapse' });
     expect(navigate).toHaveBeenCalledWith(['/']);
     nameless.destroy();
     TestBed.resetTestingModule();
-    const { destroy } = await render('nowhere-at-all');
+    const unknown = await render({ ...LOOP, track: 'nowhere' });
+    expect(navigate).toHaveBeenCalledWith(['/']);
+    unknown.destroy();
+    TestBed.resetTestingModule();
+    const bare = await render({ mode: 'track' });
     expect(navigate).toHaveBeenCalledWith(['/']);
     await TestBed.inject(JoltPhysics).load();
     await new Promise((r) => setTimeout(r, 0));
     expect(TestBed.inject(JoltPhysics).physicsSystem.GetNumBodies()).toBe(0);
-    destroy();
+    bare.destroy();
   });
 
   it('lays the track, holds the car on the line, then runs the chrono and the HUD', async () => {
@@ -101,7 +118,8 @@ describe('RacePage', () => {
     capture.tick(30, 50);
     expect(page.race.director.state.phase).toBe('countdown');
     expect(page.readout.countdownStep()).toBe(3);
-    expect(page.readout.timer().lapCount).toBe(3);
+    expect(page.readout.timer().mode).toBe('track');
+    expect(page.readout.timer().lapCount).toBe(2);
     expect(page.race.parts.car.frozen).toBe(true);
 
     go();
@@ -114,6 +132,32 @@ describe('RacePage', () => {
     expect(page.readout.wrongWay()).toBe(false);
     expect(rendered.length).toBeGreaterThan(0);
     destroy();
+  });
+
+  it('runs a Rally on the rules of its own mode, with one lap and the Rally timer', async () => {
+    const { page, destroy } = await loaded({
+      mode: 'rally',
+      country: 'testland',
+      track: 'mock-line',
+    });
+    expect(page.race.director.rules).toEqual({ mode: 'rally', laps: 2 });
+    go();
+    expect(page.readout.timer().mode).toBe('rally');
+    expect(page.readout.timer().lapCount).toBe(1);
+    destroy();
+  });
+
+  it('races the track a seed drew, and keeps racing it when the address is reloaded', async () => {
+    const first = await loaded(DRAWN);
+    const id = first.page.race.stage.track?.id;
+    expect(id).toContain('gen-');
+    go();
+    expect(first.page.readout.timer().mode).toBe('rally');
+    first.destroy();
+    TestBed.resetTestingModule();
+    const again = await loaded(DRAWN);
+    expect(again.page.race.stage.track?.id).toBe(id);
+    again.destroy();
   });
 
   it('asks before quitting, runs on behind the question, and resumes or leaves', async () => {
@@ -168,15 +212,6 @@ describe('RacePage', () => {
     expect(box.textContent).toContain('new record');
     box.querySelectorAll('button')[0]!.click();
     destroy();
-  });
-
-  it('runs a loop that says no number of laps over the default three', async () => {
-    const page = await render('north-ring-01');
-    await TestBed.inject(JoltPhysics).load();
-    await new Promise((r) => setTimeout(r, 0));
-    capture.tick(2, 50);
-    expect(page.page.readout.timer().lapCount).toBe(2);
-    page.destroy();
   });
 
   it('draws the touch paddles on a coarse pointer', async () => {

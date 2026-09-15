@@ -116,7 +116,7 @@ describe('RaceShowcase', () => {
 
   it('lays the example track, holds the car on the line, then lets it drive away', async () => {
     const { host, page, destroy } = await loaded();
-    expect(host.textContent).toContain('Small Ring');
+    expect(host.textContent).toContain('Loop');
     expect(host.textContent).toContain('the model accepts it');
     expect(page.settings).toEqual({ mode: 'track', laps: 3 });
     expect(page.race.stage.shown.size).toBeGreaterThan(1);
@@ -192,7 +192,7 @@ describe('RaceShowcase', () => {
     const { page, destroy } = await loaded();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const open = vi.spyOn(TestBed.inject(ResultsDialogs), 'open').mockResolvedValue('retry');
-    TestBed.inject(BestTimes).record('europe-ring-01', 61_234);
+    TestBed.inject(BestTimes).record('europe-loop-01', 61_234);
     go();
 
     TestBed.inject(EventBus).publish('race/finish', { timeMs: 61_234, record: true });
@@ -228,7 +228,7 @@ describe('RaceShowcase', () => {
 
   it('shows the best time the package saved, and forgets it on demand', async () => {
     const { page, destroy } = await loaded();
-    TestBed.inject(BestTimes).record('europe-ring-01', 12_340);
+    TestBed.inject(BestTimes).record('europe-loop-01', 12_340);
     page.rebuild();
     expect(page.best).toBe('12.34 s');
     panelButton('Clear best time').click();

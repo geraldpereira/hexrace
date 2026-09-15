@@ -13,7 +13,7 @@ describe('TrackExamples', () => {
 
   it('reads the twelve tracks the module ships with', () => {
     expect(examples.ids()).toEqual([
-      'europe-ring-01',
+      'europe-loop-01',
       'europe-curves-01',
       'north-catalog-01',
       'europe-surfaces-01',
@@ -21,21 +21,21 @@ describe('TrackExamples', () => {
       'africa-bends-01',
       'europe-relief-01',
       'europe-line-01',
-      'north-ring-01',
+      'north-loop-01',
       'africa-triangle-01',
       'europe-overlap-01',
       'europe-invalid-01',
     ]);
-    expect(examples.all().map((track: Track) => track.name)).toContain('Small Ring');
+    expect(examples.all().map((track: Track) => track.name)).toContain('Loop');
   });
 
   it('finds one by its id, and nothing by an unknown one', () => {
-    expect(examples.of('europe-ring-01')?.tiles).toHaveLength(12);
+    expect(examples.of('europe-loop-01')?.tiles).toHaveLength(12);
     expect(examples.of('mars-01')).toBeNull();
   });
 
   it('drops a file that does not read rather than throwing', () => {
     examples.files = ['not a track file', ...examples.files.slice(0, 1)];
-    expect(examples.ids()).toEqual(['europe-ring-01']);
+    expect(examples.ids()).toEqual(['europe-loop-01']);
   });
 });

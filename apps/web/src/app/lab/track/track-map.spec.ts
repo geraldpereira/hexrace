@@ -39,20 +39,20 @@ describe('TrackMap', () => {
   }
 
   it('draws nothing without a 2D context', () => {
-    map.draw(canvas, viewOf('europe-ring-01', new Set([0]), true));
+    map.draw(canvas, viewOf('europe-loop-01', new Set([0]), true));
     expect(fake.calls).toEqual([]);
   });
 
   it('draws nothing for a track without a tile', () => {
     mockCanvasContext(fake);
-    const view = viewOf('europe-ring-01', new Set<number>(), false);
+    const view = viewOf('europe-loop-01', new Set<number>(), false);
     map.draw(canvas, { ...view, placement: { tiles: [], next: view.placement.next } });
     expect(fake.calls).toEqual(['clearRect(0,0,400,300)']);
   });
 
   it('draws the zones, the line, the numbers and the player dot', () => {
     mockCanvasContext(fake);
-    map.draw(canvas, viewOf('europe-ring-01', new Set([0, 1, 2]), true));
+    map.draw(canvas, viewOf('europe-loop-01', new Set([0, 1, 2]), true));
     expect(fake.calls.filter((call: string) => call.startsWith('fill('))).not.toHaveLength(0);
     expect(fake.calls.filter((call: string) => call.startsWith('stroke('))).not.toHaveLength(0);
     expect(fake.calls.filter((call: string) => call.startsWith('arc('))).not.toHaveLength(0);
@@ -62,7 +62,7 @@ describe('TrackMap', () => {
   it('dims the tiles outside the window and reddens the faulty ones', () => {
     mockCanvasContext(fake);
     const before = fakeContext();
-    map.draw(canvas, viewOf('europe-ring-01', new Set([0]), false));
+    map.draw(canvas, viewOf('europe-loop-01', new Set([0]), false));
     const clean = fake.calls.length;
     fake.calls.length = 0;
     mockCanvasContext(before);

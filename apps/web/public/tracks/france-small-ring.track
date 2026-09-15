@@ -1,7 +1,6 @@
-/** Track mode, three laps: the reference loop of the functional spec. */
-export const SMALL_RING_FILE = `hexrace-track 1
+hexrace-track 1
 
-id: europe-ring-01
+id: france-small-ring
 name: Small Ring
 environment: europe  # Europe
 mode: track
@@ -24,4 +23,3 @@ start  exit=12  pos=2  w=3  sh=1,1  h=40  t=1/1/1
        exit=2   pos=2  w=3  sh=1,1  h=48  t=1/1/1  obs=hazard:small@0.5/1
        exit=12  pos=2  w=3  sh=1,1  h=40  t=1/1/1  obs=barrier:right@0.5-1
        exit=2   pos=2  w=3  sh=1,1  h=40  t=1/1/1  obs=barrier:right@0-0.5,hazard:large@0.6/-2.5
-`;
